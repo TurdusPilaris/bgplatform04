@@ -6,6 +6,7 @@ import {
   UserModelType,
 } from '../domain/entities/user.entity';
 import { UserCreateModel } from '../api/models/input/create-user.input.model';
+import { Types } from 'mongoose';
 
 @Injectable()
 export class UsersRepository {
@@ -13,8 +14,20 @@ export class UsersRepository {
     @InjectModel(User.name)
     private UserModel: UserModelType,
   ) {}
-  createUser(inputModel: UserCreateModel): Promise<UserDocument> {
-    const newUser = this.UserModel.createdNewUser(inputModel, this.UserModel);
+  async createUser(inputModel: UserCreateModel): Promise<UserDocument> {
+    const newUser = this.UserModel.createNewUser(inputModel, this.UserModel);
     return newUser.save();
+  }
+
+  async findById(id: string): Promise<UserDocument | null> {
+    const user = await this.UserModel.findById(id, { __v: false });
+    if (!user) return null;
+    return user;
+  }
+
+  async delete(id: string) {
+    return this.UserModel.deleteOne({
+      _id: new Types.ObjectId(id),
+    });
   }
 }
