@@ -36,7 +36,7 @@ export class BlogsService {
   }
 
   async deleteBlog(blogId: string): Promise<InterlayerNotice> {
-    // if user wasn't found we will return an error
+    // if blog wasn't found we will return an error
     const foundedBlog = await this.blogsRepository.findById(blogId);
     if (!foundedBlog) {
       const result = new InterlayerNotice(null);

@@ -49,12 +49,12 @@ export class User {
   @Prop({ type: UserEmailConfirmationSchema })
   emailConfirmation: UserEmailConfirmation;
 
-  static createdNewUser(dto: UserCreateModel, UserModel: UserModelType) {
+  static createNewUser(dto: UserCreateModel, UserModel: UserModelType) {
     /**
      * нужно навешивать декоратор схема для регистрации модели в базе
      */
 
-    const createUser = new UserModel({
+    const createdUser = new UserModel({
       accountData: {
         email: dto.email,
         userName: dto.login,
@@ -62,7 +62,7 @@ export class User {
       },
     });
 
-    return createUser;
+    return createdUser;
   }
 }
 
@@ -74,7 +74,7 @@ export type UserModelStaticType = {
 };
 export const UserSchema = SchemaFactory.createForClass(User);
 UserSchema.statics = {
-  createNewUser: User.createdNewUser,
+  createNewUser: User.createNewUser,
 } as UserModelStaticType;
 
 export type UserModelType = Model<UserDocument> & UserModelStaticType;

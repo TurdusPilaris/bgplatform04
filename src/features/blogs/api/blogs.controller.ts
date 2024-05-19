@@ -17,12 +17,18 @@ import { BlogCreateInputModel } from './models/input/create-blog.input.model';
 import { BlogsService } from '../application/blogs.service';
 import { QueryBlogInputModel } from './models/input/query-blog.model';
 import { Response } from 'express';
+import { PostsService } from '../../posts/application/posts.service';
+import { PostCreateInputModel } from '../../posts/api/models/input/create-post.input.model';
+import { QueryPostInputModel } from '../../posts/api/models/input/query-post.model';
+import { PostsQueryRepository } from '../../posts/infrastructure/posts.query-repository';
 
 @Controller('blogs')
 export class BlogsController {
   constructor(
     protected blogsService: BlogsService,
+    protected postsService: PostsService,
     protected blogsQueryRepository: BlogsQueryRepository,
+    protected postsQueryRepository: PostsQueryRepository,
     @InjectModel(Blog.name)
     private BlogModel: BlogModelType,
   ) {}
@@ -40,11 +46,42 @@ export class BlogsController {
     return await this.blogsService.create(inputModel);
   }
 
-  @Get(':id')
-  async getBlog(@Param('id') blogId: string) {
-    return await this.blogsQueryRepository.findById(blogId);
+  @Post(':id/posts')
+  async createPostByBlogId(
+    @Param('id') blogId: string,
+    @Body() inputModel: PostCreateInputModel,
+    @Res() response: Response,
+  ) {
+    inputModel.blogId = blogId;
+    const result = await this.postsService.create(inputModel);
+
+    if (result.hasError()) {
+      if (result.code === 404) {
+        return response.status(result.code).send();
+      }
+    } else {
+      return response.status(201).send(result.data);
+    }
   }
 
+  @Get(':id')
+  async getBlog(@Param('id') blogId: string, @Res() response: Response) {
+    const foundedBlog = await this.blogsQueryRepository.findById(blogId);
+    console.log('foundedBlog', foundedBlog);
+    if (!foundedBlog) {
+      return response.status(404).send();
+    }
+    return response.status(200).send(foundedBlog);
+  }
+
+  @Get(':id/posts')
+  async getPostsByBlogId(
+    @Query(new ValidationPipe({ transform: true }))
+    queryDto: QueryPostInputModel,
+    @Param('id') blogId: string,
+  ) {
+    return await this.postsQueryRepository.findAll(queryDto, blogId);
+  }
   @Put(':id')
   async updateUser(
     @Param('id') blogId: string,
