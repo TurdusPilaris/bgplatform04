@@ -67,7 +67,6 @@ export class BlogsController {
   @Get(':id')
   async getBlog(@Param('id') blogId: string, @Res() response: Response) {
     const foundedBlog = await this.blogsQueryRepository.findById(blogId);
-    console.log('foundedBlog', foundedBlog);
     if (!foundedBlog) {
       return response.status(404).send();
     }
@@ -79,8 +78,15 @@ export class BlogsController {
     @Query(new ValidationPipe({ transform: true }))
     queryDto: QueryPostInputModel,
     @Param('id') blogId: string,
+    @Res() response: Response,
   ) {
-    return await this.postsQueryRepository.findAll(queryDto, blogId);
+    const foundedBlog = await this.blogsQueryRepository.findById(blogId);
+    if (!foundedBlog) {
+      return response.status(404).send();
+    }
+    return response
+      .status(200)
+      .send(await this.postsQueryRepository.findAll(queryDto, blogId));
   }
   @Put(':id')
   async updateUser(

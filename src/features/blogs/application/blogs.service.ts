@@ -28,7 +28,7 @@ export class BlogsService {
 
     //update blog
     foundedBlog.name = inputModel.name;
-    foundedBlog.description = inputModel.name;
+    foundedBlog.description = inputModel.description;
     foundedBlog.websiteUrl = inputModel.websiteUrl;
     const resultUpdatedBlog = await this.blogsRepository.save(foundedBlog);
 

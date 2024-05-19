@@ -15,8 +15,8 @@ export const PaginationUserOutputModelMapper = (
   const paginatorModel = new PaginationUserModel();
 
   paginatorModel.pagesCount = Math.ceil(countUsers / query.pageSize);
-  paginatorModel.page = query.pageNumber;
-  paginatorModel.pageSize = query.pageSize;
+  paginatorModel.page = +query.pageNumber;
+  paginatorModel.pageSize = +query.pageSize;
   paginatorModel.totalCount = countUsers;
   paginatorModel.items = items;
 

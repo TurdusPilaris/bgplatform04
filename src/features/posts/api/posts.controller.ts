@@ -52,8 +52,13 @@ export class PostsController {
   }
 
   @Get(':id')
-  async getPost(@Param('id') postId: string) {
-    return await this.postsQueryRepository.findById(postId);
+  async getPost(@Param('id') postId: string, @Res() response: Response) {
+    const foundedPost = await this.postsQueryRepository.findById(postId);
+    if (!foundedPost) {
+      return response.status(404).send();
+    } else {
+      return response.status(200).send(foundedPost);
+    }
   }
 
   @Put(':id')

@@ -1,4 +1,4 @@
-import { Prop, Schema } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { likeStatus } from '../../../../base/models/likesStatus';
 import { HydratedDocument, Model } from 'mongoose';
 
@@ -60,4 +60,21 @@ export class Comment {
     return createdComment;
   }
 }
-export type CommentModelType = Model<CommentDocument>;
+
+export type CommentModelStaticType = {
+  createNewComment: (
+    CommentModel: CommentModelType,
+    content: string,
+    postId: string,
+    userId: string,
+    userLogin: string,
+  ) => CommentDocument;
+};
+
+export const CommentSchema = SchemaFactory.createForClass(Comment);
+
+CommentSchema.statics = {
+  createNewComment: Comment.createNewComment,
+} as CommentModelStaticType;
+
+export type CommentModelType = Model<CommentDocument> & CommentModelStaticType;
