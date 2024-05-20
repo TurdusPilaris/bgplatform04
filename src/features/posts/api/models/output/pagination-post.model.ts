@@ -1,4 +1,4 @@
-import { PaginationOutputModel } from '../../../../../infrastructure/models/output/pagination.output.model';
+import { PaginationOutputModel } from '../../../../../base/models/output/pagination.output.model';
 import { PostOutputModel } from './post.output.model';
 import { QueryPostInputModel } from '../input/query-post.model';
 

@@ -1,4 +1,4 @@
-import { PaginationOutputModel } from '../../../../../infrastructure/models/output/pagination.output.model';
+import { PaginationOutputModel } from '../../../../../base/models/output/pagination.output.model';
 import { BlogOutputModel } from './blog.output.model';
 import { QueryBlogInputModel } from '../input/query-blog.model';
 

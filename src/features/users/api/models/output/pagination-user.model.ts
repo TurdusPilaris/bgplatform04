@@ -1,4 +1,4 @@
-import { PaginationOutputModel } from '../../../../../infrastructure/models/output/pagination.output.model';
+import { PaginationOutputModel } from '../../../../../base/models/output/pagination.output.model';
 import { UserOutputModel } from './user.output.model';
 import { UserDocument } from '../../../domain/entities/user.entity';
 import { QueryUserInputModel } from '../input/query-user.input.model';
