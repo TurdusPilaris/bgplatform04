@@ -1,8 +1,14 @@
 import {
+  BadGatewayException,
   Body,
   Controller,
+  DefaultValuePipe,
   Delete,
   Get,
+  HttpCode,
+  HttpException,
+  HttpStatus,
+  NotFoundException,
   Param,
   Post,
   Put,
@@ -35,6 +41,7 @@ export class BlogsController {
 
   @Get()
   async getBlogs(
+    // @Query('pageSize', new DefaultValuePipe(10)) pageSize: number,
     @Query(new ValidationPipe({ transform: true }))
     queryDto: QueryBlogInputModel,
   ) {
@@ -50,27 +57,26 @@ export class BlogsController {
   async createPostByBlogId(
     @Param('id') blogId: string,
     @Body() inputModel: PostCreateInputModel,
-    @Res() response: Response,
+    // @Res() response: Response,
   ) {
     inputModel.blogId = blogId;
     const result = await this.postsService.create(inputModel);
 
     if (result.hasError()) {
       if (result.code === 404) {
-        return response.status(result.code).send();
+        throw new NotFoundException();
       }
-    } else {
-      return response.status(201).send(result.data);
     }
+    return result.data;
   }
 
   @Get(':id')
-  async getBlog(@Param('id') blogId: string, @Res() response: Response) {
+  async getBlog(@Param('id') blogId: string) {
     const foundedBlog = await this.blogsQueryRepository.findById(blogId);
     if (!foundedBlog) {
-      return response.status(404).send();
+      throw new NotFoundException();
     }
-    return response.status(200).send(foundedBlog);
+    return foundedBlog;
   }
 
   @Get(':id/posts')
@@ -78,45 +84,39 @@ export class BlogsController {
     @Query(new ValidationPipe({ transform: true }))
     queryDto: QueryPostInputModel,
     @Param('id') blogId: string,
-    @Res() response: Response,
   ) {
     const foundedBlog = await this.blogsQueryRepository.findById(blogId);
     if (!foundedBlog) {
-      return response.status(404).send();
+      throw new NotFoundException();
     }
-    return response
-      .status(200)
-      .send(await this.postsQueryRepository.findAll(queryDto, blogId));
+    return await this.postsQueryRepository.findAll(queryDto, blogId);
   }
   @Put(':id')
-  async updateUser(
+  async updateBlog(
     @Param('id') blogId: string,
     @Body() inputModel: BlogCreateInputModel,
-    @Res() response: Response,
   ) {
     const result = await this.blogsService.updateBlog(blogId, inputModel);
 
     if (result.hasError()) {
       if (result.code === 404) {
-        return response.status(result.code).send();
+        throw new NotFoundException();
       }
-    } else {
-      return response.status(204).send();
     }
   }
 
   @Delete(':id')
-  async deleteBlog(@Param('id') blogId: string, @Res() response: Response) {
+  @HttpCode(204)
+  async deleteBlog(
+    @Param('id') blogId: string,
+    //@Res({passthrough: true}) response: Response
+  ) {
     const result = await this.blogsService.deleteBlog(blogId);
     if (result.hasError()) {
       if (result.code === 404) {
-        return response.status(result.code).send();
+        throw new NotFoundException();
       }
-      if (result.code === 502) {
-        return response.status(result.code).send();
-      }
-    } else {
-      return response.status(204).send();
     }
+    return;
   }
 }

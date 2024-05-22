@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  NotFoundException,
   Param,
   Post,
   Put,
@@ -28,18 +29,15 @@ export class PostsController {
   ) {}
 
   @Post()
-  async createPost(
-    @Body() inputModel: PostCreateInputModel,
-    @Res() response: Response,
-  ) {
+  async createPost(@Body() inputModel: PostCreateInputModel) {
     const result = await this.postsService.create(inputModel);
 
     if (result.hasError()) {
       if (result.code === 404) {
-        return response.status(result.code).send();
+        throw new NotFoundException();
       }
     } else {
-      return response.status(201).send(result.data);
+      return result.data;
     }
   }
 
@@ -52,12 +50,12 @@ export class PostsController {
   }
 
   @Get(':id')
-  async getPost(@Param('id') postId: string, @Res() response: Response) {
+  async getPost(@Param('id') postId: string) {
     const foundedPost = await this.postsQueryRepository.findById(postId);
     if (!foundedPost) {
-      return response.status(404).send();
+      throw new NotFoundException();
     } else {
-      return response.status(200).send(foundedPost);
+      return foundedPost;
     }
   }
 
@@ -65,31 +63,23 @@ export class PostsController {
   async updatePost(
     @Param('id') postId: string,
     @Body() inputModel: PostCreateInputModel,
-    @Res() response: Response,
   ) {
     const result = await this.postsService.updatePost(postId, inputModel);
 
     if (result.hasError()) {
       if (result.code === 404) {
-        return response.status(result.code).send();
+        throw new NotFoundException();
       }
-    } else {
-      return response.status(204).send();
     }
   }
 
   @Delete(':id')
-  async deletePost(@Param('id') postId: string, @Res() response: Response) {
+  async deletePost(@Param('id') postId: string) {
     const result = await this.postsService.deletePost(postId);
     if (result.hasError()) {
       if (result.code === 404) {
-        return response.status(result.code).send();
+        throw new NotFoundException();
       }
-      if (result.code === 502) {
-        return response.status(result.code).send();
-      }
-    } else {
-      return response.status(204).send();
     }
   }
 }

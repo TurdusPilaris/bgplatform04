@@ -34,12 +34,6 @@ export class UsersService {
     //delete user
     const deletedUser = await this.usersRepository.delete(userId);
 
-    //Failed to create user
-    if (deletedUser.deletedCount !== 1) {
-      const resultObject = new InterlayerNotice(null);
-      resultObject.addError('Failed to create user', 'userId', 502);
-      return resultObject;
-    }
     //return information about success
     return new InterlayerNotice(null);
   }

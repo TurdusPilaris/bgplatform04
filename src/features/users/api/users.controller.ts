@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  NotFoundException,
   Param,
   Post,
   Query,
@@ -55,18 +56,13 @@ export class UsersController {
   }
 
   @Delete(':id')
-  async deleteUser(@Param('id') userId: string, @Res() response: Response) {
+  async deleteUser(@Param('id') userId: string) {
     const result = await this.usersService.delete(userId);
 
     if (result.hasError()) {
       if (result.code === 404) {
-        return response.status(result.code).send();
+        throw new NotFoundException();
       }
-      if (result.code === 502) {
-        return response.status(result.code).send();
-      }
-    } else {
-      return response.status(204).send();
     }
   }
   //

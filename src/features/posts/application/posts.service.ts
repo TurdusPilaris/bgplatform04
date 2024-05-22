@@ -76,13 +76,6 @@ export class PostsService {
     //delete post
     const deletedPost = await this.postsRepository.delete(postId);
 
-    //Failed to create post
-    if (deletedPost.deletedCount !== 1) {
-      const result = new InterlayerNotice(null);
-      result.addError('Failed to create post', 'postId', 404);
-      return result;
-    }
-
     //return information about success
     return new InterlayerNotice(null);
   }

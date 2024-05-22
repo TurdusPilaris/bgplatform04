@@ -47,13 +47,6 @@ export class BlogsService {
     //delete blog
     const deletedBlog = await this.blogsRepository.delete(blogId);
 
-    //Failed to create blog
-    if (deletedBlog.deletedCount !== 1) {
-      const result = new InterlayerNotice(null);
-      result.addError('Failed to create blog', 'blogId', 404);
-      return result;
-    }
-
     //return information about success
     return new InterlayerNotice(null);
   }
