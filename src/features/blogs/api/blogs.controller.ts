@@ -42,7 +42,7 @@ export class BlogsController {
   @Get()
   async getBlogs(
     // @Query('pageSize', new DefaultValuePipe(10)) pageSize: number,
-    @Query(new ValidationPipe({ transform: true }))
+    @Query(new ValidationPipe({ transform: true, stopAtFirstError: true }))
     queryDto: QueryBlogInputModel,
   ) {
     return await this.blogsQueryRepository.findAll(queryDto);
