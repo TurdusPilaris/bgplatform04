@@ -14,7 +14,6 @@ const APP_PREFIX = '/api';
 
 // Используем данную функцию в main.ts и в e2e тестах
 export const applyAppSettings = (app: INestApplication) => {
-  console.log('Im here 1');
   // Применение глобальных Interceptors
   // app.useGlobalInterceptors()
 

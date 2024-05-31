@@ -13,7 +13,6 @@ import {
   Post,
   Put,
   Query,
-  Res,
   ValidationPipe,
 } from '@nestjs/common';
 import { BlogsQueryRepository } from '../infrastructure/blogs.query-repository';
@@ -22,7 +21,6 @@ import { Blog, BlogModelType } from '../domain/entiities/blog.entity';
 import { BlogCreateInputModel } from './models/input/create-blog.input.model';
 import { BlogsService } from '../application/blogs.service';
 import { QueryBlogInputModel } from './models/input/query-blog.model';
-import { Response } from 'express';
 import { PostsService } from '../../posts/application/posts.service';
 import { PostCreateInputModel } from '../../posts/api/models/input/create-post.input.model';
 import { QueryPostInputModel } from '../../posts/api/models/input/query-post.model';

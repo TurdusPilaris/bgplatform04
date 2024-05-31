@@ -3,8 +3,9 @@ import { IsOptionalEmail } from '../../../../../infrastructure/decorators/valida
 
 export class UserCreateModel {
   @IsString()
+  @Length(3, 10, { message: 'Login is not correct' })
   login: string;
-  @Length(6, 20, { message: 'Password not correct' })
+  @Length(6, 20, { message: 'Password is not correct' })
   password: string;
   @IsOptionalEmail()
   email: string;

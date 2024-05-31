@@ -1,42 +1,33 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   NotFoundException,
   Param,
   Post,
   Query,
-  Res,
+  UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
 import { UserCreateModel } from './models/input/create-user.input.model';
-import { InjectModel } from '@nestjs/mongoose';
-import { User, UserModelType } from '../domain/entities/user.entity';
 import { UsersService } from '../application/users.service';
 import { UsersQueryRepository } from '../infrastructure/users.query-repository';
 import { QueryUserInputModel } from './models/input/query-user.input.model';
-import express, { Request, Response } from 'express';
+import { AuthBasicGuard } from '../../../infrastructure/guards/auth.basic.guard';
+import { AuthService } from '../../auth/application/auth.service';
 
+@UseGuards(AuthBasicGuard)
 @Controller('users')
 export class UsersController {
   constructor(
     protected usersService: UsersService,
+    protected authService: AuthService,
     protected usersQueryRepository: UsersQueryRepository,
-
-    @InjectModel(User.name)
-    private UserModel: UserModelType,
   ) {}
-  // constructor(protected usersService: UsersService) {}
-  // @Get()
-  // getUsers(@Query() query: { term: string }) {
-  //   // return this.usersService.findUsers(query.term);
-  // }
-  //
-  // @Get(':id')
-  // getUser(@Param('id') userId: string) {
-  //   return [{ id: 1 }, { id: 2 }].find((u) => u.id === +userId);
-  // }
 
   @Get()
   async getUsers(
@@ -52,9 +43,23 @@ export class UsersController {
   }
   @Post()
   async createUsers(@Body() inputModel: UserCreateModel) {
-    return await this.usersService.create(inputModel);
+    // const result = await this.authService.registerUser(createInputUser);
+    // if (result.hasError()) {
+    //   if (result.code === 400) {
+    //     throw new BadRequestException(result.extensions);
+    //   }
+    // }
+    const result = await this.usersService.create(inputModel);
+    if (result.hasError()) {
+      if (result.code === 400) {
+        throw new BadRequestException(result.extensions);
+      }
+    }
+
+    return result.data;
   }
 
+  @HttpCode(204)
   @Delete(':id')
   async deleteUser(@Param('id') userId: string) {
     const result = await this.usersService.delete(userId);
@@ -65,12 +70,4 @@ export class UsersController {
       }
     }
   }
-  //
-  // @Put(':id')
-  // updateUser(
-  //   @Param('id') userId: string,
-  //   @Body() inputModel: CreateUserInputModelType,
-  // ) {
-  //   return { id: userId, model: inputModel };
-  // }
 }

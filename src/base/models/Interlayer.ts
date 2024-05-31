@@ -26,9 +26,9 @@ export class InterlayerNotice<D = null> {
 
 export class InterlayerNoticeExtension {
   public readonly message: string;
-  public readonly key: string | null;
+  public readonly field: string | null;
   constructor(message: string, key: string | null = null) {
     this.message = message;
-    this.key = key;
+    this.field = key;
   }
 }

@@ -16,10 +16,6 @@ export const PaginationPostModelMapper = (
   paginatorModel.page = +query.pageNumber;
   paginatorModel.pageSize = +query.pageSize;
   paginatorModel.totalCount = countPosts;
-  console.log('paginatorModel.pagesCount', paginatorModel.pagesCount);
-  console.log('paginatorModel.pageSize', paginatorModel.pageSize);
-  console.log('paginatorModel.totalCount', paginatorModel.totalCount);
-  console.log('paginatorModel.pagesCount', paginatorModel.pagesCount);
   paginatorModel.items = items;
 
   return paginatorModel;

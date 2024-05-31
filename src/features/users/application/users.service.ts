@@ -7,15 +7,59 @@ import {
 } from '../api/models/output/user.output.model';
 import { UserDocument } from '../domain/entities/user.entity';
 import { InterlayerNotice } from '../../../base/models/Interlayer';
+import { BcryptService } from '../../../base/adapters/bcrypt-service';
+import { BusinessService } from '../../../base/domain/business-service';
 
 @Injectable()
 export class UsersService {
-  constructor(private usersRepository: UsersRepository) {}
+  constructor(
+    private usersRepository: UsersRepository,
+    protected bcryptService: BcryptService,
+    protected businessService: BusinessService,
+  ) {}
 
-  async create(inputModel: UserCreateModel): Promise<UserOutputModel> {
-    return UserOutputModelMapper(
-      await this.usersRepository.createUser(inputModel),
+  async create(createInputUser: UserCreateModel) {
+    const foundedUserEmail = await this.usersRepository.findByLoginOrEmail(
+      createInputUser.email,
     );
+
+    if (foundedUserEmail) {
+      const result = new InterlayerNotice(null);
+      result.addError('email is not unique', 'email', 400);
+      return result;
+    }
+    const foundedUserLogin = await this.usersRepository.findByLoginOrEmail(
+      createInputUser.login,
+    );
+    if (foundedUserLogin) {
+      const result = new InterlayerNotice(null);
+      result.addError('Login is not unique', 'login', 400);
+      return result;
+    }
+
+    // return UserOutputModelMapper(
+    //   await this.usersRepository.createBasicUser(createInputUser),
+    // );
+
+    //create hash
+    const passwordHash = await this.bcryptService.generationHash(
+      createInputUser.password,
+    );
+    //create user
+    const createdUser = await this.usersRepository.createUser(
+      createInputUser,
+      passwordHash,
+    );
+    try {
+      this.businessService.sendRegisrtationEmail(
+        createInputUser.email,
+        createdUser.emailConfirmation.confirmationCode,
+      );
+    } catch (e: unknown) {
+      console.error('Send email error', e);
+    }
+
+    return new InterlayerNotice(UserOutputModelMapper(createdUser));
   }
 
   async findById(userId: string): Promise<UserDocument | null> {
@@ -32,7 +76,7 @@ export class UsersService {
     }
 
     //delete user
-    const deletedUser = await this.usersRepository.delete(userId);
+    await this.usersRepository.delete(userId);
 
     //return information about success
     return new InterlayerNotice(null);

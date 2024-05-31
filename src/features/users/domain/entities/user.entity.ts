@@ -1,7 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Model } from 'mongoose';
 import { UserCreateModel } from '../../api/models/input/create-user.input.model';
-
+import { v4 } from 'uuid';
+import { add } from 'date-fns';
 export type UserDocument = HydratedDocument<User>;
 
 @Schema({ _id: false, id: false, versionKey: false })
@@ -28,7 +29,7 @@ export class UserEmailConfirmation {
   confirmationCode: string;
 
   @Prop({ required: true })
-  expirationDate: string;
+  expirationDate: Date;
 
   @Prop({ default: false })
   isConfirmed: boolean;
@@ -49,7 +50,7 @@ export class User {
   @Prop({ type: UserEmailConfirmationSchema })
   emailConfirmation: UserEmailConfirmation;
 
-  static createNewUser(dto: UserCreateModel, UserModel: UserModelType) {
+  static createNewBasicUser(dto: UserCreateModel, UserModel: UserModelType) {
     /**
      * нужно навешивать декоратор схема для регистрации модели в базе
      */
@@ -64,16 +65,51 @@ export class User {
 
     return createdUser;
   }
+
+  static createNewUser(
+    dto: UserCreateModel,
+    passwordHash: string,
+    UserModel: UserModelType,
+  ) {
+    /**
+     * нужно навешивать декоратор схема для регистрации модели в базе
+     */
+
+    const createdUser = new UserModel({
+      accountData: {
+        email: dto.email,
+        userName: dto.login,
+        passwordHash: passwordHash,
+        createdAt: new Date(),
+      },
+      emailConfirmation: {
+        confirmationCode: v4(),
+        expirationDate: add(new Date(), {
+          hours: 99,
+          minutes: 3,
+        }),
+        isConfirmed: false,
+      },
+    });
+
+    return createdUser;
+  }
 }
 
 export type UserModelStaticType = {
+  createNewBasicUser: (
+    dto: UserCreateModel,
+    UserModel: UserModelType,
+  ) => UserDocument;
   createNewUser: (
     dto: UserCreateModel,
+    passwordHash: string,
     UserModel: UserModelType,
   ) => UserDocument;
 };
 export const UserSchema = SchemaFactory.createForClass(User);
 UserSchema.statics = {
+  createNewBasicUser: User.createNewBasicUser,
   createNewUser: User.createNewUser,
 } as UserModelStaticType;
 

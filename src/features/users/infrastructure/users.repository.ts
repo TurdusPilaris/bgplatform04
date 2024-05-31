@@ -14,8 +14,23 @@ export class UsersRepository {
     @InjectModel(User.name)
     private UserModel: UserModelType,
   ) {}
-  async createUser(inputModel: UserCreateModel): Promise<UserDocument> {
-    const newUser = this.UserModel.createNewUser(inputModel, this.UserModel);
+  async createBasicUser(inputModel: UserCreateModel): Promise<UserDocument> {
+    const newUser = this.UserModel.createNewBasicUser(
+      inputModel,
+      this.UserModel,
+    );
+    return newUser.save();
+  }
+
+  async createUser(
+    inputModel: UserCreateModel,
+    passwordHash: string,
+  ): Promise<UserDocument> {
+    const newUser = this.UserModel.createNewUser(
+      inputModel,
+      passwordHash,
+      this.UserModel,
+    );
     return newUser.save();
   }
 
@@ -29,5 +44,62 @@ export class UsersRepository {
     return this.UserModel.deleteOne({
       _id: new Types.ObjectId(id),
     });
+  }
+
+  async findByCodeConfirmation(code: string) {
+    const filterCodeConfirmation = {
+      'emailConfirmation.confirmationCode': {
+        $regex: code ?? '',
+        $options: 'i',
+      },
+    };
+
+    return this.UserModel.findOne(filterCodeConfirmation);
+  }
+
+  async updateConfirmation(id: any) {
+    const result = await this.UserModel.updateOne(
+      { _id: id },
+      {
+        // $set: {
+        'emailConfirmation.isConfirmed': true,
+      },
+      // },
+    );
+  }
+
+  async findByLoginOrEmail(loginOrEmail: string) {
+    const filterLoginOrEmail = {
+      // $or: [
+      //   {
+      //     'accountData.userName': { $regex: loginOrEmail ?? '', $options: 'i' },
+      //   },
+      //   { 'accountData.email': { $regex: loginOrEmail ?? '', $options: 'i' } },
+      // ],
+      $or: [
+        {
+          'accountData.userName': loginOrEmail,
+        },
+        { 'accountData.email': loginOrEmail },
+      ],
+    };
+    return this.UserModel.findOne(filterLoginOrEmail);
+  }
+
+  async updateConfirmationCode(
+    _id: any,
+    confirmationCode: string,
+    expirationDate: Date,
+  ) {
+    await this.UserModel.updateOne(
+      { _id: _id },
+      {
+        $set: {
+          'emailConfirmation.confirmationCode': confirmationCode,
+          'emailConfirmation.expirationDate': expirationDate,
+          'emailConfirmation.isConfirmed': false,
+        },
+      },
+    );
   }
 }
