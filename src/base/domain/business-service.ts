@@ -13,13 +13,13 @@ export class BusinessService {
       email,
       confirmationCode,
     );
-    // await this.emailAdapter.sandMail(dataMail);
+    await this.emailAdapter.sandMail(dataMail);
   }
   async sendRecoveryPassword(email: string, confirmationCode: string) {
     const dataMail = this.emailRouter.getDataMailForRecoveryPassword(
       email,
       confirmationCode,
     );
-    // await this.emailAdapter.sandMail(dataMail);
+    await this.emailAdapter.sandMail(dataMail);
   }
 }

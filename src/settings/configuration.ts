@@ -2,7 +2,7 @@ enum Environments {
   DEVELOPMENT = 'DEVELOPMENT',
   STAGING = 'STAGING',
   PRODUCTION = 'PRODUCTION',
-  TEST = 'TEST',
+  TESTING = 'TESTING',
 }
 import dotenv from 'dotenv';
 dotenv.config();
@@ -41,7 +41,7 @@ const getConfig = (
       currentEnv: currentEnvironment,
       isProduction: currentEnvironment === Environments.PRODUCTION,
       isStaging: currentEnvironment === Environments.STAGING,
-      isTesting: currentEnvironment === Environments.TEST,
+      isTesting: currentEnvironment === Environments.TESTING,
       isDevelopment: currentEnvironment === Environments.DEVELOPMENT,
     },
   };
