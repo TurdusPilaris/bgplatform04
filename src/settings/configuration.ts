@@ -14,12 +14,6 @@ const getConfig = (
   environmentVariables: EnvironmentVariable,
   currentEnvironment: Environments,
 ) => {
-  console.log({
-    MONGO_CONNECTION_URI: environmentVariables.MONGO_CONNECTION_URI,
-    MONGO_CONNECTION_URI_FOR_TESTS:
-      environmentVariables.MONGO_CONNECTION_URI_FOR_TESTS,
-  });
-  console.log(currentEnvironment);
   return {
     apiSettings: {
       PORT: Number.parseInt(environmentVariables.PORT || '3000'),

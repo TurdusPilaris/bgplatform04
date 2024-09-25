@@ -4,13 +4,11 @@ import {
   Controller,
   Get,
   HttpCode,
-  NotFoundException,
   Post,
   UnauthorizedException,
-  UseGuards,
 } from '@nestjs/common';
 import { UserCreateModel } from '../../users/api/models/input/create-user.input.model';
-import { LocalAuthGuard } from '../../../infrastructure/guards/local.auth.gard';
+import cookieParser from 'cookie-parser';
 import { LoginInputModel } from './models/input/login.input.model';
 import { AuthService } from '../application/auth.service';
 import { CodeConfirmationModel } from './models/input/code.confirmation.model';

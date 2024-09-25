@@ -25,14 +25,26 @@ import { PostsService } from '../../posts/application/posts.service';
 import { PostCreateInputModel } from '../../posts/api/models/input/create-post.input.model';
 import { QueryPostInputModel } from '../../posts/api/models/input/query-post.model';
 import { PostsQueryRepository } from '../../posts/infrastructure/posts.query-repository';
+import {
+  DeleteBlogCommand,
+  DeleteBlogUseCase,
+} from '../application/use-cases/delete-blog-use-case';
+import {
+  CreateBlogCommand,
+  CreateBlogUseCase,
+} from '../application/use-cases/create-blog-use-case';
+import { CommandBus } from '@nestjs/cqrs';
 
 @Controller('blogs')
 export class BlogsController {
   constructor(
+    private commandBus: CommandBus,
     protected blogsService: BlogsService,
     protected postsService: PostsService,
     protected blogsQueryRepository: BlogsQueryRepository,
     protected postsQueryRepository: PostsQueryRepository,
+    // private deleteBlogUseCase: DeleteBlogUseCase,
+    // private createBlogUseCase: CreateBlogUseCase,
     @InjectModel(Blog.name)
     private BlogModel: BlogModelType,
   ) {}
@@ -48,7 +60,7 @@ export class BlogsController {
 
   @Post()
   async createBlog(@Body() inputModel: BlogCreateInputModel) {
-    return await this.blogsService.create(inputModel);
+    return await this.commandBus.execute(new CreateBlogCommand(inputModel));
   }
 
   @Post(':id/posts')
@@ -109,7 +121,7 @@ export class BlogsController {
     @Param('id') blogId: string,
     //@Res({passthrough: true}) response: Response
   ) {
-    const result = await this.blogsService.deleteBlog(blogId);
+    const result = await this.commandBus.execute(new DeleteBlogCommand(blogId));
     if (result.hasError()) {
       if (result.code === 404) {
         throw new NotFoundException();

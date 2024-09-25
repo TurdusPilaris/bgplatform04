@@ -1,10 +1,7 @@
 import { UsersRepository } from '../infrastructure/users.repository';
 import { UserCreateModel } from '../api/models/input/create-user.input.model';
 import { Injectable } from '@nestjs/common';
-import {
-  UserOutputModel,
-  UserOutputModelMapper,
-} from '../api/models/output/user.output.model';
+import { UserOutputModelMapper } from '../api/models/output/user.output.model';
 import { UserDocument } from '../domain/entities/user.entity';
 import { InterlayerNotice } from '../../../base/models/Interlayer';
 import { BcryptService } from '../../../base/adapters/bcrypt-service';
@@ -82,3 +79,7 @@ export class UsersService {
     return new InterlayerNotice(null);
   }
 }
+
+export type UsersServiceSettings = {
+  count: number;
+};

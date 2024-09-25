@@ -1,7 +1,7 @@
-import { IsOptional, IsString, Length } from '@nestjs/class-validator';
-import { DefaultValuePipe } from '@nestjs/common';
-import { IsIn, IsNumber, IsNumberString } from 'class-validator';
-import { Transform } from '@nestjs/class-transformer';
+import { IsOptional } from '@nestjs/class-validator';
+
+import { IsIn, IsNumber } from 'class-validator';
+
 import { Type } from 'class-transformer';
 
 export class QueryPaginationInputModel {

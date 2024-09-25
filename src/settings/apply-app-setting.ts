@@ -5,9 +5,11 @@ import {
 } from '@nestjs/common';
 // import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
-import { appSettings } from './app-settings';
 // import { LoggerMiddlewareFunc } from '../infrastructure/middlewares/logger.middleware';
-import { HttpExceptionFilter } from '../infrastructure/exeption-filters/http-exception-filter';
+import {
+  ErrorFilter,
+  HttpExceptionFilter,
+} from '../infrastructure/exeption-filters/http-exception-filter';
 
 // Префикс нашего приложения (http://site.com/api)
 const APP_PREFIX = '/api';
@@ -88,5 +90,5 @@ const setAppPipes = (app: INestApplication) => {
 };
 
 const setAppExceptionsFilters = (app: INestApplication) => {
-  app.useGlobalFilters(new HttpExceptionFilter());
+  app.useGlobalFilters(new ErrorFilter(), new HttpExceptionFilter());
 };

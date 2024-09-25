@@ -40,11 +40,11 @@ export class PostLikesInfo {
 
 @Schema()
 export class Post {
-  @Prop()
+  @Prop({ type: String, required: true, min: 1, max: 30 })
   title: string;
-  @Prop()
+  @Prop({ type: String, required: true, min: 1, max: 100 })
   shortDescription: string;
-  @Prop()
+  @Prop({ type: String, required: true, min: 1, max: 1000 })
   content: string;
   @Prop()
   blogId: string;
