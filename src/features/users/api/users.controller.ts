@@ -41,14 +41,9 @@ export class UsersController {
     return await this.usersQueryRepository.findById(userId);
   }
   @Post()
-  async createUsers(@Body() inputModel: UserCreateModel) {
-    // const result = await this.authService.registerUser(createInputUser);
-    // if (result.hasError()) {
-    //   if (result.code === 400) {
-    //     throw new BadRequestException(result.extensions);
-    //   }
-    // }
-    const result = await this.usersService.create(inputModel);
+  @HttpCode(200)
+  async createUsers(@Body() createModel: UserCreateModel) {
+    const result = await this.usersService.create(createModel);
     if (result.hasError()) {
       if (result.code === 400) {
         throw new BadRequestException(result.extensions);

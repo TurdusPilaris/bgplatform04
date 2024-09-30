@@ -6,6 +6,10 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
+import {
+  APIErrorMessageType,
+  APIErrorsMessageType,
+} from '../../base/type/types';
 
 // https://docs.nestjs.com/exception-filters
 //filter for only http exception
@@ -49,6 +53,7 @@ export class ErrorFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
+    console.log('Here exception' + exception);
     const status = exception.getStatus();
 
     if (status === HttpStatus.BAD_REQUEST) {

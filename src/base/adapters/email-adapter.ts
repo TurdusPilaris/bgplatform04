@@ -2,11 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { DataMailType } from '../email/models/mail.types';
 import nodemailer from 'nodemailer';
 import { ConfigService } from '@nestjs/config';
-import { ConfigurationType } from '../../settings/configuration';
+import { Configuration } from '../../settings/configuration';
 
 @Injectable()
 export class EmailAdapter {
-  constructor(private configService: ConfigService<ConfigurationType, true>) {}
+  constructor(private configService: ConfigService<Configuration, true>) {}
   async sandMail(dataMail: DataMailType) {
     const authSettings = this.configService.get('authSettings', {
       infer: true,

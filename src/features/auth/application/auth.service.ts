@@ -8,7 +8,7 @@ import { BusinessService } from '../../../base/domain/business-service';
 import { CodeConfirmationModel } from '../api/models/input/code.confirmation.model';
 import { LoginInputModel } from '../api/models/input/login.input.model';
 import { ConfigService } from '@nestjs/config';
-import { ConfigurationType } from '../../../settings/configuration';
+import { Configuration } from '../../../settings/configuration';
 import { v4 } from 'uuid';
 import { add } from 'date-fns';
 
@@ -19,7 +19,7 @@ export class AuthService {
     protected bcryptService: BcryptService,
     protected businessService: BusinessService,
     private jwtService: JwtService,
-    private configService: ConfigService<ConfigurationType, true>,
+    private configService: ConfigService<Configuration, true>,
   ) {}
 
   async validateBasicUser(auth: string) {

@@ -1,51 +1,63 @@
-enum Environments {
+import { AuthSettings } from './env/auth-settings';
+
+export enum Environments {
   DEVELOPMENT = 'DEVELOPMENT',
   STAGING = 'STAGING',
   PRODUCTION = 'PRODUCTION',
   TESTING = 'TESTING',
 }
-import dotenv from 'dotenv';
-dotenv.config();
-export type EnvironmentVariable = { [key: string]: string | undefined };
 
-export type ConfigurationType = ReturnType<typeof getConfig>;
+import { ValidateNested, validateSync } from 'class-validator';
+import { ApiSettings } from './env/api-settings';
+import { DatabaseSettings } from './env/database-settings';
+import { EnvironmentSettings } from './env/env-settings';
+import { EnvironmentVariable } from './app-settings';
 
-const getConfig = (
-  environmentVariables: EnvironmentVariable,
-  currentEnvironment: Environments,
-) => {
-  return {
-    apiSettings: {
-      PORT: Number.parseInt(environmentVariables.PORT || '3000'),
-      LOCAL_HOST: environmentVariables.LOCAL_HOST || 'http://localhost:3000',
-      PUBLIC_FRIEND_FRONT_URL: environmentVariables.PUBLIC_FRIEND_FRONT_URL,
-    },
+export class Configuration {
+  @ValidateNested()
+  apiSettings: ApiSettings;
+  @ValidateNested()
+  databaseSettings: DatabaseSettings;
+  // Другие настройки...
+  @ValidateNested()
+  environmentSettings: EnvironmentSettings;
+  @ValidateNested()
+  authSettings: AuthSettings;
 
-    databaseSettings: {
-      MONGO_CONNECTION_URI: environmentVariables.MONGO_CONNECTION_URI,
-      MONGO_CONNECTION_URI_FOR_TESTS:
-        environmentVariables.MONGO_CONNECTION_URI_FOR_TESTS,
-    },
-    authSettings: {
-      PASSWORD_FOR_EMAIL: environmentVariables.PASSWORD_FOR_EMAIL,
-      JWT_SECRET: environmentVariables.JWT_SECRET,
-    },
+  private constructor(configuration: Configuration) {
+    Object.assign(this, configuration);
+  }
 
-    environmentSettings: {
-      currentEnv: currentEnvironment,
-      isProduction: currentEnvironment === Environments.PRODUCTION,
-      isStaging: currentEnvironment === Environments.STAGING,
-      isTesting: currentEnvironment === Environments.TESTING,
-      isDevelopment: currentEnvironment === Environments.DEVELOPMENT,
-    },
-  };
-};
+  static createConfig(
+    environmentVariables: Record<string, string>,
+    // environmentVariables: any,
+  ): Configuration {
+    return new this({
+      apiSettings: new ApiSettings(environmentVariables),
+      databaseSettings: new DatabaseSettings(environmentVariables),
+      // environmentSettings: new EnvironmentSettings(
+      //   environmentVariables as unknown as EnvironmentsTypes,
+      // ),
+      environmentSettings: new EnvironmentSettings(environmentVariables),
+      authSettings: new AuthSettings(environmentVariables),
+    });
+  }
+}
+
+export function validate(environmentVariables: Record<string, string>) {
+  console.log('environmentVariables----', environmentVariables);
+  const config = Configuration.createConfig(environmentVariables);
+  console.log('config', config.environmentSettings);
+  const errors = validateSync(config, { skipMissingProperties: false });
+  if (errors.length > 0) {
+    console.log('Tuta errori ' + errors);
+    throw new Error(errors.toString());
+  }
+  return config;
+}
 
 export default () => {
-  const environmentVariables = process.env;
-
-  const currentEnvironment: Environments =
-    environmentVariables.ENV as Environments;
-
-  return getConfig(environmentVariables, currentEnvironment);
+  const environmentVariables = process.env as EnvironmentVariable;
+  console.log('process.env.ENV =', environmentVariables.ENV);
+  return Configuration.createConfig(environmentVariables);
 };
