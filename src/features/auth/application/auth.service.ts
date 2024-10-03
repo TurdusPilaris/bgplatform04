@@ -11,6 +11,7 @@ import { ConfigService } from '@nestjs/config';
 import { Configuration } from '../../../settings/configuration';
 import { v4 } from 'uuid';
 import { add } from 'date-fns';
+import { uuid } from 'uuidv4';
 
 @Injectable()
 export class AuthService {
@@ -27,7 +28,7 @@ export class AuthService {
     return auth === ADMIN_AUTH_BASE64;
   }
 
-  async createToken(userId: string) {
+  async createAccessToken(userId: string) {
     const authSettings = this.configService.get('authSettings', {
       infer: true,
     });
@@ -40,10 +41,34 @@ export class AuthService {
     return {
       accessToken: await this.jwtService.signAsync(payload, {
         secret: authSettings.JWT_SECRET,
+        expiresIn: authSettings.AC_TIME,
       }),
     };
   }
 
+  async createRefreshToken(userId: string) {
+    const authSettings = this.configService.get('authSettings', {
+      infer: true,
+    });
+
+    const user = await this.usersRepository.findById(userId);
+
+    const newDeviceId = uuid();
+
+    const payLoadRefreshToken = {
+      userId: user!._id,
+      deviceId: newDeviceId,
+    };
+
+    return {
+      refreshToken: await this.jwtService.signAsync(payLoadRefreshToken, {
+        secret: authSettings.JWT_SECRET,
+        expiresIn: authSettings.AC_REFRESH_TIME,
+      }),
+      userId: user!._id,
+      deviceId: newDeviceId,
+    };
+  }
   // async registerUser(inputModel: UserCreateModel): Promise<InterlayerNotice> {
   // const passwordHash = await this.bcryptService.generationHash(inputModel.password);
   //
@@ -126,23 +151,18 @@ export class AuthService {
     const user = await this.usersRepository.findByLoginOrEmail(
       loginInput.loginOrEmail,
     );
-    console.log('loginInput', loginInput);
-    console.log('user', user);
 
-    // if (!user || !user.emailConfirmation.isConfirmed) {
     if (!user) {
-      console.log('Im a problem');
       const result = new InterlayerNotice(null);
       result.addError('Unauthorisation', 'loginOrEmail', 401);
       return result;
     }
-    console.log('Im not a problem');
+
     const checkedResult = await this.bcryptService.checkPassword(
       loginInput.password,
       user.accountData.passwordHash,
     );
     if (!checkedResult) {
-      console.log('Im a not password corect');
       const result = new InterlayerNotice(null);
       result.addError('Unauthorisation', 'password', 401);
       return result;
@@ -153,7 +173,13 @@ export class AuthService {
   async getTokenForUser(loginOrEmail: string) {
     const user = await this.usersRepository.findByLoginOrEmail(loginOrEmail);
 
-    return await this.createToken(user.id);
+    return await this.createAccessToken(user.id);
+  }
+
+  async getRefreshTokenForUser(loginOrEmail: string) {
+    const user = await this.usersRepository.findByLoginOrEmail(loginOrEmail);
+
+    return await this.createRefreshToken(user.id);
   }
 
   async resendingEmail(email: string) {
@@ -216,5 +242,43 @@ export class AuthService {
     }
 
     return new InterlayerNotice(null);
+  }
+
+  async checkAccessToken(authHeader: string) {
+    const auth = authHeader.split(' ');
+    if (auth[0] !== 'Bearer') {
+      const result = new InterlayerNotice(null);
+      result.addError('Wrong authorization', 'access token', 401);
+
+      return result;
+    }
+
+    const authSettings = this.configService.get('authSettings', {
+      infer: true,
+    });
+
+    const payloadAccessToken = await this.jwtService.verify(auth[1], {
+      secret: authSettings.JWT_SECRET,
+    });
+
+    console.log('HEY!!!!!!!!!', payloadAccessToken);
+
+    if (!payloadAccessToken) {
+      const result = new InterlayerNotice(null);
+      result.addError('Wrong access token', 'access token', 401);
+
+      return result;
+    }
+
+    const user = await this.usersRepository.findById(payloadAccessToken.id);
+
+    if (!user) {
+      const result = new InterlayerNotice(null);
+      result.addError('User not found', 'user id', 401);
+
+      return result;
+    }
+
+    return new InterlayerNotice(payloadAccessToken.id);
   }
 }

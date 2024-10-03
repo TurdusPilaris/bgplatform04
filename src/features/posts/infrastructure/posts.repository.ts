@@ -1,5 +1,5 @@
 import { Injectable, Post } from '@nestjs/common';
-import { PostDocument, PostModelType } from '../domain/entiities/post.entity';
+import { PostClass, PostDocument, PostModelType } from "../domain/entiities/post.entity";
 import { PostCreateInputModel } from '../api/models/input/create-post.input.model';
 import { InjectModel } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
@@ -7,7 +7,7 @@ import { Types } from 'mongoose';
 @Injectable()
 export class PostsRepository {
   constructor(
-    @InjectModel(Post.name)
+    @InjectModel(PostClass.name)
     private PostModel: PostModelType,
   ) {}
   async createPost(

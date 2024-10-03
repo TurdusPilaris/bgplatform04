@@ -55,6 +55,12 @@ export class Comment {
         userId: userId,
         userLogin: userLogin,
       },
+      createdAt: new Date(),
+      likesInfo: {
+        countLikes: 0,
+        countDislikes: 0,
+        myStatus: likeStatus.None,
+      },
     });
 
     return createdComment;

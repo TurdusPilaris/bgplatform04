@@ -5,14 +5,16 @@ import {
   Get,
   HttpCode,
   Post,
+  Res,
+  Response,
   UnauthorizedException,
 } from '@nestjs/common';
 import { UserCreateModel } from '../../users/api/models/input/create-user.input.model';
-import cookieParser from 'cookie-parser';
 import { LoginInputModel } from './models/input/login.input.model';
 import { AuthService } from '../application/auth.service';
 import { CodeConfirmationModel } from './models/input/code.confirmation.model';
 import { EmailInputModel } from './models/input/email.input.model';
+import { uuid } from 'uuidv4';
 
 @Controller('auth')
 export class AuthController {
@@ -35,7 +37,7 @@ export class AuthController {
   // @UseGuards(LocalAuthGuard)
   @HttpCode(200)
   @Post('login')
-  async login(@Body() loginInput: LoginInputModel) {
+  async login(@Body() loginInput: LoginInputModel, @Response() res) {
     const resultCheckCredentials =
       await this.authService.checkCredentials(loginInput);
 
@@ -45,11 +47,22 @@ export class AuthController {
       }
     }
 
+    //сначала сделаем аксесс токен
     const accessToken = await this.authService.getTokenForUser(
       loginInput.loginOrEmail,
     );
 
-    return accessToken;
+    // return accessToken;
+
+    //теперь создадим рефреш токен
+    const { refreshToken, userId, deviceId } =
+      await this.authService.getRefreshTokenForUser(loginInput.loginOrEmail);
+
+    res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: true });
+    res.send({ accessToken: accessToken });
+
+    //перед тем как сделать рефреш токен создадим новую сессию id
+
     //
     // if (result) {
     //

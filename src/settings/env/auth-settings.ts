@@ -6,4 +6,6 @@ export class AuthSettings {
   @IsString()
   PASSWORD_FOR_EMAIL: string = this.environmentVariables.PASSWORD_FOR_EMAIL;
   JWT_SECRET: string = this.environmentVariables.JWT_SECRET;
+  AC_TIME: string = '5d';
+  AC_REFRESH_TIME: string = '10min';
 }

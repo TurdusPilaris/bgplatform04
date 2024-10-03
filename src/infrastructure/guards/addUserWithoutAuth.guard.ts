@@ -11,7 +11,7 @@ import { UsersService } from '../../features/users/application/users.service';
 import { AuthService } from '../../features/auth/application/auth.service';
 
 @Injectable()
-export class AuthBearerGuard implements CanActivate {
+export class AddUserWithoutAuthGuard implements CanActivate {
   constructor(
     protected usersService: UsersService,
     protected authService: AuthService,
@@ -19,9 +19,10 @@ export class AuthBearerGuard implements CanActivate {
   async canActivate(context: ExecutionContext) {
     // : boolean | Promise<boolean> | Observable<boolean>
     const request: Request = context.switchToHttp().getRequest();
-    // const ADMIN_AUTH_BASE64 = 'Basic YWRtaW46cXdlcnR5';
+
     if (!request.headers.authorization) {
-      throw new UnauthorizedException();
+      request['userId'] = null;
+      return true;
     }
 
     const result = await this.authService.checkAccessToken(
@@ -29,7 +30,8 @@ export class AuthBearerGuard implements CanActivate {
     );
 
     if (result.hasError()) {
-      throw new UnauthorizedException();
+      request['userId'] = null;
+      return true;
     } else {
     }
     request['userId'] = result.data;

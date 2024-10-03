@@ -45,12 +45,10 @@ export class Configuration {
 }
 
 export function validate(environmentVariables: Record<string, string>) {
-  console.log('environmentVariables----', environmentVariables);
   const config = Configuration.createConfig(environmentVariables);
-  console.log('config', config.environmentSettings);
+
   const errors = validateSync(config, { skipMissingProperties: false });
   if (errors.length > 0) {
-    console.log('Tuta errori ' + errors);
     throw new Error(errors.toString());
   }
   return config;
@@ -58,6 +56,5 @@ export function validate(environmentVariables: Record<string, string>) {
 
 export default () => {
   const environmentVariables = process.env as EnvironmentVariable;
-  console.log('process.env.ENV =', environmentVariables.ENV);
   return Configuration.createConfig(environmentVariables);
 };

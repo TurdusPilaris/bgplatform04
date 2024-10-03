@@ -2,8 +2,9 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Model } from 'mongoose';
 import { PostCreateInputModel } from '../../api/models/input/create-post.input.model';
 import { likeStatus } from '../../../../base/models/likesStatus';
+import { Cat } from '../../../users/domain/entities/users-schema';
 
-export type PostDocument = HydratedDocument<Post>;
+export type PostDocument = HydratedDocument<PostClass>;
 
 @Schema({ _id: false, id: false, versionKey: false })
 export class PostLikesInfoNewestLikes {
@@ -35,11 +36,11 @@ export class PostLikesInfo {
   myStatus: likeStatus;
 
   @Prop({ default: [], type: PostLikesInfoNewestLikes })
-  newestLikes: PostLikesInfoNewestLikes;
+  newestLikes: PostLikesInfoNewestLikes[];
 }
 
 @Schema()
-export class Post {
+export class PostClass {
   @Prop({ type: String, required: true, min: 1, max: 30 })
   title: string;
   @Prop({ type: String, required: true, min: 1, max: 100 })
@@ -70,6 +71,63 @@ export class Post {
     });
     return createdPost;
   }
+
+  async addCountLikes(
+    newStatusLike: likeStatus,
+    resultLastThreeLikes: PostLikesInfoNewestLikes[],
+  ) {
+    if (newStatusLike === likeStatus.Like) {
+      this.likesInfo.countLikes += 1;
+    }
+    if (newStatusLike === likeStatus.Dislike) {
+      this.likesInfo.countDislikes += 1;
+    }
+
+    this.likesInfo.newestLikes = [];
+    this.likesInfo.newestLikes.push(...resultLastThreeLikes);
+  }
+
+  async recountLikes(
+    oldStatusLike: likeStatus,
+    newStatusLike: likeStatus,
+    resultLastThreeLikes: PostLikesInfoNewestLikes[],
+  ) {
+    let countLikes = 0;
+    let countDislikes = 0;
+
+    if (oldStatusLike === likeStatus.None) {
+      if (newStatusLike === likeStatus.Like) {
+        countLikes = 1;
+        countDislikes = 0;
+      }
+      if (newStatusLike === likeStatus.Dislike) {
+        countLikes = 0;
+        countDislikes = 1;
+      }
+    } else if (oldStatusLike === likeStatus.Like) {
+      countLikes = -1;
+      if (newStatusLike === likeStatus.None) {
+        countDislikes = 0;
+      }
+      if (newStatusLike === likeStatus.Dislike) {
+        countDislikes = 1;
+      }
+    } else if (oldStatusLike === likeStatus.Dislike) {
+      countDislikes = -1;
+      if (newStatusLike === likeStatus.None) {
+        countLikes = 0;
+      }
+      if (newStatusLike === likeStatus.Like) {
+        countLikes = 1;
+      }
+    }
+
+    this.likesInfo.countLikes += countLikes;
+    this.likesInfo.countDislikes += countDislikes;
+
+    this.likesInfo.newestLikes = [];
+    this.likesInfo.newestLikes.push(...resultLastThreeLikes);
+  }
 }
 
 export type PostModelStaticType = {
@@ -80,10 +138,14 @@ export type PostModelStaticType = {
   ) => PostDocument;
 };
 
-export const PostSchema = SchemaFactory.createForClass(Post);
+export const PostSchema = SchemaFactory.createForClass(PostClass);
 
 PostSchema.statics = {
-  createNewPost: Post.createNewPost,
+  createNewPost: PostClass.createNewPost,
 } as PostModelStaticType;
 
+PostSchema.methods = {
+  addCountLikes: PostClass.prototype.addCountLikes,
+  recountLikes: PostClass.prototype.recountLikes,
+};
 export type PostModelType = Model<PostDocument> & PostModelStaticType;

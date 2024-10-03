@@ -41,7 +41,7 @@ export class UsersController {
     return await this.usersQueryRepository.findById(userId);
   }
   @Post()
-  @HttpCode(200)
+  @HttpCode(201)
   async createUsers(@Body() createModel: UserCreateModel) {
     const result = await this.usersService.create(createModel);
     if (result.hasError()) {

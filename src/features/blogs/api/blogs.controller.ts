@@ -13,6 +13,7 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
 import { BlogsQueryRepository } from '../infrastructure/blogs.query-repository';
@@ -34,6 +35,7 @@ import {
   CreateBlogUseCase,
 } from '../application/use-cases/create-blog-use-case';
 import { CommandBus } from '@nestjs/cqrs';
+import { AuthBasicGuard } from '../../../infrastructure/guards/auth.basic.guard';
 
 @Controller('blogs')
 export class BlogsController {
@@ -59,11 +61,16 @@ export class BlogsController {
   }
 
   @Post()
-  async createBlog(@Body() inputModel: BlogCreateInputModel) {
+  @UseGuards(AuthBasicGuard)
+  async createBlog(
+    @Body()
+    inputModel: BlogCreateInputModel,
+  ) {
     return await this.commandBus.execute(new CreateBlogCommand(inputModel));
   }
 
   @Post(':id/posts')
+  @UseGuards(AuthBasicGuard)
   async createPostByBlogId(
     @Param('id') blogId: string,
     @Body() inputModel: PostCreateInputModel,
@@ -101,7 +108,10 @@ export class BlogsController {
     }
     return await this.postsQueryRepository.findAll(queryDto, blogId);
   }
+
+  @HttpCode(204)
   @Put(':id')
+  @UseGuards(AuthBasicGuard)
   async updateBlog(
     @Param('id') blogId: string,
     @Body() inputModel: BlogCreateInputModel,
@@ -116,6 +126,7 @@ export class BlogsController {
   }
 
   @Delete(':id')
+  @UseGuards(AuthBasicGuard)
   @HttpCode(204)
   async deleteBlog(
     @Param('id') blogId: string,

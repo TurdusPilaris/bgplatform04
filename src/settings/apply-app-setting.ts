@@ -71,6 +71,7 @@ const setAppPipes = (app: INestApplication) => {
     new ValidationPipe({
       // Для работы трансформации входящих данных
       transform: true,
+      transformOptions: { enableImplicitConversion: true },
       // Выдавать первую ошибку для каждого поля
       stopAtFirstError: true,
       // Перехватываем ошибку, кастомизируем её и выкидываем 400 с собранными данными
@@ -82,7 +83,7 @@ const setAppPipes = (app: INestApplication) => {
           constraintKeys.forEach((cKey) => {
             const msg = e.constraints[cKey];
 
-            customErrors.push({ field: e.property, message: msg });
+            customErrors.push({ message: msg, field: e.property });
           });
         });
 

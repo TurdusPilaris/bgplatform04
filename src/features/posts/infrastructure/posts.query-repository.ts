@@ -1,6 +1,10 @@
 import { Injectable, Post } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { PostDocument, PostModelType } from '../domain/entiities/post.entity';
+import {
+  PostClass,
+  PostDocument,
+  PostModelType,
+} from '../domain/entiities/post.entity';
 import { QueryPostInputModel } from '../api/models/input/query-post.model';
 import { PostOutputModelMapper } from '../api/models/output/post.output.model';
 import { PaginationPostModelMapper } from '../api/models/output/pagination-post.model';
@@ -8,7 +12,7 @@ import { PaginationPostModelMapper } from '../api/models/output/pagination-post.
 @Injectable()
 export class PostsQueryRepository {
   constructor(
-    @InjectModel(Post.name)
+    @InjectModel(PostClass.name)
     private PostModel: PostModelType,
   ) {}
   async findAll(queryDto: QueryPostInputModel, blogId?: string) {
