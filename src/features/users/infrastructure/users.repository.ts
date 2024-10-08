@@ -70,12 +70,6 @@ export class UsersRepository {
 
   async findByLoginOrEmail(loginOrEmail: string) {
     const filterLoginOrEmail = {
-      // $or: [
-      //   {
-      //     'accountData.userName': { $regex: loginOrEmail ?? '', $options: 'i' },
-      //   },
-      //   { 'accountData.email': { $regex: loginOrEmail ?? '', $options: 'i' } },
-      // ],
       $or: [
         {
           'accountData.userName': loginOrEmail,

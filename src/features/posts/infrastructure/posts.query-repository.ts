@@ -8,15 +8,24 @@ import {
 import { QueryPostInputModel } from '../api/models/input/query-post.model';
 import { PostOutputModelMapper } from '../api/models/output/post.output.model';
 import { PaginationPostModelMapper } from '../api/models/output/pagination-post.model';
+import { CommentsQueryRepository } from '../../comments/infrastructure/comments.query-repository';
+import { likeStatus } from '../../../base/models/likesStatus';
 
 @Injectable()
 export class PostsQueryRepository {
   constructor(
+    protected commentsQueryRepository: CommentsQueryRepository,
     @InjectModel(PostClass.name)
     private PostModel: PostModelType,
   ) {}
-  async findAll(queryDto: QueryPostInputModel, blogId?: string) {
+  async findAll(
+    queryDto: QueryPostInputModel,
+    userId: string | null,
+    blogId?: string,
+  ) {
+    console.log('blogId', blogId);
     const filter = !blogId ? {} : { blogId: blogId };
+    console.log('filter', filter);
     const items = await this.PostModel.find(filter, null, {
       sort: { [queryDto.sortBy]: queryDto.sortDirection },
     })
@@ -24,16 +33,33 @@ export class PostsQueryRepository {
       .limit(queryDto.pageSize)
       .exec();
 
-    const itemsForPaginator = items.map(PostOutputModelMapper);
+    const postIds = items.map((post) => post.id);
+
+    const myStatusesForPosts =
+      await this.commentsQueryRepository.getLikesByUser(postIds, userId);
+
+    const itemsForPaginator = items.map((post) =>
+      PostOutputModelMapper(
+        post,
+        myStatusesForPosts[post.id.toString()]?.statusLike,
+      ),
+    );
+
+    // PostOutputModelMapper, likeStatus.None);
 
     const countPosts = await this.PostModel.countDocuments(filter);
 
     return PaginationPostModelMapper(queryDto, countPosts, itemsForPaginator);
   }
 
-  async findById(postId: string) {
+  async findById(postId: string, userId) {
     const post = await this.PostModel.findById(postId, { __v: false });
     if (!post) return null;
-    return PostOutputModelMapper(post);
+
+    const myLike = await this.commentsQueryRepository.getLikesInfo(
+      postId,
+      userId,
+    );
+    return PostOutputModelMapper(post, myLike);
   }
 }

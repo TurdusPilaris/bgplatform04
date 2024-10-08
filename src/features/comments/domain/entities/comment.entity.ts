@@ -1,6 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { likeStatus } from '../../../../base/models/likesStatus';
 import { HydratedDocument, Model } from 'mongoose';
+import {
+  PostClass,
+  PostSchema,
+} from '../../../posts/domain/entiities/post.entity';
 
 export type CommentDocument = HydratedDocument<Comment>;
 @Schema({ _id: false, id: false, versionKey: false })
@@ -65,6 +69,49 @@ export class Comment {
 
     return createdComment;
   }
+
+  addCountLikes(newStatusLike: likeStatus) {
+    if (newStatusLike === likeStatus.Like) {
+      this.likesInfo.countLikes += 1;
+    }
+    if (newStatusLike === likeStatus.Dislike) {
+      this.likesInfo.countDislikes += 1;
+    }
+  }
+  recountLikes(oldStatusLike: likeStatus, newStatusLike: likeStatus) {
+    let countLikes = 0;
+    let countDislikes = 0;
+
+    if (oldStatusLike === likeStatus.None) {
+      if (newStatusLike === likeStatus.Like) {
+        countLikes = 1;
+        countDislikes = 0;
+      }
+      if (newStatusLike === likeStatus.Dislike) {
+        countLikes = 0;
+        countDislikes = 1;
+      }
+    } else if (oldStatusLike === likeStatus.Like) {
+      countLikes = -1;
+      if (newStatusLike === likeStatus.None) {
+        countDislikes = 0;
+      }
+      if (newStatusLike === likeStatus.Dislike) {
+        countDislikes = 1;
+      }
+    } else if (oldStatusLike === likeStatus.Dislike) {
+      countDislikes = -1;
+      if (newStatusLike === likeStatus.None) {
+        countLikes = 0;
+      }
+      if (newStatusLike === likeStatus.Like) {
+        countLikes = 1;
+      }
+    }
+
+    this.likesInfo.countLikes += countLikes;
+    this.likesInfo.countDislikes += countDislikes;
+  }
 }
 
 export type CommentModelStaticType = {
@@ -83,4 +130,8 @@ CommentSchema.statics = {
   createNewComment: Comment.createNewComment,
 } as CommentModelStaticType;
 
+CommentSchema.methods = {
+  addCountLikes: Comment.prototype.addCountLikes,
+  recountLikes: Comment.prototype.recountLikes,
+};
 export type CommentModelType = Model<CommentDocument> & CommentModelStaticType;

@@ -13,6 +13,7 @@ import {
   Res,
   UseGuards,
   ValidationPipe,
+  BadRequestException,
 } from '@nestjs/common';
 import { PostsService } from '../application/posts.service';
 import { InjectModel } from '@nestjs/mongoose';
@@ -28,6 +29,7 @@ import { AuthBasicGuard } from '../../../infrastructure/guards/auth.basic.guard'
 import { QueryCommentModel } from '../../comments/api/model/input/query-comment.model';
 import { CommentsQueryRepository } from '../../comments/infrastructure/comments.query-repository';
 import { CreateLikeInputModel } from '../../comments/api/model/input/create-like.input.model';
+import { GetOptionalUserGard } from '../../../infrastructure/guards/get-optional-user-gard.service';
 
 @Controller('posts')
 export class PostsController {
@@ -40,6 +42,7 @@ export class PostsController {
     private PostModel: PostModelType,
   ) {}
 
+  @UseGuards(AuthBasicGuard)
   @Post()
   async createPost(@Body() inputModel: PostCreateInputModel) {
     const result = await this.postsService.create(inputModel);
@@ -53,17 +56,23 @@ export class PostsController {
     }
   }
 
+  @UseGuards(GetOptionalUserGard)
   @Get()
   async getPosts(
     @Query(new ValidationPipe({ transform: true }))
     queryDto: QueryPostInputModel,
+    @Req() req,
   ) {
-    return await this.postsQueryRepository.findAll(queryDto);
+    return await this.postsQueryRepository.findAll(queryDto, req.userId);
   }
 
+  @UseGuards(GetOptionalUserGard)
   @Get(':id')
-  async getPost(@Param('id') postId: string) {
-    const foundedPost = await this.postsQueryRepository.findById(postId);
+  async getPost(@Param('id') postId: string, @Req() req) {
+    const foundedPost = await this.postsQueryRepository.findById(
+      postId,
+      req.userId,
+    );
     if (!foundedPost) {
       throw new NotFoundException();
     } else {
@@ -71,6 +80,8 @@ export class PostsController {
     }
   }
 
+  @HttpCode(204)
+  @UseGuards(AuthBasicGuard)
   @Put(':id')
   async updatePost(
     @Param('id') postId: string,
@@ -85,6 +96,8 @@ export class PostsController {
     }
   }
 
+  @UseGuards(AuthBasicGuard)
+  @HttpCode(204)
   @Delete(':id')
   async deletePost(@Param('id') postId: string) {
     const result = await this.postsService.deletePost(postId);
@@ -118,23 +131,29 @@ export class PostsController {
     }
   }
 
+  @UseGuards(GetOptionalUserGard)
   @HttpCode(200)
   @Get(':id/comments')
   async getCommentsForPostId(
     @Query() queryDto: QueryCommentModel,
     @Param('id') postId: string,
+    @Req() req,
   ) {
-    const post = this.postsQueryRepository.findById(postId);
+    const post = await this.postsQueryRepository.findById(postId, req.userId);
 
     if (!post) {
       throw new NotFoundException();
     }
-    return await this.commentsQueryRepository.findAll(queryDto, postId);
+    return await this.commentsQueryRepository.findAll(
+      queryDto,
+      postId,
+      req.userId,
+    );
   }
 
   @HttpCode(204)
   @UseGuards(AuthBearerGuard)
-  @Post(':id/like-status')
+  @Put(':id/like-status')
   async makeLikeCommentForPostID(
     @Body() inputModel: CreateLikeInputModel,
     @Param('id') postId: string,
@@ -149,6 +168,9 @@ export class PostsController {
     if (result.hasError()) {
       if (result.code === 404) {
         throw new NotFoundException();
+      }
+      if (result.code === 400) {
+        throw new BadRequestException(result.extensions);
       }
     } else {
       return result.data;

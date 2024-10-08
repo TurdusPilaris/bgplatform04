@@ -13,6 +13,7 @@ import {
   Post,
   Put,
   Query,
+  Req,
   UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
@@ -26,16 +27,12 @@ import { PostsService } from '../../posts/application/posts.service';
 import { PostCreateInputModel } from '../../posts/api/models/input/create-post.input.model';
 import { QueryPostInputModel } from '../../posts/api/models/input/query-post.model';
 import { PostsQueryRepository } from '../../posts/infrastructure/posts.query-repository';
-import {
-  DeleteBlogCommand,
-  DeleteBlogUseCase,
-} from '../application/use-cases/delete-blog-use-case';
-import {
-  CreateBlogCommand,
-  CreateBlogUseCase,
-} from '../application/use-cases/create-blog-use-case';
+import { DeleteBlogCommand } from '../application/use-cases/delete-blog-use-case';
+import { CreateBlogCommand } from '../application/use-cases/create-blog-use-case';
 import { CommandBus } from '@nestjs/cqrs';
 import { AuthBasicGuard } from '../../../infrastructure/guards/auth.basic.guard';
+import { CreatePostWithoutBlogIdInputModel } from '../../posts/api/models/input/create-post-withoutBlogId.input.model';
+import { GetOptionalUserGard } from '../../../infrastructure/guards/get-optional-user-gard.service';
 
 @Controller('blogs')
 export class BlogsController {
@@ -69,15 +66,20 @@ export class BlogsController {
     return await this.commandBus.execute(new CreateBlogCommand(inputModel));
   }
 
-  @Post(':id/posts')
+  @HttpCode(201)
   @UseGuards(AuthBasicGuard)
+  @Post(':id/posts')
   async createPostByBlogId(
     @Param('id') blogId: string,
-    @Body() inputModel: PostCreateInputModel,
-    // @Res() response: Response,
+    @Body() inputModel: CreatePostWithoutBlogIdInputModel,
   ) {
-    inputModel.blogId = blogId;
-    const result = await this.postsService.create(inputModel);
+    const dtoModel = new PostCreateInputModel();
+    dtoModel.blogId = blogId;
+    dtoModel.content = inputModel.content;
+    dtoModel.title = inputModel.title;
+    dtoModel.shortDescription = inputModel.shortDescription;
+
+    const result = await this.postsService.create(dtoModel);
 
     if (result.hasError()) {
       if (result.code === 404) {
@@ -96,17 +98,23 @@ export class BlogsController {
     return foundedBlog;
   }
 
+  @UseGuards(GetOptionalUserGard)
   @Get(':id/posts')
   async getPostsByBlogId(
     @Query(new ValidationPipe({ transform: true }))
     queryDto: QueryPostInputModel,
     @Param('id') blogId: string,
+    @Req() req,
   ) {
     const foundedBlog = await this.blogsQueryRepository.findById(blogId);
     if (!foundedBlog) {
       throw new NotFoundException();
     }
-    return await this.postsQueryRepository.findAll(queryDto, blogId);
+    return await this.postsQueryRepository.findAll(
+      queryDto,
+      req.userId,
+      blogId,
+    );
   }
 
   @HttpCode(204)

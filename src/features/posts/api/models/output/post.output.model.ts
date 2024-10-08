@@ -26,7 +26,10 @@ export class LikesInfoOut {
   newestLikes: NewestLikeType[];
 }
 
-export const PostOutputModelMapper = (post: PostDocument): PostOutputModel => {
+export const PostOutputModelMapper = (
+  post: PostDocument,
+  myLikes?: likeStatus,
+): PostOutputModel => {
   const outputPostModel = new PostOutputModel();
   outputPostModel.id = post.id;
   outputPostModel.title = post.title;
@@ -36,10 +39,21 @@ export const PostOutputModelMapper = (post: PostDocument): PostOutputModel => {
   outputPostModel.blogName = post.blogName;
   outputPostModel.createdAt = post.createdAt.toISOString();
   outputPostModel.extendedLikesInfo = new LikesInfoOut();
-  outputPostModel.extendedLikesInfo.likesCount = 0;
-  outputPostModel.extendedLikesInfo.dislikesCount = 0;
-  outputPostModel.extendedLikesInfo.myStatus = likeStatus.None;
-  outputPostModel.extendedLikesInfo.newestLikes = [];
+  outputPostModel.extendedLikesInfo.likesCount = post.likesInfo.countLikes || 0;
+  outputPostModel.extendedLikesInfo.dislikesCount =
+    post.likesInfo.countDislikes || 0;
+  outputPostModel.extendedLikesInfo.myStatus = !myLikes
+    ? post.likesInfo.myStatus
+    : myLikes;
+  outputPostModel.extendedLikesInfo.newestLikes =
+    // [];
 
+    post.likesInfo.newestLikes.map(function (newestLikes) {
+      return {
+        userId: newestLikes.userId,
+        addedAt: newestLikes.addedAt.toISOString(),
+        login: newestLikes.login,
+      };
+    });
   return outputPostModel;
 };

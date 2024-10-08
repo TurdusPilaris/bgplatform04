@@ -8,6 +8,7 @@ import {
 import { BlogsQueryRepository } from '../../blogs/infrastructure/blogs.query-repository';
 import { InterlayerNotice } from '../../../base/models/Interlayer';
 import { PostsQueryRepository } from '../infrastructure/posts.query-repository';
+import { CreatePostWithoutBlogIdInputModel } from '../api/models/input/create-post-withoutBlogId.input.model';
 
 @Injectable()
 export class PostsService {

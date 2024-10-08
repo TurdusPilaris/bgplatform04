@@ -19,7 +19,7 @@ export class AuthBearerGuard implements CanActivate {
   async canActivate(context: ExecutionContext) {
     // : boolean | Promise<boolean> | Observable<boolean>
     const request: Request = context.switchToHttp().getRequest();
-    // const ADMIN_AUTH_BASE64 = 'Basic YWRtaW46cXdlcnR5';
+
     if (!request.headers.authorization) {
       throw new UnauthorizedException();
     }
@@ -31,8 +31,8 @@ export class AuthBearerGuard implements CanActivate {
     if (result.hasError()) {
       throw new UnauthorizedException();
     } else {
+      request['userId'] = result.data;
+      return true;
     }
-    request['userId'] = result.data;
-    return true;
   }
 }

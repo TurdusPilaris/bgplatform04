@@ -257,11 +257,18 @@ export class AuthService {
       infer: true,
     });
 
+    const decode = await this.jwtService.decode(auth[1]);
+
+    if (!decode) {
+      const result = new InterlayerNotice(null);
+      result.addError('Wrong authorization', 'access token', 401);
+
+      return result;
+    }
+
     const payloadAccessToken = await this.jwtService.verify(auth[1], {
       secret: authSettings.JWT_SECRET,
     });
-
-    console.log('HEY!!!!!!!!!', payloadAccessToken);
 
     if (!payloadAccessToken) {
       const result = new InterlayerNotice(null);

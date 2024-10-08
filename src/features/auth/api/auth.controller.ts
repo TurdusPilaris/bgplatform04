@@ -52,6 +52,8 @@ export class AuthController {
       loginInput.loginOrEmail,
     );
 
+    console.log('accessToken', accessToken);
+
     // return accessToken;
 
     //теперь создадим рефреш токен
@@ -59,8 +61,8 @@ export class AuthController {
       await this.authService.getRefreshTokenForUser(loginInput.loginOrEmail);
 
     res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: true });
-    res.send({ accessToken: accessToken });
-
+    // res.send({ accessToken: accessToken });
+    res.send(accessToken);
     //перед тем как сделать рефреш токен создадим новую сессию id
 
     //

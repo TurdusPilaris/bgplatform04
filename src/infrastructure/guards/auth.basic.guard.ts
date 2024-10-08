@@ -22,9 +22,6 @@ export class AuthBasicGuard implements CanActivate {
     if (request.headers.authorization !== ADMIN_AUTH_BASE64) {
       throw new UnauthorizedException();
     }
-    // console.log(request.headers.authorization);
-    //401
-    // throw new UnauthorizedException();
     return true;
   }
 }

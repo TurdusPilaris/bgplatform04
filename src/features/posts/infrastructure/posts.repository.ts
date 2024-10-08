@@ -1,5 +1,9 @@
 import { Injectable, Post } from '@nestjs/common';
-import { PostClass, PostDocument, PostModelType } from "../domain/entiities/post.entity";
+import {
+  PostClass,
+  PostDocument,
+  PostModelType,
+} from '../domain/entiities/post.entity';
 import { PostCreateInputModel } from '../api/models/input/create-post.input.model';
 import { InjectModel } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
@@ -19,6 +23,8 @@ export class PostsRepository {
       this.PostModel,
       blogName,
     );
+
+    console.log('newPost=========', newPost);
     return newPost.save();
   }
   async save(post: PostDocument) {

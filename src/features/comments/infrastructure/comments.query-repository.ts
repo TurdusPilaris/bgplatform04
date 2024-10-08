@@ -25,7 +25,11 @@ export class CommentsQueryRepository {
     private LikeModel: LikeModelType,
   ) {}
 
-  async findAll(queryDto: QueryCommentModel, postId: string) {
+  async findAll(
+    queryDto: QueryCommentModel,
+    postId: string,
+    userId: string | null,
+  ) {
     // : Promise<PaginationCommentModel>
     const filterByPostID = { postId: postId };
     const items = await this.CommentModel.find(filterByPostID, null, {
@@ -35,16 +39,21 @@ export class CommentsQueryRepository {
       .limit(queryDto.pageSize)
       .exec();
 
-    console.log('items', items);
+    //сначала получим id комментов
+    const commentsIds = items.map((comments) => comments.id);
 
-    const itemsForPaginator = items.map((comment) =>
-      CommentOutputModelMapper(comment, likeStatus.None),
+    //получим статусы для юзера
+    const myStatusesForComments = await this.getLikesByUser(
+      commentsIds,
+      userId,
     );
 
-    console.log('itemsForPaginator', itemsForPaginator);
-    // const itemsForPaginator = items.map(
-    //   CommentOutputModelMapper(likeStatus.None),
-    // );
+    const itemsForPaginator = items.map((comment) =>
+      CommentOutputModelMapper(
+        comment,
+        myStatusesForComments[comment._id.toString()]?.statusLike,
+      ),
+    );
 
     const countComments =
       await this.CommentModel.countDocuments(filterByPostID);
@@ -95,5 +104,23 @@ export class CommentsQueryRepository {
     } else {
       return likeStatus.None;
     }
+  }
+
+  async getLikesByUser(commentsIds: any[], userId: string) {
+    const likes = await this.LikeModel.find()
+      .where('parentID')
+      .in(commentsIds)
+      .where('userID')
+      .equals(userId)
+      .lean();
+
+    const likesWithKeys = likes.reduce((acc, like) => {
+      const likecommentID = like.parentID.toString();
+
+      acc[likecommentID] = like;
+      return acc;
+    }, {});
+
+    return likesWithKeys;
   }
 }

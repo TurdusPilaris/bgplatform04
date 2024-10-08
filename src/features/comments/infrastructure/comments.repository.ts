@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { Comment, CommentModelType } from '../domain/entities/comment.entity';
+import {
+  Comment,
+  CommentDocument,
+  CommentModelType,
+} from '../domain/entities/comment.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import {
   Like,
@@ -7,6 +11,8 @@ import {
   LikeModelType,
 } from '../domain/entities/like.entity';
 import { likeStatus } from '../../../base/models/likesStatus';
+import { CreateCommentInputModel } from '../api/model/input/create-comment.input.model';
+import { Types } from 'mongoose';
 
 @Injectable()
 export class CommentsRepository {
@@ -55,5 +61,24 @@ export class CommentsRepository {
 
   async saveLikes(newLike: LikeDocument) {
     await newLike.save();
+  }
+
+  async findCommentById(id: string): Promise<CommentDocument | null> {
+    return this.CommentModel.findById(id);
+  }
+
+  async updateComment(comment: CommentDocument, dto: CreateCommentInputModel) {
+    comment.content = dto.content;
+    await comment.save();
+  }
+
+  async saveComment(comment: CommentDocument) {
+    await comment.save();
+  }
+
+  async deleteComment(commentId: string) {
+    return this.CommentModel.deleteOne({
+      _id: new Types.ObjectId(commentId),
+    });
   }
 }

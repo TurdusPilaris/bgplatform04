@@ -11,7 +11,7 @@ import { UsersService } from '../../features/users/application/users.service';
 import { AuthService } from '../../features/auth/application/auth.service';
 
 @Injectable()
-export class AddUserWithoutAuthGuard implements CanActivate {
+export class GetOptionalUserGard implements CanActivate {
   constructor(
     protected usersService: UsersService,
     protected authService: AuthService,

@@ -1,8 +1,7 @@
 import { IsString, Length } from '@nestjs/class-validator';
 import { Trim } from '../../../../../infrastructure/decorators/transform/trim';
-import { BlogIdIsValid } from '../../../../../infrastructure/decorators/validate/blog-id-is-valid';
 
-export class PostCreateInputModel {
+export class CreatePostWithoutBlogIdInputModel {
   @Trim()
   @IsString()
   @Length(1, 30, { message: 'Title is not correct' })
@@ -13,7 +12,4 @@ export class PostCreateInputModel {
   @Trim()
   @Length(1, 1000, { message: 'Content is not correct' })
   content: string;
-  @IsString()
-  @BlogIdIsValid()
-  blogId: string;
 }

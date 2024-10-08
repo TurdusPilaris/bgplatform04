@@ -3,6 +3,7 @@ import { HydratedDocument, Model } from 'mongoose';
 import { PostCreateInputModel } from '../../api/models/input/create-post.input.model';
 import { likeStatus } from '../../../../base/models/likesStatus';
 import { Cat } from '../../../users/domain/entities/users-schema';
+import { ConsoleLogger } from '@nestjs/common';
 
 export type PostDocument = HydratedDocument<PostClass>;
 
@@ -26,16 +27,10 @@ export class PostLikesInfo {
   @Prop({ default: 0 })
   countDislikes: number;
 
-  // @Prop({ default: likeStatus.None, type: likeStatus })
-  // myStatus: {
-  //   type: string;
-  //   enum: ['Like', 'Dislike', 'None'];
-  // };
-
   @Prop({ type: String, default: likeStatus.None, enum: likeStatus })
   myStatus: likeStatus;
 
-  @Prop({ default: [], type: PostLikesInfoNewestLikes })
+  @Prop({ default: [], type: [PostLikesInfoNewestLikes] })
   newestLikes: PostLikesInfoNewestLikes[];
 }
 
@@ -68,6 +63,12 @@ export class PostClass {
       blogId: dto.blogId,
       blogName: blogName,
       createdAt: new Date(),
+      likesInfo: {
+        countLikes: 0,
+        countDislikes: 0,
+        myStatus: likeStatus.None,
+        newestLikes: [],
+      },
     });
     return createdPost;
   }
