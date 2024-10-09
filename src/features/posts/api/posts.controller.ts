@@ -10,16 +10,12 @@ import {
   Query,
   Req,
   Post,
-  Res,
   UseGuards,
   ValidationPipe,
   BadRequestException,
 } from '@nestjs/common';
 import { PostsService } from '../application/posts.service';
-import { InjectModel } from '@nestjs/mongoose';
-import { PostClass, PostModelType } from '../domain/entiities/post.entity';
 import { PostCreateInputModel } from './models/input/create-post.input.model';
-import { Response } from 'express';
 import { QueryPostInputModel } from './models/input/query-post.model';
 import { PostsQueryRepository } from '../infrastructure/posts.query-repository';
 import { CreateCommentInputModel } from '../../comments/api/model/input/create-comment.input.model';
@@ -30,23 +26,27 @@ import { QueryCommentModel } from '../../comments/api/model/input/query-comment.
 import { CommentsQueryRepository } from '../../comments/infrastructure/comments.query-repository';
 import { CreateLikeInputModel } from '../../comments/api/model/input/create-like.input.model';
 import { GetOptionalUserGard } from '../../../infrastructure/guards/get-optional-user-gard.service';
+import { CommandBus } from '@nestjs/cqrs';
+import { CreateBlogCommand } from '../../blogs/application/use-cases/create-blog-use-case';
+import { CreatePostCommand } from '../application/use-cases/create-post-use-case';
+import { UpdatePostCommand } from '../application/use-cases/update-post-use-case';
 
 @Controller('posts')
 export class PostsController {
   constructor(
+    private commandBus: CommandBus,
     protected postsService: PostsService,
     protected postsQueryRepository: PostsQueryRepository,
     protected commentsService: CommentsService,
     protected commentsQueryRepository: CommentsQueryRepository,
-    @InjectModel(PostClass.name)
-    private PostModel: PostModelType,
   ) {}
 
   @UseGuards(AuthBasicGuard)
   @Post()
   async createPost(@Body() inputModel: PostCreateInputModel) {
-    const result = await this.postsService.create(inputModel);
-
+    const result = await this.commandBus.execute(
+      new CreatePostCommand(inputModel),
+    );
     if (result.hasError()) {
       if (result.code === 404) {
         throw new NotFoundException();
@@ -87,7 +87,11 @@ export class PostsController {
     @Param('id') postId: string,
     @Body() inputModel: PostCreateInputModel,
   ) {
-    const result = await this.postsService.updatePost(postId, inputModel);
+    // const result = await this.postsService.updatePost(postId, inputModel);
+
+    const result = await this.commandBus.execute(
+      new UpdatePostCommand(inputModel, postId),
+    );
 
     if (result.hasError()) {
       if (result.code === 404) {

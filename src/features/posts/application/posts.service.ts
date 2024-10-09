@@ -9,30 +9,14 @@ import { BlogsQueryRepository } from '../../blogs/infrastructure/blogs.query-rep
 import { InterlayerNotice } from '../../../base/models/Interlayer';
 import { PostsQueryRepository } from '../infrastructure/posts.query-repository';
 import { CreatePostWithoutBlogIdInputModel } from '../api/models/input/create-post-withoutBlogId.input.model';
+import { BlogsRepository } from '../../blogs/infrastructure/blogs.repository';
 
 @Injectable()
 export class PostsService {
   constructor(
     private postsRepository: PostsRepository,
-    private postsQueryRepository: PostsQueryRepository,
     private blogsQueryRepository: BlogsQueryRepository,
   ) {}
-  async create(inputModel: PostCreateInputModel) {
-    const foundedBlog = await this.blogsQueryRepository.findById(
-      inputModel.blogId,
-    );
-    if (!foundedBlog) {
-      const result = new InterlayerNotice(null);
-      result.addError('Blog is not exists', 'blogId', 404);
-      return result;
-    }
-
-    const outputPostModel = PostOutputModelMapper(
-      await this.postsRepository.createPost(inputModel, foundedBlog.name),
-    );
-
-    return new InterlayerNotice(outputPostModel);
-  }
 
   async updatePost(
     postId: string,
@@ -54,13 +38,11 @@ export class PostsService {
       return result;
     }
 
-    foundedPost.title = inputModel.title;
-    foundedPost.shortDescription = inputModel.shortDescription;
-    foundedPost.content = inputModel.content;
-    foundedPost.blogId = inputModel.blogId;
-    foundedPost.blogName = foundedBlog.name;
-
-    const resultUpdatedPost = await this.postsRepository.save(foundedPost);
+    await this.postsRepository.update(
+      foundedPost,
+      foundedPost,
+      foundedBlog.name,
+    );
 
     return new InterlayerNotice(null);
   }

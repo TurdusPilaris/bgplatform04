@@ -27,6 +27,20 @@ export class PostsRepository {
     console.log('newPost=========', newPost);
     return newPost.save();
   }
+
+  async update(
+    post: PostDocument,
+    updateModel: PostCreateInputModel,
+    blogName: string,
+  ): Promise<PostDocument> {
+    post.title = updateModel.title;
+    post.shortDescription = updateModel.shortDescription;
+    post.content = updateModel.content;
+    post.blogId = updateModel.blogId;
+    post.blogName = blogName;
+
+    return this.save(post);
+  }
   async save(post: PostDocument) {
     return post.save();
   }

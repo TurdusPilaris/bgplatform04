@@ -1,13 +1,9 @@
 import {
-  BadGatewayException,
   Body,
   Controller,
-  DefaultValuePipe,
   Delete,
   Get,
   HttpCode,
-  HttpException,
-  HttpStatus,
   NotFoundException,
   Param,
   Post,
@@ -18,13 +14,9 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { BlogsQueryRepository } from '../infrastructure/blogs.query-repository';
-import { InjectModel } from '@nestjs/mongoose';
-import { Blog, BlogModelType } from '../domain/entiities/blog.entity';
 import { BlogCreateInputModel } from './models/input/create-blog.input.model';
-import { BlogsService } from '../application/blogs.service';
 import { QueryBlogInputModel } from './models/input/query-blog.model';
 import { PostsService } from '../../posts/application/posts.service';
-import { PostCreateInputModel } from '../../posts/api/models/input/create-post.input.model';
 import { QueryPostInputModel } from '../../posts/api/models/input/query-post.model';
 import { PostsQueryRepository } from '../../posts/infrastructure/posts.query-repository';
 import { DeleteBlogCommand } from '../application/use-cases/delete-blog-use-case';
@@ -33,24 +25,19 @@ import { CommandBus } from '@nestjs/cqrs';
 import { AuthBasicGuard } from '../../../infrastructure/guards/auth.basic.guard';
 import { CreatePostWithoutBlogIdInputModel } from '../../posts/api/models/input/create-post-withoutBlogId.input.model';
 import { GetOptionalUserGard } from '../../../infrastructure/guards/get-optional-user-gard.service';
+import { UpdateBlogCommand } from '../application/use-cases/update-blog-use-case';
+import { CreatePostByBlogIdCommand } from '../../posts/application/use-cases/create-post-by-blogId-use-case';
 
 @Controller('blogs')
 export class BlogsController {
   constructor(
     private commandBus: CommandBus,
-    protected blogsService: BlogsService,
-    protected postsService: PostsService,
     protected blogsQueryRepository: BlogsQueryRepository,
     protected postsQueryRepository: PostsQueryRepository,
-    // private deleteBlogUseCase: DeleteBlogUseCase,
-    // private createBlogUseCase: CreateBlogUseCase,
-    @InjectModel(Blog.name)
-    private BlogModel: BlogModelType,
   ) {}
 
   @Get()
   async getBlogs(
-    // @Query('pageSize', new DefaultValuePipe(10)) pageSize: number,
     @Query(new ValidationPipe({ transform: true, stopAtFirstError: true }))
     queryDto: QueryBlogInputModel,
   ) {
@@ -73,13 +60,9 @@ export class BlogsController {
     @Param('id') blogId: string,
     @Body() inputModel: CreatePostWithoutBlogIdInputModel,
   ) {
-    const dtoModel = new PostCreateInputModel();
-    dtoModel.blogId = blogId;
-    dtoModel.content = inputModel.content;
-    dtoModel.title = inputModel.title;
-    dtoModel.shortDescription = inputModel.shortDescription;
-
-    const result = await this.postsService.create(dtoModel);
+    const result = await this.commandBus.execute(
+      new CreatePostByBlogIdCommand(inputModel, blogId),
+    );
 
     if (result.hasError()) {
       if (result.code === 404) {
@@ -124,7 +107,9 @@ export class BlogsController {
     @Param('id') blogId: string,
     @Body() inputModel: BlogCreateInputModel,
   ) {
-    const result = await this.blogsService.updateBlog(blogId, inputModel);
+    const result = await this.commandBus.execute(
+      new UpdateBlogCommand(inputModel, blogId),
+    );
 
     if (result.hasError()) {
       if (result.code === 404) {
