@@ -43,7 +43,7 @@ export class UpdatePostUseCase implements ICommandHandler<UpdatePostCommand> {
 
     await this.postsRepository.update(
       foundedPost,
-      foundedPost,
+      command.inputModel,
       foundedBlog.name,
     );
 

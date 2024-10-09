@@ -1,4 +1,3 @@
-import { Injectable } from '@nestjs/common';
 import { BlogsRepository } from '../../infrastructure/blogs.repository';
 import { InterlayerNotice } from '../../../../base/models/Interlayer';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';

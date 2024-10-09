@@ -16,7 +16,6 @@ import {
 import { BlogsQueryRepository } from '../infrastructure/blogs.query-repository';
 import { BlogCreateInputModel } from './models/input/create-blog.input.model';
 import { QueryBlogInputModel } from './models/input/query-blog.model';
-import { PostsService } from '../../posts/application/posts.service';
 import { QueryPostInputModel } from '../../posts/api/models/input/query-post.model';
 import { PostsQueryRepository } from '../../posts/infrastructure/posts.query-repository';
 import { DeleteBlogCommand } from '../application/use-cases/delete-blog-use-case';

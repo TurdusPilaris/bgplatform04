@@ -14,7 +14,6 @@ import {
   ValidationPipe,
   BadRequestException,
 } from '@nestjs/common';
-import { PostsService } from '../application/posts.service';
 import { PostCreateInputModel } from './models/input/create-post.input.model';
 import { QueryPostInputModel } from './models/input/query-post.model';
 import { PostsQueryRepository } from '../infrastructure/posts.query-repository';
@@ -27,15 +26,14 @@ import { CommentsQueryRepository } from '../../comments/infrastructure/comments.
 import { CreateLikeInputModel } from '../../comments/api/model/input/create-like.input.model';
 import { GetOptionalUserGard } from '../../../infrastructure/guards/get-optional-user-gard.service';
 import { CommandBus } from '@nestjs/cqrs';
-import { CreateBlogCommand } from '../../blogs/application/use-cases/create-blog-use-case';
 import { CreatePostCommand } from '../application/use-cases/create-post-use-case';
 import { UpdatePostCommand } from '../application/use-cases/update-post-use-case';
+import { DeletePostCommand } from '../application/use-cases/delete-post-use-case';
 
 @Controller('posts')
 export class PostsController {
   constructor(
     private commandBus: CommandBus,
-    protected postsService: PostsService,
     protected postsQueryRepository: PostsQueryRepository,
     protected commentsService: CommentsService,
     protected commentsQueryRepository: CommentsQueryRepository,
@@ -87,8 +85,6 @@ export class PostsController {
     @Param('id') postId: string,
     @Body() inputModel: PostCreateInputModel,
   ) {
-    // const result = await this.postsService.updatePost(postId, inputModel);
-
     const result = await this.commandBus.execute(
       new UpdatePostCommand(inputModel, postId),
     );
@@ -104,7 +100,7 @@ export class PostsController {
   @HttpCode(204)
   @Delete(':id')
   async deletePost(@Param('id') postId: string) {
-    const result = await this.postsService.deletePost(postId);
+    const result = await this.commandBus.execute(new DeletePostCommand(postId));
     if (result.hasError()) {
       if (result.code === 404) {
         throw new NotFoundException();
