@@ -2,6 +2,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { User, UserModelType } from '../domain/entities/user.entity';
 import { Injectable } from '@nestjs/common';
 import {
+  AboutMeOutputModelMapper,
   UserOutputModel,
   UserOutputModelMapper,
 } from '../api/models/output/user.output.model';
@@ -10,6 +11,8 @@ import {
   PaginationUserModel,
   PaginationUserOutputModelMapper,
 } from '../api/models/output/pagination-user.model';
+import { AboutMeOutputModel } from '../../auth/api/models/output/about-me-output-model';
+import { InterlayerNotice } from '../../../base/models/Interlayer';
 
 @Injectable()
 export class UsersQueryRepository {
@@ -83,5 +86,24 @@ export class UsersQueryRepository {
       countUsers,
       itemsForPaginator,
     );
+  }
+
+  async getAboutMe(
+    userId: string | null,
+  ): Promise<InterlayerNotice<AboutMeOutputModel | null>> {
+    if (!userId) {
+      const result = new InterlayerNotice(null);
+      result.addError('User is not found', 'userId', 400);
+      return result;
+    }
+    const user = await this.findById(userId);
+
+    if (!user) {
+      const result = new InterlayerNotice(null);
+      result.addError('User is not found', 'userId', 400);
+      return result;
+    }
+
+    return new InterlayerNotice(AboutMeOutputModelMapper(user));
   }
 }

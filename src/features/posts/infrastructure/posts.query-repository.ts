@@ -1,15 +1,10 @@
-import { Injectable, Post } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import {
-  PostClass,
-  PostDocument,
-  PostModelType,
-} from '../domain/entiities/post.entity';
+import { PostClass, PostModelType } from '../domain/entiities/post.entity';
 import { QueryPostInputModel } from '../api/models/input/query-post.model';
 import { PostOutputModelMapper } from '../api/models/output/post.output.model';
 import { PaginationPostModelMapper } from '../api/models/output/pagination-post.model';
 import { CommentsQueryRepository } from '../../comments/infrastructure/comments.query-repository';
-import { likeStatus } from '../../../base/models/likesStatus';
 
 @Injectable()
 export class PostsQueryRepository {
@@ -23,9 +18,7 @@ export class PostsQueryRepository {
     userId: string | null,
     blogId?: string,
   ) {
-    console.log('blogId', blogId);
     const filter = !blogId ? {} : { blogId: blogId };
-    console.log('filter', filter);
     const items = await this.PostModel.find(filter, null, {
       sort: { [queryDto.sortBy]: queryDto.sortDirection },
     })

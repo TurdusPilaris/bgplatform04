@@ -1,8 +1,7 @@
-import { Controller, Delete, HttpCode, Post, Res } from '@nestjs/common';
+import { Controller, Delete, HttpCode } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Blog, BlogModelType } from '../blogs/domain/entiities/blog.entity';
 import { User, UserModelType } from '../users/domain/entities/user.entity';
-import { Response } from 'express';
 import {
   PostClass,
   PostModelType,
@@ -12,6 +11,10 @@ import {
   CommentModelType,
 } from '../comments/domain/entities/comment.entity';
 import { Like, LikeModelType } from '../comments/domain/entities/like.entity';
+import {
+  DeviceAuthSession,
+  DeviceAuthSessionModelType,
+} from '../security/domain/deviceAuthSession.entity';
 @Controller('testing')
 export class TestingController {
   constructor(
@@ -25,6 +28,8 @@ export class TestingController {
     private CommentModel: CommentModelType,
     @InjectModel(Like.name)
     private LikeModel: LikeModelType,
+    @InjectModel(DeviceAuthSession.name)
+    private DeviceAuthSessionModel: DeviceAuthSessionModelType,
   ) {}
   @Delete('all-data')
   @HttpCode(204)
@@ -34,5 +39,6 @@ export class TestingController {
     await this.UserModel.deleteMany({});
     await this.CommentModel.deleteMany({});
     await this.LikeModel.deleteMany({});
+    await this.DeviceAuthSessionModel.deleteMany({});
   }
 }

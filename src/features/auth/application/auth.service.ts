@@ -11,13 +11,16 @@ import { ConfigService } from '@nestjs/config';
 import { Configuration } from '../../../settings/configuration';
 import { v4 } from 'uuid';
 import { add } from 'date-fns';
+import { PayloadTokenType } from '../../../base/type/types';
 import { uuid } from 'uuidv4';
+import { SecurityService } from '../../security/application/security.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     protected usersRepository: UsersRepository,
     protected bcryptService: BcryptService,
+    protected securityService: SecurityService,
     protected businessService: BusinessService,
     private jwtService: JwtService,
     private configService: ConfigService<Configuration, true>,
@@ -38,6 +41,7 @@ export class AuthService {
     //   throw new UnauthorizedException();
     // }
     const payload = { username: user.accountData.userName, id: user.id };
+
     return {
       accessToken: await this.jwtService.signAsync(payload, {
         secret: authSettings.JWT_SECRET,
@@ -46,14 +50,12 @@ export class AuthService {
     };
   }
 
-  async createRefreshToken(userId: string) {
+  async createRefreshToken(userId: string, newDeviceId) {
     const authSettings = this.configService.get('authSettings', {
       infer: true,
     });
 
     const user = await this.usersRepository.findById(userId);
-
-    const newDeviceId = uuid();
 
     const payLoadRefreshToken = {
       userId: user!._id,
@@ -69,20 +71,7 @@ export class AuthService {
       deviceId: newDeviceId,
     };
   }
-  // async registerUser(inputModel: UserCreateModel): Promise<InterlayerNotice> {
-  // const passwordHash = await this.bcryptService.generationHash(inputModel.password);
-  //
-  // const createdUser = await this.usersRepository.createBasicUser(inputModel);
-  //
-  // try {
-  //   this.businessService.sendRegisrtationEmail(inputModel.email, createdUser.emailConfirmation.confirmationCode);
-  // } catch (e: unknown) {
-  //   console.error('Send email error', e);
-  // }
-  //
-  // //return information about success
-  //     return new InterlayerNotice(null);
-  // }
+
   async registerUser(createInputUser: UserCreateModel) {
     const foundedUserEmail = await this.usersRepository.findByLoginOrEmail(
       createInputUser.email,
@@ -170,16 +159,11 @@ export class AuthService {
     return new InterlayerNotice(null);
   }
 
-  async getTokenForUser(loginOrEmail: string) {
-    const user = await this.usersRepository.findByLoginOrEmail(loginOrEmail);
-
-    return await this.createAccessToken(user.id);
-  }
-
   async getRefreshTokenForUser(loginOrEmail: string) {
     const user = await this.usersRepository.findByLoginOrEmail(loginOrEmail);
 
-    return await this.createRefreshToken(user.id);
+    const newDeviceId = uuid();
+    return await this.createRefreshToken(user.id, newDeviceId);
   }
 
   async resendingEmail(email: string) {
@@ -266,9 +250,10 @@ export class AuthService {
       return result;
     }
 
-    const payloadAccessToken = await this.jwtService.verify(auth[1], {
-      secret: authSettings.JWT_SECRET,
-    });
+    const payloadAccessToken = await this.verifyAndGetPayloadToken(
+      auth[1],
+      authSettings.JWT_SECRET,
+    );
 
     if (!payloadAccessToken) {
       const result = new InterlayerNotice(null);
@@ -277,7 +262,7 @@ export class AuthService {
       return result;
     }
 
-    const user = await this.usersRepository.findById(payloadAccessToken.id);
+    const user = await this.usersRepository.findById(payloadAccessToken.userId);
 
     if (!user) {
       const result = new InterlayerNotice(null);
@@ -286,6 +271,116 @@ export class AuthService {
       return result;
     }
 
-    return new InterlayerNotice(payloadAccessToken.id);
+    return new InterlayerNotice(payloadAccessToken.userId);
+  }
+
+  async verifyAndGetPayloadToken(
+    token: string,
+    secretCode: string,
+  ): Promise<PayloadTokenType | null> {
+    try {
+      const result: any = await this.jwtService.verifyAsync(token, {
+        secret: secretCode,
+      });
+      if (result.deviceId) {
+        return { userId: result.userId, deviceId: result.deviceId };
+      } else return { userId: result.userId };
+    } catch (error) {
+      console.log('Not verify!');
+      return null;
+    }
+  }
+
+  async decodeToken(token: string): Promise<any> {
+    try {
+      return this.jwtService.decode(token);
+    } catch (e: unknown) {
+      console.error('Cant decode token', e);
+      return null;
+    }
+  }
+
+  async checkRefreshToken(refreshToken: string) {
+    const authSettings = this.configService.get('authSettings', {
+      infer: true,
+    });
+
+    const decode = await this.jwtService.decode(refreshToken);
+
+    console.log('My DECODE', decode);
+    if (!decode) {
+      const result = new InterlayerNotice(null);
+      result.addError('Wrong authorization', 'access token', 401);
+
+      return result;
+    }
+
+    const payloadRefreshToken = await this.verifyAndGetPayloadToken(
+      refreshToken,
+      authSettings.JWT_SECRET,
+    );
+
+    console.log('MY payloadRefreshToken', payloadRefreshToken);
+
+    if (!payloadRefreshToken) {
+      const result = new InterlayerNotice(null);
+      result.addError('Wrong access token', 'куакуыр token', 401);
+
+      return result;
+    }
+
+    const user = await this.usersRepository.findById(
+      payloadRefreshToken.userId,
+    );
+
+    if (!user) {
+      const result = new InterlayerNotice(null);
+      result.addError('User not found', 'user id', 401);
+
+      return result;
+    }
+
+    const session = await this.securityService.getSession(
+      payloadRefreshToken.userId,
+      payloadRefreshToken.deviceId!,
+      new Date(decode.iat * 1000),
+    );
+    console.log('session------', session);
+
+    if (!session) {
+      const result = new InterlayerNotice(null);
+      result.addError('Not found session', 'session', 401);
+
+      return result;
+    }
+    return new InterlayerNotice(payloadRefreshToken);
+  }
+
+  async returnNewTokens(oldRefreshToken: string, userId: string) {
+    const newAccessToken = await this.createAccessToken(userId);
+
+    const payloadOldRefreshToken = await this.decodeToken(oldRefreshToken);
+
+    const session = await this.securityService.getSession(
+      payloadOldRefreshToken.userId,
+      payloadOldRefreshToken.deviceId!,
+      new Date(payloadOldRefreshToken.iat * 1000),
+    );
+
+    const newDeviceId = uuid();
+    const { refreshToken } = await this.createRefreshToken(userId, newDeviceId);
+
+    const newPayloadRefreshToken = await this.decodeToken(oldRefreshToken);
+
+    await this.securityService.updateSession(
+      session.id,
+      new Date(newPayloadRefreshToken.iat * 1000),
+      new Date(newPayloadRefreshToken.exp * 1000),
+    );
+
+    return {
+      newAccessToken,
+      refreshToken: refreshToken,
+    };
   }
 }

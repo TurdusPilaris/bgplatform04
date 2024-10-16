@@ -10,7 +10,7 @@ import { UsersService } from '../../features/users/application/users.service';
 import { AuthService } from '../../features/auth/application/auth.service';
 
 @Injectable()
-export class AuthBearerGuard implements CanActivate {
+export class AuthRefreshTokenGuard implements CanActivate {
   constructor(
     protected usersService: UsersService,
     protected authService: AuthService,
@@ -19,18 +19,24 @@ export class AuthBearerGuard implements CanActivate {
     // : boolean | Promise<boolean> | Observable<boolean>
     const request: Request = context.switchToHttp().getRequest();
 
-    if (!request.headers.authorization) {
+    if (!request.cookies) {
       throw new UnauthorizedException();
     }
 
-    const result = await this.authService.checkAccessToken(
-      request.headers.authorization,
+    if (!request.cookies.refreshToken) {
+      throw new UnauthorizedException();
+    }
+
+    console.log('My refresh token!!!!!', request.cookies.refreshToken);
+    const result = await this.authService.checkRefreshToken(
+      request.cookies.refreshToken,
     );
 
     if (result.hasError()) {
       throw new UnauthorizedException();
     } else {
-      request['userId'] = result.data;
+      request['userId'] = result.data.userId;
+      request['deviceId'] = result.data.deviceId;
       return true;
     }
   }

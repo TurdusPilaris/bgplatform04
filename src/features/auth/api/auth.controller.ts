@@ -5,9 +5,10 @@ import {
   Get,
   HttpCode,
   Post,
-  Res,
+  Req,
   Response,
   UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
 import { UserCreateModel } from '../../users/api/models/input/create-user.input.model';
 import { LoginInputModel } from './models/input/login.input.model';
@@ -15,10 +16,20 @@ import { AuthService } from '../application/auth.service';
 import { CodeConfirmationModel } from './models/input/code.confirmation.model';
 import { EmailInputModel } from './models/input/email.input.model';
 import { uuid } from 'uuidv4';
+import { AuthBearerGuard } from '../../../infrastructure/guards/auth.bearer.guard';
+import { UsersQueryRepository } from '../../users/infrastructure/users.query-repository';
+import { UsersRepository } from '../../users/infrastructure/users.repository';
+import { SecurityService } from '../../security/application/security.service';
+import { AuthRefreshTokenGuard } from '../../../infrastructure/guards/auth.refresh-token-guard';
 
 @Controller('auth')
 export class AuthController {
-  constructor(protected authService: AuthService) {}
+  constructor(
+    protected authService: AuthService,
+    protected usersQueryRepository: UsersQueryRepository,
+    protected usersRepository: UsersRepository,
+    protected securityService: SecurityService,
+  ) {}
   @HttpCode(204)
   @Post('registration')
   async registration(@Body() createInputUser: UserCreateModel) {
@@ -30,14 +41,28 @@ export class AuthController {
     }
   }
 
-  // @UseGuards(LocalAuthGuard)
+  @UseGuards(AuthBearerGuard)
   @Get('me')
-  async aboutMe() {}
+  async aboutMe(@Req() req) {
+    const result = await this.usersQueryRepository.getAboutMe(req.userId);
+
+    if (result.hasError()) {
+      if (result.code === 400) {
+        throw new BadRequestException(result.extensions);
+      }
+    }
+
+    return result.data;
+  }
 
   // @UseGuards(LocalAuthGuard)
   @HttpCode(200)
   @Post('login')
-  async login(@Body() loginInput: LoginInputModel, @Response() res) {
+  async login(
+    @Body() loginInput: LoginInputModel,
+    @Response() res,
+    @Req() req,
+  ) {
     const resultCheckCredentials =
       await this.authService.checkCredentials(loginInput);
 
@@ -47,53 +72,42 @@ export class AuthController {
       }
     }
 
-    //сначала сделаем аксесс токен
-    const accessToken = await this.authService.getTokenForUser(
+    const user = await this.usersRepository.findByLoginOrEmail(
       loginInput.loginOrEmail,
     );
 
-    console.log('accessToken', accessToken);
+    //сначала сделаем аксесс токен
+    const accessToken = await this.authService.createAccessToken(user.id);
 
-    // return accessToken;
+    //создадим deviceId
+
+    const newDeviceId = uuid();
 
     //теперь создадим рефреш токен
-    const { refreshToken, userId, deviceId } =
-      await this.authService.getRefreshTokenForUser(loginInput.loginOrEmail);
+    const { refreshToken } = await this.authService.createRefreshToken(
+      user.id,
+      newDeviceId,
+    );
+
+    console.log('new refreshToken', refreshToken);
+
+    const fullPayLoadRefreshToken =
+      await this.authService.decodeToken(refreshToken);
+
+    const resultCreated = await this.securityService.createSession(
+      fullPayLoadRefreshToken,
+      req.headers['user-agent'] ?? 'string',
+      req.ip,
+    );
+
+    if (resultCreated.hasError()) {
+      if (resultCreated.code === 400) {
+        throw new BadRequestException(resultCreated.extensions);
+      }
+    }
 
     res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: true });
-    // res.send({ accessToken: accessToken });
     res.send(accessToken);
-    //перед тем как сделать рефреш токен создадим новую сессию id
-
-    //
-    // if (result) {
-    //
-    //   const user = await this.usersQueryRepository.findByLoginOrEmail(req.body.loginOrEmail);
-    //
-    //   const payLoadAccessToken: PayloadTokenType = {userId: user!._id};
-    //   const token = await this.jwtService.createToken(payLoadAccessToken, SETTING.AC_TIME, SETTING.JWT_SECRET);
-    //
-    //   const newDeviceId = uuidv4();
-    //
-    //   const payLoadRefreshToken: PayloadTokenType = {userId: user!._id, deviceId: newDeviceId};
-    //   const refreshToken = await this.jwtService.createToken(payLoadRefreshToken, SETTING.AC_REFRESH_TIME, SETTING.JWT_REFRESH_SECRET);
-    //
-    //   const fullPayLoadRefreshToken = await this.jwtService.decodeToken(refreshToken);
-    //   const resultCreated = await this.securityService.createSession(fullPayLoadRefreshToken, req.headers['user-agent']??'string', req.ip);
-    //
-    //   if (resultCreated.status === ResultStatus.BadRequest) {
-    //     res.status(400).send({errorsMessages: [{message: resultCreated.errorMessage, field: resultCreated.errorField}]});
-    //     return;
-    //   } else if(resultCreated.status === ResultStatus.InternalServerError) {
-    //     res.status(500).send({errorsMessages: [{message: resultCreated.errorMessage, field: resultCreated.errorField}]});
-    //     return;
-    //   }
-    //   res.cookie('refreshToken', refreshToken, {httpOnly: true, secure: true,});
-    //   res.status(200).send({"accessToken":token});
-    //
-    // } else {
-    //   res.sendStatus(401);
-    // }
   }
 
   @HttpCode(204)
@@ -144,5 +158,31 @@ export class AuthController {
         throw new BadRequestException(result.extensions);
       }
     }
+  }
+
+  @UseGuards(AuthRefreshTokenGuard)
+  @HttpCode(200)
+  @Post('refresh-token')
+  async refreshToken(@Req() req, @Response() res) {
+    const result = await this.authService.returnNewTokens(
+      req.cookies.refreshToken,
+      req.userId,
+    );
+
+    res.cookie('refreshToken', result.refreshToken, {
+      httpOnly: true,
+      secure: true,
+    });
+    res.send(result.newAccessToken);
+  }
+
+  @UseGuards(AuthRefreshTokenGuard)
+  @HttpCode(200)
+  @Post('logout')
+  async logout(@Req() req) {
+    const result = await this.securityService.dropCurrentSession(
+      req.userId,
+      req.deviceId,
+    );
   }
 }

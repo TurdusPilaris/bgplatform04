@@ -3,3 +3,8 @@ export type APIErrorsMessageType = {
 };
 
 export type APIErrorMessageType = { message: string; field: string };
+
+export type PayloadTokenType = {
+  userId: string;
+  deviceId?: string | null;
+};

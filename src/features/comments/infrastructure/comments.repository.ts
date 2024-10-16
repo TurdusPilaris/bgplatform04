@@ -14,7 +14,6 @@ import { likeStatus } from '../../../base/models/likesStatus';
 import { CreateCommentInputModel } from '../api/model/input/create-comment.input.model';
 import { Types } from 'mongoose';
 
-@Injectable()
 export class CommentsRepository {
   constructor(
     @InjectModel(Comment.name)

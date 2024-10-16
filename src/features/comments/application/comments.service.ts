@@ -3,11 +3,7 @@ import { PostsRepository } from '../../posts/infrastructure/posts.repository';
 import { InterlayerNotice } from '../../../base/models/Interlayer';
 import { UsersRepository } from '../../users/infrastructure/users.repository';
 import { InjectModel } from '@nestjs/mongoose';
-import {
-  Comment,
-  CommentDocument,
-  CommentModelType,
-} from '../domain/entities/comment.entity';
+import { Comment, CommentModelType } from '../domain/entities/comment.entity';
 import { CommentsRepository } from '../infrastructure/comments.repository';
 import { Like, LikeModelType } from '../domain/entities/like.entity';
 import { CreateCommentInputModel } from '../api/model/input/create-comment.input.model';
