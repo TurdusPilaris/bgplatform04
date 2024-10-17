@@ -37,10 +37,8 @@ export class AuthService {
     });
 
     const user = await this.usersRepository.findById(userId);
-    // if (user?.password !== pass) {
-    //   throw new UnauthorizedException();
-    // }
-    const payload = { username: user.accountData.userName, id: user.id };
+
+    const payload = { username: user.accountData.userName, userId: user.id };
 
     return {
       accessToken: await this.jwtService.signAsync(payload, {
@@ -282,6 +280,7 @@ export class AuthService {
       const result: any = await this.jwtService.verifyAsync(token, {
         secret: secretCode,
       });
+
       if (result.deviceId) {
         return { userId: result.userId, deviceId: result.deviceId };
       } else return { userId: result.userId };
@@ -307,7 +306,6 @@ export class AuthService {
 
     const decode = await this.jwtService.decode(refreshToken);
 
-    console.log('My DECODE', decode);
     if (!decode) {
       const result = new InterlayerNotice(null);
       result.addError('Wrong authorization', 'access token', 401);
@@ -319,8 +317,6 @@ export class AuthService {
       refreshToken,
       authSettings.JWT_SECRET,
     );
-
-    console.log('MY payloadRefreshToken', payloadRefreshToken);
 
     if (!payloadRefreshToken) {
       const result = new InterlayerNotice(null);
@@ -345,7 +341,6 @@ export class AuthService {
       payloadRefreshToken.deviceId!,
       new Date(decode.iat * 1000),
     );
-    console.log('session------', session);
 
     if (!session) {
       const result = new InterlayerNotice(null);
@@ -370,7 +365,7 @@ export class AuthService {
     const newDeviceId = uuid();
     const { refreshToken } = await this.createRefreshToken(userId, newDeviceId);
 
-    const newPayloadRefreshToken = await this.decodeToken(oldRefreshToken);
+    const newPayloadRefreshToken = await this.decodeToken(refreshToken);
 
     await this.securityService.updateSession(
       session.id,

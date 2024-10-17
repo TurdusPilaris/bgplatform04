@@ -44,6 +44,7 @@ export class AuthController {
   @UseGuards(AuthBearerGuard)
   @Get('me')
   async aboutMe(@Req() req) {
+    console.log('its meeeeee');
     const result = await this.usersQueryRepository.getAboutMe(req.userId);
 
     if (result.hasError()) {
@@ -89,8 +90,6 @@ export class AuthController {
       newDeviceId,
     );
 
-    console.log('new refreshToken', refreshToken);
-
     const fullPayLoadRefreshToken =
       await this.authService.decodeToken(refreshToken);
 
@@ -134,18 +133,6 @@ export class AuthController {
     }
   }
 
-  // @HttpCode(204)
-  // @Post('refresh-token')
-  // async refreshToken(@Body() inputEmail: EmailInputModel) {
-  //   const result = await this.authService.resendingEmail(inputEmail.email);
-  //
-  //   if (result.hasError()) {
-  //     if (result.code === 400) {
-  //       throw new BadRequestException(result.extensions);
-  //     }
-  //   }
-  // }
-
   @HttpCode(204)
   @Post('password-recovery')
   async passwordRecovery(@Body() inputEmail: EmailInputModel) {
@@ -180,9 +167,13 @@ export class AuthController {
   @HttpCode(200)
   @Post('logout')
   async logout(@Req() req) {
+    console.log('req.userId', req.userId);
+    console.log('req.deviceId', req.deviceId);
     const result = await this.securityService.dropCurrentSession(
       req.userId,
       req.deviceId,
     );
+
+    console.log('result logout', result);
   }
 }

@@ -38,8 +38,6 @@ export class PostsQueryRepository {
       ),
     );
 
-    // PostOutputModelMapper, likeStatus.None);
-
     const countPosts = await this.PostModel.countDocuments(filter);
 
     return PaginationPostModelMapper(queryDto, countPosts, itemsForPaginator);
