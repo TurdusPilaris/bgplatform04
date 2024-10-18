@@ -21,6 +21,7 @@ import { UsersQueryRepository } from '../../users/infrastructure/users.query-rep
 import { UsersRepository } from '../../users/infrastructure/users.repository';
 import { SecurityService } from '../../security/application/security.service';
 import { AuthRefreshTokenGuard } from '../../../infrastructure/guards/auth.refresh-token-guard';
+import { ThrottlerGuard } from '@nestjs/throttler';
 
 @Controller('auth')
 export class AuthController {
@@ -30,6 +31,8 @@ export class AuthController {
     protected usersRepository: UsersRepository,
     protected securityService: SecurityService,
   ) {}
+
+  @UseGuards(ThrottlerGuard)
   @HttpCode(204)
   @Post('registration')
   async registration(@Body() createInputUser: UserCreateModel) {
@@ -44,7 +47,6 @@ export class AuthController {
   @UseGuards(AuthBearerGuard)
   @Get('me')
   async aboutMe(@Req() req) {
-    console.log('its meeeeee');
     const result = await this.usersQueryRepository.getAboutMe(req.userId);
 
     if (result.hasError()) {
@@ -56,7 +58,7 @@ export class AuthController {
     return result.data;
   }
 
-  // @UseGuards(LocalAuthGuard)
+  @UseGuards(ThrottlerGuard)
   @HttpCode(200)
   @Post('login')
   async login(
@@ -109,6 +111,7 @@ export class AuthController {
     res.send(accessToken);
   }
 
+  @UseGuards(ThrottlerGuard)
   @HttpCode(204)
   @Post('registration-confirmation')
   async registrationConfirmation(@Body() inputCode: CodeConfirmationModel) {
@@ -121,6 +124,7 @@ export class AuthController {
     }
   }
 
+  @UseGuards(ThrottlerGuard)
   @HttpCode(204)
   @Post('registration-email-resending')
   async registrationEmailResending(@Body() inputEmail: EmailInputModel) {
@@ -164,16 +168,12 @@ export class AuthController {
   }
 
   @UseGuards(AuthRefreshTokenGuard)
-  @HttpCode(200)
+  @HttpCode(204)
   @Post('logout')
   async logout(@Req() req) {
-    console.log('req.userId', req.userId);
-    console.log('req.deviceId', req.deviceId);
     const result = await this.securityService.dropCurrentSession(
       req.userId,
       req.deviceId,
     );
-
-    console.log('result logout', result);
   }
 }

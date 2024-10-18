@@ -27,7 +27,6 @@ export class AuthRefreshTokenGuard implements CanActivate {
       throw new UnauthorizedException();
     }
 
-    console.log('My refresh token!!!!!', request.cookies.refreshToken);
     const result = await this.authService.checkRefreshToken(
       request.cookies.refreshToken,
     );

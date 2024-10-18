@@ -31,6 +31,8 @@ export class SecurityService {
       ip,
     );
 
+    console.log('new session then login', session);
+
     return new InterlayerNotice(session.id);
   }
 

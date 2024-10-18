@@ -48,7 +48,7 @@ export class AuthService {
     };
   }
 
-  async createRefreshToken(userId: string, newDeviceId) {
+  async createRefreshToken(userId: string, newDeviceId: string) {
     const authSettings = this.configService.get('authSettings', {
       infer: true,
     });
@@ -318,6 +318,7 @@ export class AuthService {
       authSettings.JWT_SECRET,
     );
 
+    console.log('payloadRefreshToken', payloadRefreshToken);
     if (!payloadRefreshToken) {
       const result = new InterlayerNotice(null);
       result.addError('Wrong access token', 'куакуыр token', 401);
@@ -362,8 +363,11 @@ export class AuthService {
       new Date(payloadOldRefreshToken.iat * 1000),
     );
 
-    const newDeviceId = uuid();
-    const { refreshToken } = await this.createRefreshToken(userId, newDeviceId);
+    // const newDeviceId = uuid();
+    const { refreshToken } = await this.createRefreshToken(
+      userId,
+      payloadOldRefreshToken.deviceId,
+    );
 
     const newPayloadRefreshToken = await this.decodeToken(refreshToken);
 

@@ -5,6 +5,7 @@ import {
   DeviceAuthSessionDocument,
   DeviceAuthSessionModelType,
 } from '../domain/deviceAuthSession.entity';
+import { Types } from 'mongoose';
 
 @Injectable()
 export class SecurityRepository {
@@ -49,6 +50,8 @@ export class SecurityRepository {
         },
       },
     );
+
+    console.log('updatedSession------------------------', updatedSession);
   }
 
   async deleteCurrentSessions(userId: string, currentDeviceId: string) {
@@ -59,7 +62,9 @@ export class SecurityRepository {
   }
 
   async deleteSessionByDeviceID(id: string) {
-    await this.DeviceAuthSessionModel.deleteOne({ id: id });
+    await this.DeviceAuthSessionModel.deleteOne({
+      _id: new Types.ObjectId(id),
+    });
   }
 
   async deleteNonCurrentSessions(userId: string, currentDeviceId: string) {
