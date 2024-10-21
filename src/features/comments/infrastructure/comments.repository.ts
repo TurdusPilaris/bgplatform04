@@ -80,4 +80,20 @@ export class CommentsRepository {
       _id: new Types.ObjectId(commentId),
     });
   }
+
+  createLike(
+    parentID: string,
+    userId: string,
+    userName: string,
+    newStatusLike: any,
+  ) {
+    const newLike = this.LikeModel.createNewLike(
+      this.LikeModel,
+      parentID,
+      userId,
+      userName,
+      newStatusLike,
+    );
+    return newLike.save();
+  }
 }

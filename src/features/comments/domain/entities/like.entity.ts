@@ -1,12 +1,6 @@
 import { HydratedDocument, Model } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { likeStatus } from '../../../../base/models/likesStatus';
-import {
-  Comment,
-  CommentDocument,
-  CommentModelStaticType,
-  CommentModelType,
-} from './comment.entity';
 
 export type LikeDocument = HydratedDocument<Like>;
 

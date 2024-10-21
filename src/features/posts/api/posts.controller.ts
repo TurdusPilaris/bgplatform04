@@ -18,7 +18,6 @@ import { PostCreateInputModel } from './models/input/create-post.input.model';
 import { QueryPostInputModel } from './models/input/query-post.model';
 import { PostsQueryRepository } from '../infrastructure/posts.query-repository';
 import { CreateCommentInputModel } from '../../comments/api/model/input/create-comment.input.model';
-import { CommentsService } from '../../comments/application/comments.service';
 import { AuthBearerGuard } from '../../../infrastructure/guards/auth.bearer.guard';
 import { AuthBasicGuard } from '../../../infrastructure/guards/auth.basic.guard';
 import { QueryCommentModel } from '../../comments/api/model/input/query-comment.model';
@@ -29,13 +28,14 @@ import { CommandBus } from '@nestjs/cqrs';
 import { CreatePostCommand } from '../application/use-cases/create-post-use-case';
 import { UpdatePostCommand } from '../application/use-cases/update-post-use-case';
 import { DeletePostCommand } from '../application/use-cases/delete-post-use-case';
+import { CreateLikeCommand } from '../../comments/application/use-cases/create-like-use-case';
+import { CreateCommentCommand } from '../../comments/application/use-cases/create-comment-use-case';
 
 @Controller('posts')
 export class PostsController {
   constructor(
     private commandBus: CommandBus,
     protected postsQueryRepository: PostsQueryRepository,
-    protected commentsService: CommentsService,
     protected commentsQueryRepository: CommentsQueryRepository,
   ) {}
 
@@ -116,10 +116,8 @@ export class PostsController {
     @Param('id') postId: string,
     @Req() req,
   ) {
-    const result = await this.commentsService.createComment(
-      inputModel.content,
-      postId,
-      req.userId,
+    const result = await this.commandBus.execute(
+      new CreateCommentCommand(inputModel.content, postId, req.userId),
     );
 
     if (result.hasError()) {
@@ -159,10 +157,8 @@ export class PostsController {
     @Param('id') postId: string,
     @Req() req,
   ) {
-    const result = await this.commentsService.createLike(
-      inputModel.likeStatus,
-      postId,
-      req.userId,
+    const result = await this.commandBus.execute(
+      new CreateLikeCommand(inputModel.likeStatus, postId, req.userId),
     );
 
     if (result.hasError()) {

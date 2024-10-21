@@ -6,10 +6,7 @@ import {
 } from '../domain/entities/comment.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { QueryCommentModel } from '../api/model/input/query-comment.model';
-import {
-  PaginationCommentModel,
-  PaginationCommentModelMapper,
-} from '../api/model/output/pagination-comment.model';
+import { PaginationCommentModelMapper } from '../api/model/output/pagination-comment.model';
 import { PostsRepository } from '../../posts/infrastructure/posts.repository';
 import { CommentOutputModelMapper } from '../api/model/output/comment.output.model';
 import { likeStatus } from '../../../base/models/likesStatus';

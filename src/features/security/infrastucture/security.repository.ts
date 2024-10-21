@@ -50,8 +50,6 @@ export class SecurityRepository {
         },
       },
     );
-
-    console.log('updatedSession------------------------', updatedSession);
   }
 
   async deleteCurrentSessions(userId: string, currentDeviceId: string) {

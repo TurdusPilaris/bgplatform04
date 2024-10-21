@@ -10,26 +10,22 @@ import {
   Param,
   Put,
   Req,
-  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
-import { CommentsService } from '../application/comments.service';
-
-import { CommentsRepository } from '../infrastructure/comments.repository';
 import { CommentsQueryRepository } from '../infrastructure/comments.query-repository';
 import { GetOptionalUserGard } from '../../../infrastructure/guards/get-optional-user-gard.service';
 import { AuthBearerGuard } from '../../../infrastructure/guards/auth.bearer.guard';
-import { PostCreateInputModel } from '../../posts/api/models/input/create-post.input.model';
 import { CreateCommentInputModel } from './model/input/create-comment.input.model';
 import { CreateLikeInputModel } from './model/input/create-like.input.model';
+import { UpdateCommentCommand } from '../application/use-cases/update-comment-use-case';
+import { UpdateLikeStatusCommand } from '../application/use-cases/update-like-status-use-case';
+import { DeleteCommentCommand } from '../application/use-cases/delete-comment-use-case';
 
 @Controller('comments')
 export class CommentsController {
   constructor(
     private commandBus: CommandBus,
-    protected commentsService: CommentsService,
-    protected commentsRepository: CommentsRepository,
     protected commentsQueryRepository: CommentsQueryRepository,
   ) {}
 
@@ -57,10 +53,8 @@ export class CommentsController {
     @Body() inputModel: CreateCommentInputModel,
     @Req() req,
   ) {
-    const result = await this.commentsService.updateComment(
-      inputModel,
-      commentId,
-      req.userId,
+    const result = await this.commandBus.execute(
+      new UpdateCommentCommand(inputModel, commentId, req.userId),
     );
 
     if (result.hasError()) {
@@ -81,10 +75,8 @@ export class CommentsController {
     @Body() inputModel: CreateLikeInputModel,
     @Req() req,
   ) {
-    const result = await this.commentsService.updateLikeStatus(
-      commentId,
-      req.userId,
-      inputModel.likeStatus,
+    const result = await this.commandBus.execute(
+      new UpdateLikeStatusCommand(commentId, req.userId, inputModel.likeStatus),
     );
 
     if (result.hasError()) {
@@ -101,9 +93,8 @@ export class CommentsController {
   @HttpCode(204)
   @Delete(':id')
   async deleteComment(@Param('id') commentId: string, @Req() req) {
-    const result = await this.commentsService.deleteComment(
-      commentId,
-      req.userId,
+    const result = await this.commandBus.execute(
+      new DeleteCommentCommand(commentId, req.userId),
     );
 
     if (result.hasError()) {

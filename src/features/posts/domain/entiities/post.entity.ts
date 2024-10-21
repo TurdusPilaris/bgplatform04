@@ -2,8 +2,6 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Model } from 'mongoose';
 import { PostCreateInputModel } from '../../api/models/input/create-post.input.model';
 import { likeStatus } from '../../../../base/models/likesStatus';
-import { Cat } from '../../../users/domain/entities/users-schema';
-import { ConsoleLogger } from '@nestjs/common';
 
 export type PostDocument = HydratedDocument<PostClass>;
 
