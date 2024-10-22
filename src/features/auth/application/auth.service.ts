@@ -290,15 +290,6 @@ export class AuthService {
     }
   }
 
-  async decodeToken(token: string): Promise<any> {
-    try {
-      return this.jwtService.decode(token);
-    } catch (e: unknown) {
-      console.error('Cant decode token', e);
-      return null;
-    }
-  }
-
   async checkRefreshToken(refreshToken: string) {
     const authSettings = this.configService.get('authSettings', {
       infer: true,
@@ -381,5 +372,14 @@ export class AuthService {
       newAccessToken,
       refreshToken: refreshToken,
     };
+  }
+
+  async decodeToken(token: string): Promise<any> {
+    try {
+      return this.jwtService.decode(token);
+    } catch (e: unknown) {
+      console.error('Cant decode token', e);
+      return null;
+    }
   }
 }

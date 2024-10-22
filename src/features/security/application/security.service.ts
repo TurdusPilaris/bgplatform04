@@ -9,32 +9,7 @@ import { SecurityRepository } from '../infrastucture/security.repository';
 
 @Injectable()
 export class SecurityService {
-  constructor(
-    @InjectModel(DeviceAuthSession.name)
-    private DeviceAuthSessionModel: DeviceAuthSessionModelType,
-    protected securityRepository: SecurityRepository,
-  ) {}
-  async createSession(
-    payload: any,
-    deviceName: string,
-    ip: string | undefined,
-  ): Promise<InterlayerNotice<string | null>> {
-    if (!ip) {
-      const result = new InterlayerNotice(null);
-      result.addError('Not found ip', 'ip', 400);
-      return result;
-    }
-
-    const session = await this.securityRepository.createSession(
-      payload,
-      deviceName,
-      ip,
-    );
-
-    console.log('new session then login', session);
-
-    return new InterlayerNotice(session.id);
-  }
+  constructor(protected securityRepository: SecurityRepository) {}
 
   async getSession(userId: string, deviceId: string, iat: Date) {
     return this.securityRepository.getSession(userId, deviceId, iat);

@@ -22,10 +22,13 @@ import { UsersRepository } from '../../users/infrastructure/users.repository';
 import { SecurityService } from '../../security/application/security.service';
 import { AuthRefreshTokenGuard } from '../../../infrastructure/guards/auth.refresh-token-guard';
 import { ThrottlerGuard } from '@nestjs/throttler';
+import { CommandBus } from '@nestjs/cqrs';
+import { CreateSessionCommand } from '../../security/application/use-cases/create-session-use-case';
 
 @Controller('auth')
 export class AuthController {
   constructor(
+    private commandBus: CommandBus,
     protected authService: AuthService,
     protected usersQueryRepository: UsersQueryRepository,
     protected usersRepository: UsersRepository,
@@ -95,10 +98,12 @@ export class AuthController {
     const fullPayLoadRefreshToken =
       await this.authService.decodeToken(refreshToken);
 
-    const resultCreated = await this.securityService.createSession(
-      fullPayLoadRefreshToken,
-      req.headers['user-agent'] ?? 'string',
-      req.ip,
+    const resultCreated = await this.commandBus.execute(
+      new CreateSessionCommand(
+        fullPayLoadRefreshToken,
+        req.headers['user-agent'] ?? 'string',
+        req.ip,
+      ),
     );
 
     if (resultCreated.hasError()) {
