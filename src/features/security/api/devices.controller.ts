@@ -24,13 +24,13 @@ export class DevicesController {
   ) {}
 
   @Get('devices')
-  async getDevices(@Req() req) {
+  async getDevices(@Req() req: any) {
     return await this.securityQueryRepository.getAllSessionsForUser(req.userId);
   }
 
   @HttpCode(204)
   @Delete('devices')
-  async deleteDevices(@Req() req) {
+  async deleteDevices(@Req() req: any) {
     await this.securityRepository.deleteNonCurrentSessions(
       req.userId,
       req.deviceId,
@@ -39,7 +39,7 @@ export class DevicesController {
 
   @HttpCode(204)
   @Delete('devices/:id')
-  async deleteDevicesByID(@Param('id') deviceId: string, @Req() req) {
+  async deleteDevicesByID(@Param('id') deviceId: string, @Req() req: any) {
     const result = await this.securityService.deleteSessionByDeviceID(
       req.userId,
       deviceId,

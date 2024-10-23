@@ -31,7 +31,7 @@ export class CommentsController {
 
   @UseGuards(GetOptionalUserGard)
   @Get(':id')
-  async getCommentByID(@Param('id') commentId: string, @Req() req) {
+  async getCommentByID(@Param('id') commentId: string, @Req() req: any) {
     const foundedComment =
       await this.commentsQueryRepository.findCommentWithLikesForOutput(
         commentId,
@@ -51,7 +51,7 @@ export class CommentsController {
   async updateComment(
     @Param('id') commentId: string,
     @Body() inputModel: CreateCommentInputModel,
-    @Req() req,
+    @Req() req: any,
   ) {
     const result = await this.commandBus.execute(
       new UpdateCommentCommand(inputModel, commentId, req.userId),
@@ -73,7 +73,7 @@ export class CommentsController {
   async updateLikeForComment(
     @Param('id') commentId: string,
     @Body() inputModel: CreateLikeInputModel,
-    @Req() req,
+    @Req() req: any,
   ) {
     const result = await this.commandBus.execute(
       new UpdateLikeStatusCommand(commentId, req.userId, inputModel.likeStatus),
@@ -92,7 +92,7 @@ export class CommentsController {
   @UseGuards(AuthBearerGuard)
   @HttpCode(204)
   @Delete(':id')
-  async deleteComment(@Param('id') commentId: string, @Req() req) {
+  async deleteComment(@Param('id') commentId: string, @Req() req: any) {
     const result = await this.commandBus.execute(
       new DeleteCommentCommand(commentId, req.userId),
     );

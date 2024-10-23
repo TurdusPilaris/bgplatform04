@@ -53,7 +53,7 @@ export class AuthController {
 
   @UseGuards(AuthBearerGuard)
   @Get('me')
-  async aboutMe(@Req() req) {
+  async aboutMe(@Req() req: any) {
     const result = await this.usersQueryRepository.getAboutMe(req.userId);
 
     if (result.hasError()) {
@@ -70,8 +70,8 @@ export class AuthController {
   @Post('login')
   async login(
     @Body() loginInput: LoginInputModel,
-    @Response() res,
-    @Req() req,
+    @Response() res: any,
+    @Req() req: any,
   ) {
     const resultCheckCredentials =
       await this.authService.checkCredentials(loginInput);
@@ -164,7 +164,7 @@ export class AuthController {
   @UseGuards(AuthRefreshTokenGuard)
   @HttpCode(200)
   @Post('refresh-token')
-  async refreshToken(@Req() req, @Response() res) {
+  async refreshToken(@Req() req: any, @Response() res: any) {
     const result = await this.authService.returnNewTokens(
       req.cookies.refreshToken,
       req.userId,
@@ -180,7 +180,7 @@ export class AuthController {
   @UseGuards(AuthRefreshTokenGuard)
   @HttpCode(204)
   @Post('logout')
-  async logout(@Req() req) {
+  async logout(@Req() req: any) {
     await this.securityService.dropCurrentSession(req.userId, req.deviceId);
   }
 }

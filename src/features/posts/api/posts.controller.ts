@@ -59,14 +59,14 @@ export class PostsController {
   async getPosts(
     @Query(new ValidationPipe({ transform: true }))
     queryDto: QueryPostInputModel,
-    @Req() req,
+    @Req() req: any,
   ) {
     return await this.postsQueryRepository.findAll(queryDto, req.userId);
   }
 
   @UseGuards(GetOptionalUserGard)
   @Get(':id')
-  async getPost(@Param('id') postId: string, @Req() req) {
+  async getPost(@Param('id') postId: string, @Req() req: any) {
     const foundedPost = await this.postsQueryRepository.findById(
       postId,
       req.userId,
@@ -114,7 +114,7 @@ export class PostsController {
   async createCommentForPostID(
     @Body() inputModel: CreateCommentInputModel,
     @Param('id') postId: string,
-    @Req() req,
+    @Req() req: any,
   ) {
     const result = await this.commandBus.execute(
       new CreateCommentCommand(inputModel.content, postId, req.userId),
@@ -135,7 +135,7 @@ export class PostsController {
   async getCommentsForPostId(
     @Query() queryDto: QueryCommentModel,
     @Param('id') postId: string,
-    @Req() req,
+    @Req() req: any,
   ) {
     const post = await this.postsQueryRepository.findById(postId, req.userId);
 
@@ -155,7 +155,7 @@ export class PostsController {
   async makeLikeCommentForPostID(
     @Body() inputModel: CreateLikeInputModel,
     @Param('id') postId: string,
-    @Req() req,
+    @Req() req: any,
   ) {
     const result = await this.commandBus.execute(
       new CreateLikeCommand(inputModel.likeStatus, postId, req.userId),

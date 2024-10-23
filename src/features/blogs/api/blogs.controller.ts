@@ -86,7 +86,7 @@ export class BlogsController {
     @Query(new ValidationPipe({ transform: true }))
     queryDto: QueryPostInputModel,
     @Param('id') blogId: string,
-    @Req() req,
+    @Req() req: any,
   ) {
     const foundedBlog = await this.blogsQueryRepository.findById(blogId);
     if (!foundedBlog) {
@@ -120,10 +120,7 @@ export class BlogsController {
   @Delete(':id')
   @UseGuards(AuthBasicGuard)
   @HttpCode(204)
-  async deleteBlog(
-    @Param('id') blogId: string,
-    //@Res({passthrough: true}) response: Response
-  ) {
+  async deleteBlog(@Param('id') blogId: string) {
     const result = await this.commandBus.execute(new DeleteBlogCommand(blogId));
     if (result.hasError()) {
       if (result.code === 404) {
