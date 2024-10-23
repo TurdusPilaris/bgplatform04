@@ -1,18 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { UsersRepository } from '../../users/infrastructure/users.repository';
 import { JwtService } from '@nestjs/jwt';
-import { UserCreateModel } from '../../users/api/models/input/create-user.input.model';
 import { InterlayerNotice } from '../../../base/models/Interlayer';
 import { BcryptService } from '../../../base/adapters/bcrypt-service';
 import { BusinessService } from '../../../base/domain/business-service';
-import { CodeConfirmationModel } from '../api/models/input/code.confirmation.model';
 import { LoginInputModel } from '../api/models/input/login.input.model';
 import { ConfigService } from '@nestjs/config';
 import { Configuration } from '../../../settings/configuration';
 import { v4 } from 'uuid';
 import { add } from 'date-fns';
 import { PayloadTokenType } from '../../../base/type/types';
-import { uuid } from 'uuidv4';
 import { SecurityService } from '../../security/application/security.service';
 
 @Injectable()
@@ -70,70 +67,6 @@ export class AuthService {
     };
   }
 
-  async registerUser(createInputUser: UserCreateModel) {
-    const foundedUserEmail = await this.usersRepository.findByLoginOrEmail(
-      createInputUser.email,
-    );
-    if (foundedUserEmail) {
-      const result = new InterlayerNotice(null);
-      result.addError('email is not unique', 'email', 400);
-      return result;
-    }
-    const foundedUserLogin = await this.usersRepository.findByLoginOrEmail(
-      createInputUser.login,
-    );
-    if (foundedUserLogin) {
-      const result = new InterlayerNotice(null);
-      result.addError('Login is not unique', 'login', 400);
-      return result;
-    }
-    //create hash
-    const passwordHash = await this.bcryptService.generationHash(
-      createInputUser.password,
-    );
-    //create user
-    const createdUser = await this.usersRepository.createUser(
-      createInputUser,
-      passwordHash,
-    );
-    try {
-      this.businessService.sendRegisrtationEmail(
-        createInputUser.email,
-        createdUser.emailConfirmation.confirmationCode,
-      );
-    } catch (e: unknown) {
-      console.error('Send email error', e);
-    }
-
-    return new InterlayerNotice(null);
-  }
-
-  async registrationConfirmation(inputCode: CodeConfirmationModel) {
-    const foundedUser = await this.usersRepository.findByCodeConfirmation(
-      inputCode.code,
-    );
-
-    if (!foundedUser) {
-      const result = new InterlayerNotice(null);
-      result.addError('Not found user', 'code', 400);
-      return result;
-    }
-    if (foundedUser.emailConfirmation.isConfirmed) {
-      const result = new InterlayerNotice(null);
-      result.addError('Code confirmation already been applied', 'code', 400);
-      return result;
-    }
-    if (foundedUser.emailConfirmation.expirationDate < new Date()) {
-      const result = new InterlayerNotice(null);
-      result.addError('Code confirmation is expired', 'code', 400);
-      return result;
-    }
-
-    await this.usersRepository.updateConfirmation(foundedUser.id);
-
-    return new InterlayerNotice(null);
-  }
-
   async checkCredentials(loginInput: LoginInputModel) {
     const user = await this.usersRepository.findByLoginOrEmail(
       loginInput.loginOrEmail,
@@ -141,7 +74,7 @@ export class AuthService {
 
     if (!user) {
       const result = new InterlayerNotice(null);
-      result.addError('Unauthorisation', 'loginOrEmail', 401);
+      result.addError('Unauthorization', 'loginOrEmail', 401);
       return result;
     }
 
@@ -151,17 +84,10 @@ export class AuthService {
     );
     if (!checkedResult) {
       const result = new InterlayerNotice(null);
-      result.addError('Unauthorisation', 'password', 401);
+      result.addError('Unauthorization', 'password', 401);
       return result;
     }
     return new InterlayerNotice(null);
-  }
-
-  async getRefreshTokenForUser(loginOrEmail: string) {
-    const user = await this.usersRepository.findByLoginOrEmail(loginOrEmail);
-
-    const newDeviceId = uuid();
-    return await this.createRefreshToken(user.id, newDeviceId);
   }
 
   async resendingEmail(email: string) {
@@ -309,10 +235,9 @@ export class AuthService {
       authSettings.JWT_SECRET,
     );
 
-    console.log('payloadRefreshToken', payloadRefreshToken);
     if (!payloadRefreshToken) {
       const result = new InterlayerNotice(null);
-      result.addError('Wrong access token', 'куакуыр token', 401);
+      result.addError('Wrong access token', 'refresh token', 401);
 
       return result;
     }

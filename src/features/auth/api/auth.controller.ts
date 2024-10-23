@@ -24,6 +24,8 @@ import { AuthRefreshTokenGuard } from '../../../infrastructure/guards/auth.refre
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { CommandBus } from '@nestjs/cqrs';
 import { CreateSessionCommand } from '../../security/application/use-cases/create-session-use-case';
+import { RegisterUserCommand } from '../application/use-cases/register-user-use-case';
+import { RegistrationConfirmationCommand } from '../application/use-cases/registration-confirmation-use-case';
 
 @Controller('auth')
 export class AuthController {
@@ -39,7 +41,9 @@ export class AuthController {
   @HttpCode(204)
   @Post('registration')
   async registration(@Body() createInputUser: UserCreateModel) {
-    const result = await this.authService.registerUser(createInputUser);
+    const result = await this.commandBus.execute(
+      new RegisterUserCommand(createInputUser),
+    );
     if (result.hasError()) {
       if (result.code === 400) {
         throw new BadRequestException(result.extensions);
@@ -120,8 +124,9 @@ export class AuthController {
   @HttpCode(204)
   @Post('registration-confirmation')
   async registrationConfirmation(@Body() inputCode: CodeConfirmationModel) {
-    const result = await this.authService.registrationConfirmation(inputCode);
-
+    const result = await this.commandBus.execute(
+      new RegistrationConfirmationCommand(inputCode),
+    );
     if (result.hasError()) {
       if (result.code === 400) {
         throw new BadRequestException(result.extensions);
@@ -176,9 +181,6 @@ export class AuthController {
   @HttpCode(204)
   @Post('logout')
   async logout(@Req() req) {
-    const result = await this.securityService.dropCurrentSession(
-      req.userId,
-      req.deviceId,
-    );
+    await this.securityService.dropCurrentSession(req.userId, req.deviceId);
   }
 }
