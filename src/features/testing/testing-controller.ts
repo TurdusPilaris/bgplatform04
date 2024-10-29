@@ -1,20 +1,30 @@
 import { Controller, Delete, HttpCode } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Blog, BlogModelType } from '../blogs/domain/entiities/blog.entity';
-import { User, UserModelType } from '../users/domain/entities/user.entity';
+import {
+  Blog,
+  BlogModelType,
+} from '../bloggers-platform/blogs/domain/entiities/blog.entity';
+import {
+  User,
+  UserModelType,
+} from '../userAccaunts/users/domain/entities/user.entity';
 import {
   PostClass,
   PostModelType,
-} from '../posts/domain/entiities/post.entity';
+} from '../bloggers-platform/posts/domain/entiities/post.entity';
 import {
   Comment,
   CommentModelType,
-} from '../comments/domain/entities/comment.entity';
-import { Like, LikeModelType } from '../comments/domain/entities/like.entity';
+} from '../bloggers-platform/comments/domain/entities/comment.entity';
+import {
+  Like,
+  LikeModelType,
+} from '../bloggers-platform/comments/domain/entities/like.entity';
 import {
   DeviceAuthSession,
   DeviceAuthSessionModelType,
-} from '../security/domain/deviceAuthSession.entity';
+} from '../userAccaunts/security/domain/deviceAuthSession.entity';
+
 @Controller('testing')
 export class TestingController {
   constructor(

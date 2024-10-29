@@ -1,10 +1,7 @@
-import { UsersRepository } from '../../src/features/users/infrastructure/users.repository';
-import {
-  UsersService,
-  // UsersServiceSettings,
-} from '../../src/features/users/application/users.service';
 import { BcryptService } from '../../src/base/adapters/bcrypt-service';
 import { BusinessServiceMock } from './business.service.mock';
+import { UsersService } from '../../src/features/userAccaunts/users/application/users.service';
+import { UsersRepository } from '../../src/features/userAccaunts/users/infrastructure/users.repository';
 
 //  .overrideProvider(UsersService)
 //  .useValue(UserServiceMockObject)

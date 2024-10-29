@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { Request } from 'express';
-import { UsersService } from '../../features/users/application/users.service';
+import { UsersService } from '../../features/userAccaunts/users/application/users.service';
 
 @Injectable()
 export class AuthBasicGuard implements CanActivate {

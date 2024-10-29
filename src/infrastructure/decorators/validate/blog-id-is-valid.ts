@@ -6,9 +6,7 @@ import {
   ValidatorConstraintInterface,
 } from 'class-validator';
 import { Injectable } from '@nestjs/common';
-import { UsersRepository } from '../../../features/users/infrastructure/users.repository';
-import { ValidationPipeOption } from '../../pipes/validation/validation-pipe-option';
-import { BlogsRepository } from '../../../features/blogs/infrastructure/blogs.repository';
+import { BlogsRepository } from '../../../features/bloggers-platform/blogs/infrastructure/blogs.repository';
 
 @ValidatorConstraint({ name: 'BlogIdIsValid', async: true })
 @Injectable()

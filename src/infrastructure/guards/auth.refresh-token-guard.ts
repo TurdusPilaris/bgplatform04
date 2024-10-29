@@ -6,8 +6,8 @@ import {
 } from '@nestjs/common';
 
 import { Request } from 'express';
-import { UsersService } from '../../features/users/application/users.service';
-import { AuthService } from '../../features/auth/application/auth.service';
+import { UsersService } from '../../features/userAccaunts/users/application/users.service';
+import { AuthService } from '../../features/userAccaunts/auth/application/auth.service';
 
 @Injectable()
 export class AuthRefreshTokenGuard implements CanActivate {
