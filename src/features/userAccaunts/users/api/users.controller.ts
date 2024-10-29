@@ -8,7 +8,6 @@ import {
   Post,
   Query,
   UseGuards,
-  ValidationPipe,
 } from '@nestjs/common';
 import { UserCreateModel } from './models/input/create-user.input.model';
 import { UsersService } from '../application/users.service';

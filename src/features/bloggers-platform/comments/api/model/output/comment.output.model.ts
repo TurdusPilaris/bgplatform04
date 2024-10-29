@@ -19,7 +19,7 @@ export class LikesInfo {
   dislikesCount: number;
   myStatus: string;
 }
-export const CommentOutputModelMapper = (
+export const commentOutputModelMapper = (
   comment: CommentDocument,
   myLikes?: likeStatus,
 ): CommentOutputModel => {

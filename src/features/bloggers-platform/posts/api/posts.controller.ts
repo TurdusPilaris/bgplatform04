@@ -30,6 +30,7 @@ import { AuthBasicGuard } from '../../../../infrastructure/guards/auth.basic.gua
 import { GetOptionalUserGard } from '../../../../infrastructure/guards/get-optional-user-gard.service';
 import { AuthBearerGuard } from '../../../../infrastructure/guards/auth.bearer.guard';
 import { ErrorProcessor } from '../../../../base/models/errorProcessor';
+import { Request } from 'express';
 
 @Controller('posts')
 export class PostsController {
@@ -42,16 +43,16 @@ export class PostsController {
   @UseGuards(GetOptionalUserGard)
   @Get()
   async getPosts(
-    @Query(new ValidationPipe({ transform: true }))
+    @Query()
     queryDto: QueryPostInputModel,
-    @Req() req: any,
+    @Req() req: Request,
   ) {
     return await this.postsQueryRepository.findAll(queryDto, req.userId);
   }
 
   @UseGuards(GetOptionalUserGard)
   @Get(':id')
-  async getPost(@Param('id') postId: string, @Req() req: any) {
+  async getPost(@Param('id') postId: string, @Req() req: Request) {
     const foundedPost = await this.postsQueryRepository.findById(
       postId,
       req.userId,
@@ -69,7 +70,7 @@ export class PostsController {
   async getCommentsForPostId(
     @Query() queryDto: QueryCommentModel,
     @Param('id') postId: string,
-    @Req() req: any,
+    @Req() req: Request,
   ) {
     const post = await this.postsQueryRepository.findById(postId, req.userId);
 
@@ -101,7 +102,7 @@ export class PostsController {
   async createCommentForPostID(
     @Body() inputModel: CreateCommentInputModel,
     @Param('id') postId: string,
-    @Req() req: any,
+    @Req() req: Request,
   ) {
     const result = await this.commandBus.execute(
       new CreateCommentCommand(inputModel.content, postId, req.userId),
@@ -136,7 +137,7 @@ export class PostsController {
   async makeLikeCommentForPostID(
     @Body() inputModel: CreateLikeInputModel,
     @Param('id') postId: string,
-    @Req() req: any,
+    @Req() req: Request,
   ) {
     const result = await this.commandBus.execute(
       new CreateLikeCommand(inputModel.likeStatus, postId, req.userId),

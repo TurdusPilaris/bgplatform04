@@ -27,6 +27,7 @@ import { CreatePostByBlogIdCommand } from '../../posts/application/use-cases/cre
 import { AuthBasicGuard } from '../../../../infrastructure/guards/auth.basic.guard';
 import { GetOptionalUserGard } from '../../../../infrastructure/guards/get-optional-user-gard.service';
 import { ErrorProcessor } from '../../../../base/models/errorProcessor';
+import { Request } from 'express';
 
 @Controller('blogs')
 export class BlogsController {
@@ -38,7 +39,7 @@ export class BlogsController {
 
   @Get()
   async getBlogs(
-    @Query(new ValidationPipe({ transform: true, stopAtFirstError: true }))
+    @Query()
     queryDto: QueryBlogInputModel,
   ) {
     return await this.blogsQueryRepository.findAll(queryDto);
@@ -59,7 +60,7 @@ export class BlogsController {
     @Query(new ValidationPipe({ transform: true }))
     queryDto: QueryPostInputModel,
     @Param('id') blogId: string,
-    @Req() req: any,
+    @Req() req: Request,
   ) {
     const foundedBlog = await this.blogsQueryRepository.findById(blogId);
     if (!foundedBlog) {

@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import {
   CommentOutputModel,
-  CommentOutputModelMapper,
+  commentOutputModelMapper,
 } from '../../api/model/output/comment.output.model';
 import { PostsRepository } from '../../../posts/infrastructure/posts.repository';
 import { CommentsRepository } from '../../infrastructure/comments.repository';
@@ -47,7 +47,7 @@ export class CreateCommentUseCase
     );
 
     return new InterlayerNotice(
-      CommentOutputModelMapper(newComment, likeStatus.None),
+      commentOutputModelMapper(newComment, likeStatus.None),
     );
   }
 }

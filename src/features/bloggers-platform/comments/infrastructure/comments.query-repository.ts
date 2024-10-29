@@ -7,7 +7,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { QueryCommentModel } from '../api/model/input/query-comment.model';
 import { paginationCommentModelMapper } from '../api/model/output/pagination-comment.model';
-import { CommentOutputModelMapper } from '../api/model/output/comment.output.model';
+import { commentOutputModelMapper } from '../api/model/output/comment.output.model';
 import { Like, LikeModelType } from '../domain/entities/like.entity';
 import { likeStatus } from '../../../../base/models/likesStatus';
 
@@ -44,7 +44,7 @@ export class CommentsQueryRepository {
     );
 
     const itemsForPaginator = items.map((comment) =>
-      CommentOutputModelMapper(
+      commentOutputModelMapper(
         comment,
         myStatusesForComments[comment._id.toString()]?.statusLike,
       ),
@@ -69,7 +69,7 @@ export class CommentsQueryRepository {
     if (!foundComment) {
       return null;
     }
-    return CommentOutputModelMapper(foundComment, undefined);
+    return commentOutputModelMapper(foundComment, undefined);
   }
 
   async findCommentWithLikesForOutput(id: string, userId: string | null) {
@@ -79,7 +79,7 @@ export class CommentsQueryRepository {
     }
 
     const myLike = await this.getLikesInfo(id.toString(), userId);
-    return CommentOutputModelMapper(foundComment, myLike);
+    return commentOutputModelMapper(foundComment, myLike);
   }
 
   async getLikesInfo(
@@ -109,13 +109,11 @@ export class CommentsQueryRepository {
       .equals(userId)
       .lean();
 
-    const likesWithKeys = likes.reduce((acc, like) => {
-      const likecommentID = like.parentID.toString();
+    return likes.reduce((acc, like) => {
+      const likeCommentID = like.parentID.toString();
 
-      acc[likecommentID] = like;
+      acc[likeCommentID] = like;
       return acc;
     }, {});
-
-    return likesWithKeys;
   }
 }

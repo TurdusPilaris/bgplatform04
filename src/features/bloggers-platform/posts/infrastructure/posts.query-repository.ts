@@ -4,16 +4,16 @@ import { PostClass, PostModelType } from '../domain/entiities/post.entity';
 import { QueryPostInputModel } from '../api/models/input/query-post.model';
 import { postOutputModelMapper } from '../api/models/output/post.output.model';
 import { PaginationPostModelMapper } from '../api/models/output/pagination-post.model';
-import { CommentsQueryRepository } from '../../comments/infrastructure/comments.query-repository';
+
 import {
   Like,
   LikeModelType,
 } from '../../comments/domain/entities/like.entity';
+import { likeStatus } from '../../../../base/models/likesStatus';
 
 @Injectable()
 export class PostsQueryRepository {
   constructor(
-    protected commentsQueryRepository: CommentsQueryRepository,
     @InjectModel(PostClass.name)
     private PostModel: PostModelType,
     @InjectModel(Like.name)
@@ -34,8 +34,7 @@ export class PostsQueryRepository {
 
     const postIds = items.map((post) => post.id);
 
-    const myStatusesForPosts =
-      await this.commentsQueryRepository.getLikesByUser(postIds, userId);
+    const myStatusesForPosts = await this.getLikesByUser(postIds, userId);
 
     const itemsForPaginator = items.map((post) =>
       postOutputModelMapper(
@@ -49,14 +48,46 @@ export class PostsQueryRepository {
     return PaginationPostModelMapper(queryDto, countPosts, itemsForPaginator);
   }
 
-  async findById(postId: string, userId) {
+  async findById(postId: string, userId: string) {
     const post = await this.PostModel.findById(postId, { __v: false });
     if (!post) return null;
 
-    const myLike = await this.commentsQueryRepository.getLikesInfo(
-      postId,
-      userId,
-    );
+    const myLike = await this.getLikesInfo(postId, userId);
     return postOutputModelMapper(post, myLike);
+  }
+
+  async getLikesByUser(postIds: string[], userId: string) {
+    const likes = await this.LikeModel.find()
+      .where('parentID')
+      .in(postIds)
+      .where('userID')
+      .equals(userId)
+      .lean();
+
+    return likes.reduce((acc, like) => {
+      const likeCommentID = like.parentID.toString();
+
+      acc[likeCommentID] = like;
+      return acc;
+    }, {});
+  }
+
+  async getLikesInfo(
+    postId: string,
+    userId: string | null,
+  ): Promise<likeStatus> {
+    if (userId) {
+      const myLike = await this.LikeModel.findOne({
+        parentID: postId,
+        userID: userId,
+      }).lean();
+      if (!myLike) {
+        return likeStatus.None;
+      } else {
+        return myLike.statusLike;
+      }
+    } else {
+      return likeStatus.None;
+    }
   }
 }
