@@ -11,7 +11,6 @@ import {
   Req,
   Post,
   UseGuards,
-  ValidationPipe,
 } from '@nestjs/common';
 import { PostCreateInputModel } from './models/input/create-post.input.model';
 import { QueryPostInputModel } from './models/input/query-post.model';

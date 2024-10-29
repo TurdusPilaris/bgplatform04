@@ -12,6 +12,7 @@ import {
 } from '../infrastructure/exeption-filters/http-exception-filter';
 import { useContainer } from 'class-validator';
 import { AppModule } from '../app.module';
+import cookieParser from 'cookie-parser';
 
 // Префикс нашего приложения (http://site.com/api)
 const APP_PREFIX = '/api';
@@ -40,6 +41,8 @@ export const applyAppSettings = (app: INestApplication) => {
 
   // Применение глобальных exceptions filters
   setAppExceptionsFilters(app);
+
+  app.use(cookieParser());
 };
 
 const setAppPrefix = (app: INestApplication) => {

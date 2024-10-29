@@ -24,7 +24,6 @@ export class PostsRepository {
       blogName,
     );
 
-    console.log('newPost=========', newPost);
     return newPost.save();
   }
 

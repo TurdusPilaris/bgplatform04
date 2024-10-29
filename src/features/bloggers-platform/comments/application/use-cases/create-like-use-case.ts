@@ -4,6 +4,7 @@ import { CommentsRepository } from '../../infrastructure/comments.repository';
 import { UsersRepository } from '../../../../userAccaunts/users/infrastructure/users.repository';
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
 import { likeStatus } from '../../../../../base/models/likesStatus';
+import { PostDocument } from '../../../posts/domain/entiities/post.entity';
 
 export class CreateLikeCommand {
   constructor(
@@ -21,64 +22,41 @@ export class CreateLikeUseCase implements ICommandHandler<CreateLikeCommand> {
   ) {}
 
   async execute(command: CreateLikeCommand): Promise<InterlayerNotice> {
+    //приводим к enum лайк
     const newStatusLike = likeStatus[command.likeStatusFromDto];
 
-    if (!newStatusLike) {
-      const result = new InterlayerNotice(null);
-      result.addError('Invalid field', 'likeStatus', 400);
-      return result;
-    }
+    // выносим переменные из команды в отедльные переменные
+    const userId = command.userId;
+    const postId = command.postId;
 
-    const foundedPost = await this.postsRepository.findById(command.postId);
+    //ищем пост
+    const foundedPost = await this.postsRepository.findById(postId);
 
+    //возвращаем ошибку если пост не найден
     if (!foundedPost) {
       const result = new InterlayerNotice(null);
       result.addError('Post is not exists', 'postId', 404);
       return result;
     }
 
+    //ищем лайки для конкретных поста и пользователя
     const foundedLikes = await this.commentsRepository.findLikesByUserAndParent(
-      command.postId,
-      command.userId,
+      postId,
+      userId,
     );
 
-    const user = await this.usersRepository.findById(command.userId);
+    //получаем пользователя что бы забрать имя для создания нового лайка, в дальнейшем проще геты строить
+    const user = await this.usersRepository.findById(userId);
 
     //проверяем был ли создан лайк
     if (!foundedLikes) {
-      //если нет, то создаем новый лайк и сохраняем его
-      await this.commentsRepository.createLike(
-        command.postId,
-        command.userId,
+      return await this.createNewLike(
+        postId,
+        userId,
         user.accountData.userName,
         newStatusLike,
+        foundedPost,
       );
-      //в пост добавляем количество лайков по статусу
-
-      const lastThreeLikes =
-        await this.commentsRepository.findThreeLastLikesByParent(
-          command.postId,
-        );
-
-      let resultLastThreeLikes: {
-        addedAt: Date;
-        login: string;
-        userId: string;
-      }[] = [];
-
-      if (lastThreeLikes) {
-        resultLastThreeLikes = lastThreeLikes.map(function (newestLikes) {
-          return {
-            userId: newestLikes.userID,
-            addedAt: newestLikes.updatedAt,
-            login: newestLikes.login,
-          };
-        });
-      }
-      await foundedPost.addCountLikes(newStatusLike, resultLastThreeLikes);
-      await this.postsRepository.save(foundedPost);
-
-      return new InterlayerNotice();
     } else {
       //сохранили старый статус лайка для пересчета в комментарии
       const oldStatusLike = foundedLikes.statusLike;
@@ -90,9 +68,7 @@ export class CreateLikeUseCase implements ICommandHandler<CreateLikeCommand> {
       //пересчитаем количество если отличаются новй статус от старого
       if (oldStatusLike !== newStatusLike) {
         const lastThreeLikes =
-          await this.commentsRepository.findThreeLastLikesByParent(
-            command.postId,
-          );
+          await this.commentsRepository.findThreeLastLikesByParent(postId);
 
         let resultLastThreeLikes: {
           addedAt: Date;
@@ -119,5 +95,45 @@ export class CreateLikeUseCase implements ICommandHandler<CreateLikeCommand> {
 
       return new InterlayerNotice();
     }
+  }
+
+  async createNewLike(
+    postId: string,
+    userId: string,
+    userName: string,
+    newStatusLike: likeStatus,
+    foundedPost: PostDocument,
+  ): Promise<InterlayerNotice> {
+    //если нет, то создаем новый лайк и сохраняем его
+    await this.commentsRepository.createLike(
+      postId,
+      userId,
+      userName,
+      newStatusLike,
+    );
+    //в пост добавляем количество лайков по статусу
+
+    const lastThreeLikes =
+      await this.commentsRepository.findThreeLastLikesByParent(postId);
+
+    let resultLastThreeLikes: {
+      addedAt: Date;
+      login: string;
+      userId: string;
+    }[] = [];
+
+    if (lastThreeLikes) {
+      resultLastThreeLikes = lastThreeLikes.map(function (newestLikes) {
+        return {
+          userId: newestLikes.userID,
+          addedAt: newestLikes.updatedAt,
+          login: newestLikes.login,
+        };
+      });
+    }
+    await foundedPost.addCountLikes(newStatusLike, resultLastThreeLikes);
+    await this.postsRepository.save(foundedPost);
+
+    return new InterlayerNotice();
   }
 }

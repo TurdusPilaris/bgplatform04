@@ -11,7 +11,6 @@ async function bootstrap() {
   applyAppSettings(app);
   const configService = app.get(ConfigService<Configuration, true>);
   const apiSettings = configService.get('apiSettings', { infer: true });
-  app.use(cookieParser());
 
   const config = new DocumentBuilder()
     .setTitle('Cats example')
