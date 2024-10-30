@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import {
   DeviceAuthSession,
+  DeviceAuthSessionDocument,
   DeviceAuthSessionModelType,
 } from '../domain/deviceAuthSession.entity';
 import { InjectModel } from '@nestjs/mongoose';
-import { deviceOutputModelMapper } from '../api/models/output/device.output.model';
+import { DeviceOutputModel } from '../api/models/output/device.output.model';
 
 @Injectable()
 export class SecurityQueryRepository {
@@ -18,6 +19,17 @@ export class SecurityQueryRepository {
       userId: userId,
     }).exec();
 
-    return sessions.map((device) => deviceOutputModelMapper(device));
+    return sessions.map((device) => this.deviceOutputModelMapper(device));
   }
+
+  deviceOutputModelMapper = (
+    device: DeviceAuthSessionDocument,
+  ): DeviceOutputModel => {
+    return {
+      ip: device.ip,
+      title: device.deviceName,
+      lastActiveDate: device.iat.toISOString(),
+      deviceId: device.deviceId,
+    };
+  };
 }

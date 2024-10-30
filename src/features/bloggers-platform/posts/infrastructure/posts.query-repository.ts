@@ -1,15 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { PostClass, PostModelType } from '../domain/entiities/post.entity';
+import {
+  PostClass,
+  PostDocument,
+  PostModelType,
+} from '../domain/entiities/post.entity';
 import { QueryPostInputModel } from '../api/models/input/query-post.model';
-import { postOutputModelMapper } from '../api/models/output/post.output.model';
-import { PaginationPostModelMapper } from '../api/models/output/pagination-post.model';
+import {
+  LikesInfoOut,
+  PostOutputModel,
+} from '../api/models/output/post.output.model';
 
 import {
   Like,
   LikeModelType,
 } from '../../comments/domain/entities/like.entity';
 import { likeStatus } from '../../../../base/models/likesStatus';
+import { PaginationOutputModel } from '../../../../base/models/output/pagination.output.model';
 
 @Injectable()
 export class PostsQueryRepository {
@@ -37,7 +44,7 @@ export class PostsQueryRepository {
     const myStatusesForPosts = await this.getLikesByUser(postIds, userId);
 
     const itemsForPaginator = items.map((post) =>
-      postOutputModelMapper(
+      this.postOutputModelMapper(
         post,
         myStatusesForPosts[post.id.toString()]?.statusLike,
       ),
@@ -45,7 +52,11 @@ export class PostsQueryRepository {
 
     const countPosts = await this.PostModel.countDocuments(filter);
 
-    return PaginationPostModelMapper(queryDto, countPosts, itemsForPaginator);
+    return this.paginationPostModelMapper(
+      queryDto,
+      countPosts,
+      itemsForPaginator,
+    );
   }
 
   async findById(postId: string, userId: string) {
@@ -53,7 +64,7 @@ export class PostsQueryRepository {
     if (!post) return null;
 
     const myLike = await this.getLikesInfo(postId, userId);
-    return postOutputModelMapper(post, myLike);
+    return this.postOutputModelMapper(post, myLike);
   }
 
   async getLikesByUser(postIds: string[], userId: string) {
@@ -90,4 +101,49 @@ export class PostsQueryRepository {
       return likeStatus.None;
     }
   }
+
+  postOutputModelMapper = (
+    post: PostDocument,
+    myLikes?: likeStatus,
+  ): PostOutputModel => {
+    const outputPostModel = new PostOutputModel();
+    outputPostModel.id = post.id;
+    outputPostModel.title = post.title;
+    outputPostModel.shortDescription = post.shortDescription;
+    outputPostModel.content = post.content;
+    outputPostModel.blogId = post.blogId;
+    outputPostModel.blogName = post.blogName;
+    outputPostModel.createdAt = post.createdAt.toISOString();
+    outputPostModel.extendedLikesInfo = new LikesInfoOut();
+    outputPostModel.extendedLikesInfo.likesCount =
+      post.likesInfo.countLikes || 0;
+    outputPostModel.extendedLikesInfo.dislikesCount =
+      post.likesInfo.countDislikes || 0;
+    outputPostModel.extendedLikesInfo.myStatus = !myLikes
+      ? post.likesInfo.myStatus
+      : myLikes;
+    outputPostModel.extendedLikesInfo.newestLikes =
+      post.likesInfo.newestLikes.map(function (newestLikes) {
+        return {
+          userId: newestLikes.userId,
+          addedAt: newestLikes.addedAt.toISOString(),
+          login: newestLikes.login,
+        };
+      });
+    return outputPostModel;
+  };
+
+  paginationPostModelMapper = (
+    query: QueryPostInputModel,
+    countPosts: number,
+    items: PostOutputModel[],
+  ): PaginationOutputModel<PostOutputModel[]> => {
+    return {
+      pagesCount: Math.ceil(countPosts / query.pageSize),
+      page: +query.pageNumber,
+      pageSize: +query.pageSize,
+      totalCount: countPosts,
+      items: items,
+    };
+  };
 }

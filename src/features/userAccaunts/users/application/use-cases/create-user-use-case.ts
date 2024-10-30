@@ -2,7 +2,7 @@ import { UserCreateModel } from '../../api/models/input/create-user.input.model'
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import {
   UserOutputModel,
-  UserOutputModelMapper,
+  userOutputModelMapper,
 } from '../../api/models/output/user.output.model';
 import { UsersRepository } from '../../infrastructure/users.repository';
 import { BcryptService } from '../../../../../base/adapters/bcrypt-service';
@@ -64,6 +64,6 @@ export class CreateUserUseCase implements ICommandHandler<CreateUserCommand> {
       console.error('Send email error', e);
     }
 
-    return new InterlayerNotice(UserOutputModelMapper(createdUser));
+    return new InterlayerNotice(userOutputModelMapper(createdUser));
   }
 }

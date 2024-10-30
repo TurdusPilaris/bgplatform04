@@ -19,24 +19,3 @@ export class LikesInfo {
   dislikesCount: number;
   myStatus: string;
 }
-export const commentOutputModelMapper = (
-  comment: CommentDocument,
-  myLikes?: likeStatus,
-): CommentOutputModel => {
-  const outputCommentModel = new CommentOutputModel();
-  outputCommentModel.id = comment.id.toString();
-  outputCommentModel.content = comment.content;
-  outputCommentModel.commentatorInfo = new CommentatorInfo();
-  outputCommentModel.commentatorInfo.userId = comment.commentatorInfo.userId;
-  outputCommentModel.commentatorInfo.userLogin =
-    comment.commentatorInfo.userLogin;
-  outputCommentModel.createdAt = comment.createdAt.toISOString();
-  outputCommentModel.likesInfo = new LikesInfo();
-  outputCommentModel.likesInfo.dislikesCount = comment.likesInfo.countDislikes;
-  outputCommentModel.likesInfo.likesCount = comment.likesInfo.countLikes;
-  outputCommentModel.likesInfo.myStatus = !myLikes
-    ? comment.likesInfo.myStatus
-    : myLikes;
-
-  return outputCommentModel;
-};

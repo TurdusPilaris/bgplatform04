@@ -28,8 +28,6 @@ import { AuthBasicGuard } from '../../../../infrastructure/guards/auth.basic.gua
 import { GetOptionalUserGard } from '../../../../infrastructure/guards/get-optional-user-gard.service';
 import { ErrorProcessor } from '../../../../base/models/errorProcessor';
 import { Request } from 'express';
-import { InterlayerNotice } from '../../../../base/models/Interlayer';
-import { PostOutputModel } from '../../posts/api/models/output/post.output.model';
 
 @Controller('blogs')
 export class BlogsController {

@@ -6,10 +6,14 @@ import {
 } from '../domain/entities/comment.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { QueryCommentModel } from '../api/model/input/query-comment.model';
-import { paginationCommentModelMapper } from '../api/model/output/pagination-comment.model';
-import { commentOutputModelMapper } from '../api/model/output/comment.output.model';
+import {
+  CommentatorInfo,
+  CommentOutputModel,
+  LikesInfo,
+} from '../api/model/output/comment.output.model';
 import { Like, LikeModelType } from '../domain/entities/like.entity';
 import { likeStatus } from '../../../../base/models/likesStatus';
+import { PaginationOutputModel } from '../../../../base/models/output/pagination.output.model';
 
 @Injectable()
 export class CommentsQueryRepository {
@@ -44,7 +48,7 @@ export class CommentsQueryRepository {
     );
 
     const itemsForPaginator = items.map((comment) =>
-      commentOutputModelMapper(
+      this.commentOutputModelMapper(
         comment,
         myStatusesForComments[comment._id.toString()]?.statusLike,
       ),
@@ -53,7 +57,7 @@ export class CommentsQueryRepository {
     const countComments =
       await this.CommentModel.countDocuments(filterByPostID);
 
-    return paginationCommentModelMapper(
+    return this.paginationCommentModelMapper(
       queryDto,
       countComments,
       itemsForPaginator,
@@ -69,7 +73,7 @@ export class CommentsQueryRepository {
     if (!foundComment) {
       return null;
     }
-    return commentOutputModelMapper(foundComment, undefined);
+    return this.commentOutputModelMapper(foundComment, undefined);
   }
 
   async findCommentWithLikesForOutput(id: string, userId: string | null) {
@@ -79,7 +83,7 @@ export class CommentsQueryRepository {
     }
 
     const myLike = await this.getLikesInfo(id.toString(), userId);
-    return commentOutputModelMapper(foundComment, myLike);
+    return this.commentOutputModelMapper(foundComment, myLike);
   }
 
   async getLikesInfo(
@@ -116,4 +120,41 @@ export class CommentsQueryRepository {
       return acc;
     }, {});
   }
+
+  commentOutputModelMapper = (
+    comment: CommentDocument,
+    myLikes?: likeStatus,
+  ): CommentOutputModel => {
+    const outputCommentModel = new CommentOutputModel();
+    outputCommentModel.id = comment.id.toString();
+    outputCommentModel.content = comment.content;
+    outputCommentModel.commentatorInfo = new CommentatorInfo();
+    outputCommentModel.commentatorInfo.userId = comment.commentatorInfo.userId;
+    outputCommentModel.commentatorInfo.userLogin =
+      comment.commentatorInfo.userLogin;
+    outputCommentModel.createdAt = comment.createdAt.toISOString();
+    outputCommentModel.likesInfo = new LikesInfo();
+    outputCommentModel.likesInfo.dislikesCount =
+      comment.likesInfo.countDislikes;
+    outputCommentModel.likesInfo.likesCount = comment.likesInfo.countLikes;
+    outputCommentModel.likesInfo.myStatus = !myLikes
+      ? comment.likesInfo.myStatus
+      : myLikes;
+
+    return outputCommentModel;
+  };
+
+  paginationCommentModelMapper = (
+    query: QueryCommentModel,
+    countComments: number,
+    items: CommentOutputModel[],
+  ): PaginationOutputModel<CommentOutputModel[]> => {
+    return {
+      pagesCount: Math.ceil(countComments / query.pageSize),
+      page: +query.pageNumber,
+      pageSize: +query.pageSize,
+      totalCount: countComments,
+      items: items,
+    };
+  };
 }

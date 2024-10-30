@@ -1,7 +1,7 @@
 import { UsersRepository } from '../infrastructure/users.repository';
 import { UserCreateModel } from '../api/models/input/create-user.input.model';
 import { Injectable } from '@nestjs/common';
-import { UserOutputModelMapper } from '../api/models/output/user.output.model';
+import { userOutputModelMapper } from '../api/models/output/user.output.model';
 import { UserDocument } from '../domain/entities/user.entity';
 import { BcryptService } from '../../../../base/adapters/bcrypt-service';
 import { BusinessService } from '../../../../base/domain/business-service';
@@ -52,7 +52,7 @@ export class UsersService {
       console.error('Send email error', e);
     }
 
-    return new InterlayerNotice(UserOutputModelMapper(createdUser));
+    return new InterlayerNotice(userOutputModelMapper(createdUser));
   }
 
   async findById(userId: string): Promise<UserDocument | null> {

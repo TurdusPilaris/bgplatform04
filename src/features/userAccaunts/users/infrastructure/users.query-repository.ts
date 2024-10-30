@@ -1,16 +1,15 @@
 import { InjectModel } from '@nestjs/mongoose';
-import { User, UserModelType } from '../domain/entities/user.entity';
-import { Injectable } from '@nestjs/common';
 import {
-  aboutMeOutputModelMapper,
-  UserOutputModel,
-  UserOutputModelMapper,
-} from '../api/models/output/user.output.model';
+  User,
+  UserDocument,
+  UserModelType,
+} from '../domain/entities/user.entity';
+import { Injectable } from '@nestjs/common';
+import { UserOutputModel } from '../api/models/output/user.output.model';
 import { QueryUserInputModel } from '../api/models/input/query-user.input.model';
-import { paginationUserOutputModelMapper } from '../api/models/output/pagination-user.model';
+
 import { AboutMeOutputModel } from '../../auth/api/models/output/about-me-output-model';
 import { PaginationOutputModel } from '../../../../base/models/output/pagination.output.model';
-import { InterlayerNotice } from '../../../../base/models/Interlayer';
 
 @Injectable()
 export class UsersQueryRepository {
@@ -23,7 +22,7 @@ export class UsersQueryRepository {
     const user = await this.UserModel.findById(id, { __v: false });
 
     if (!user) return null;
-    return UserOutputModelMapper(user);
+    return this.userOutputModelMapper(user);
   }
 
   async findAll(
@@ -78,10 +77,10 @@ export class UsersQueryRepository {
       .limit(queryDto.pageSize)
       .exec();
 
-    const itemsForPaginator = items.map(UserOutputModelMapper);
+    const itemsForPaginator = items.map(this.userOutputModelMapper);
     const countUsers = await this.UserModel.countDocuments(filterLoginOrEmail);
 
-    return paginationUserOutputModelMapper(
+    return this.paginationUserOutputModelMapper(
       queryDto,
       countUsers,
       itemsForPaginator,
@@ -91,6 +90,37 @@ export class UsersQueryRepository {
   async getAboutMe(userId: string): Promise<AboutMeOutputModel> {
     const user = await this.findById(userId);
 
-    return aboutMeOutputModelMapper(user);
+    return this.aboutMeOutputModelMapper(user);
   }
+
+  userOutputModelMapper = (user: UserDocument): UserOutputModel => {
+    return {
+      id: user.id,
+      login: user.accountData.userName,
+      email: user.accountData.email,
+      createdAt: user.accountData.createdAt.toISOString(),
+    };
+  };
+
+  aboutMeOutputModelMapper = (user: UserOutputModel): AboutMeOutputModel => {
+    return {
+      login: user.login,
+      email: user.email,
+      userId: user.id,
+    };
+  };
+
+  paginationUserOutputModelMapper = (
+    query: QueryUserInputModel,
+    countUsers: number,
+    items: UserOutputModel[],
+  ): PaginationOutputModel<UserOutputModel[]> => {
+    return {
+      pagesCount: Math.ceil(countUsers / query.pageSize),
+      page: +query.pageNumber,
+      pageSize: +query.pageSize,
+      totalCount: countUsers,
+      items: items,
+    };
+  };
 }
