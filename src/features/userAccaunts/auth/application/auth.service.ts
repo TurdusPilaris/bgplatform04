@@ -12,6 +12,7 @@ import { BcryptService } from '../../../../base/adapters/bcrypt-service';
 import { BusinessService } from '../../../../base/domain/business-service';
 import { InterlayerNotice } from '../../../../base/models/Interlayer';
 import { PayloadTokenType } from '../../../../base/type/types';
+import { SecurityRepository } from '../../security/infrastucture/security.repository';
 
 @Injectable()
 export class AuthService {
@@ -19,6 +20,7 @@ export class AuthService {
     protected usersRepository: UsersRepository,
     protected bcryptService: BcryptService,
     protected securityService: SecurityService,
+    protected securityRepository: SecurityRepository,
     protected businessService: BusinessService,
     private jwtService: JwtService,
     private configService: ConfigService<Configuration, true>,
@@ -254,7 +256,7 @@ export class AuthService {
       return result;
     }
 
-    const session = await this.securityService.getSession(
+    const session = await this.securityRepository.getSession(
       payloadRefreshToken.userId,
       payloadRefreshToken.deviceId!,
       new Date(decode.iat * 1000),
@@ -274,7 +276,7 @@ export class AuthService {
 
     const payloadOldRefreshToken = await this.decodeToken(oldRefreshToken);
 
-    const session = await this.securityService.getSession(
+    const session = await this.securityRepository.getSession(
       payloadOldRefreshToken.userId,
       payloadOldRefreshToken.deviceId!,
       new Date(payloadOldRefreshToken.iat * 1000),

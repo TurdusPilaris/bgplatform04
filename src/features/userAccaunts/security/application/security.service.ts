@@ -6,9 +6,6 @@ import { InterlayerNotice } from '../../../../base/models/Interlayer';
 export class SecurityService {
   constructor(protected securityRepository: SecurityRepository) {}
 
-  async getSession(userId: string, deviceId: string, iat: Date) {
-    return this.securityRepository.getSession(userId, deviceId, iat);
-  }
   async updateSession(id: string, iat: Date, exp: Date) {
     await this.securityRepository.updateSession(id, iat, exp);
   }
