@@ -8,7 +8,7 @@ import { PostDocument } from '../../../posts/domain/entiities/post.entity';
 
 export class CreateLikeCommand {
   constructor(
-    public likeStatusFromDto: string,
+    public likeStatusFromDto: likeStatus,
     public postId: string,
     public userId: string,
   ) {}
@@ -23,8 +23,7 @@ export class CreateLikeUseCase implements ICommandHandler<CreateLikeCommand> {
 
   async execute(command: CreateLikeCommand): Promise<InterlayerNotice> {
     //приводим к enum лайк
-    const newStatusLike = likeStatus[command.likeStatusFromDto];
-
+    const newStatusLike = command.likeStatusFromDto;
     // выносим переменные из команды в отедльные переменные
     const userId = command.userId;
     const postId = command.postId;

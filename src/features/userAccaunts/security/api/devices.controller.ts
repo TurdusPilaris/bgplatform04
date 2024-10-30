@@ -46,7 +46,7 @@ export class DevicesController {
     );
 
     if (result.hasError()) {
-      new ErrorProcessor(result.code, result.extensions).errorHandling();
+      new ErrorProcessor(result).errorHandling();
     }
   }
 }

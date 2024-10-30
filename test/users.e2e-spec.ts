@@ -3,13 +3,14 @@ import { INestApplication } from '@nestjs/common';
 import { AppModule } from './../src/app.module';
 import { applyAppSettings } from '../src/settings/apply-app-setting';
 import { UsersTestManager } from './utils/users-test-manager';
-import { UsersService } from '../src/features/users/application/users.service';
+
 import { UserServiceMock } from './mock/user.service.mock';
 import { userTestSeeder } from './utils/users.test.seedr';
 import { BusinessService } from '../src/base/domain/business-service';
 import { BusinessServiceMock } from './mock/business.service.mock';
 
 import { TestingController } from '../src/features/testing/testing-controller';
+import { UsersService } from '../src/features/userAccaunts/users/application/users.service';
 
 const CORRECT_ADMIN_AUTH_BASE64 = 'Basic YWRtaW46cXdlcnR5';
 

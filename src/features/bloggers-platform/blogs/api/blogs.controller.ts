@@ -28,6 +28,8 @@ import { AuthBasicGuard } from '../../../../infrastructure/guards/auth.basic.gua
 import { GetOptionalUserGard } from '../../../../infrastructure/guards/get-optional-user-gard.service';
 import { ErrorProcessor } from '../../../../base/models/errorProcessor';
 import { Request } from 'express';
+import { InterlayerNotice } from '../../../../base/models/Interlayer';
+import { PostOutputModel } from '../../posts/api/models/output/post.output.model';
 
 @Controller('blogs')
 export class BlogsController {
@@ -79,7 +81,10 @@ export class BlogsController {
     @Body()
     inputModel: BlogCreateInputModel,
   ) {
-    return await this.commandBus.execute(new CreateBlogCommand(inputModel));
+    const blogId = await this.commandBus.execute(
+      new CreateBlogCommand(inputModel),
+    );
+    return await this.blogsQueryRepository.findById(blogId);
   }
 
   @HttpCode(201)
@@ -94,7 +99,7 @@ export class BlogsController {
     );
 
     if (result.hasError()) {
-      new ErrorProcessor(result.code, result.extensions).errorHandling();
+      new ErrorProcessor(result).errorHandling();
     }
     return result.data;
   }
@@ -111,7 +116,7 @@ export class BlogsController {
     );
 
     if (result.hasError()) {
-      new ErrorProcessor(result.code, result.extensions).errorHandling();
+      new ErrorProcessor(result).errorHandling();
     }
   }
 
@@ -121,7 +126,7 @@ export class BlogsController {
   async deleteBlog(@Param('id') blogId: string) {
     const result = await this.commandBus.execute(new DeleteBlogCommand(blogId));
     if (result.hasError()) {
-      new ErrorProcessor(result.code, result.extensions).errorHandling();
+      new ErrorProcessor(result).errorHandling();
     }
     return;
   }

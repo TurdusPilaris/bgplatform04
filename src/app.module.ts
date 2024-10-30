@@ -18,6 +18,8 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { BloggersPlatformModule } from './features/bloggers-platform/bloggers.platform.module';
 import { UserAccountsModule } from './features/userAccaunts/users.accounts.module';
 import { TestingModule } from './features/testing/testing.module';
+import { NameIsExistConstraint } from './infrastructure/decorators/validate/name-is-exist.decorator';
+import { BlogIdIsValidConstraint } from './infrastructure/decorators/validate/blog-id-is-valid';
 const adapters = [EmailAdapter, EmailRouter, JwtService, BcryptService];
 
 @Module({
@@ -52,6 +54,6 @@ const adapters = [EmailAdapter, EmailRouter, JwtService, BcryptService];
     BloggersPlatformModule,
     TestingModule,
   ],
-  providers: [...adapters],
+  providers: [...adapters, NameIsExistConstraint, BlogIdIsValidConstraint],
 })
 export class AppModule {}

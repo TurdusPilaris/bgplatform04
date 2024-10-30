@@ -1,4 +1,4 @@
-import { InterlayerNoticeExtension } from './Interlayer';
+import { InterlayerNotice, InterlayerNoticeExtension } from './Interlayer';
 import {
   BadRequestException,
   ForbiddenException,
@@ -9,25 +9,24 @@ import {
 export class ErrorProcessor {
   public extensions: InterlayerNoticeExtension[];
   public code = 0;
-  constructor(code: number, extensions: InterlayerNoticeExtension[]) {
-    this.code = code;
-    this.extensions = extensions;
+  constructor(result: InterlayerNotice) {
+    this.code = result.code;
+    this.extensions = result.extensions;
   }
 
   public errorHandling() {
-    console.log('this-------------', this);
-    if (this.code === 400) {
-      console.log('Im here');
-      throw new BadRequestException(this.extensions);
-    }
-    if (this.code === 401) {
-      throw new UnauthorizedException();
-    }
-    if (this.code === 403) {
-      throw new ForbiddenException();
-    }
-    if (this.code === 404) {
-      throw new NotFoundException();
+    switch (this.code) {
+      case 400:
+        throw new BadRequestException(this.extensions);
+
+      case 401:
+        throw new UnauthorizedException();
+
+      case 403:
+        throw new ForbiddenException();
+
+      case 404:
+        throw new NotFoundException();
     }
   }
 }

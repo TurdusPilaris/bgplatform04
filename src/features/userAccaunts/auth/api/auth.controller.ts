@@ -59,7 +59,7 @@ export class AuthController {
       new RegisterUserCommand(createInputUser),
     );
     if (result.hasError()) {
-      new ErrorProcessor(result.code, result.extensions).errorHandling();
+      new ErrorProcessor(result).errorHandling();
     }
   }
 
@@ -75,10 +75,7 @@ export class AuthController {
       await this.authService.checkCredentials(loginInput);
 
     if (resultCheckCredentials.hasError()) {
-      new ErrorProcessor(
-        resultCheckCredentials.code,
-        resultCheckCredentials.extensions,
-      ).errorHandling();
+      new ErrorProcessor(resultCheckCredentials).errorHandling();
     }
 
     const user = await this.usersRepository.findByLoginOrEmail(
@@ -110,10 +107,7 @@ export class AuthController {
     );
 
     if (resultCreated.hasError()) {
-      new ErrorProcessor(
-        resultCreated.code,
-        resultCreated.extensions,
-      ).errorHandling();
+      new ErrorProcessor(resultCreated).errorHandling();
     }
 
     res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: true });
@@ -128,7 +122,7 @@ export class AuthController {
       new RegistrationConfirmationCommand(inputCode),
     );
     if (result.hasError()) {
-      new ErrorProcessor(result.code, result.extensions).errorHandling();
+      new ErrorProcessor(result).errorHandling();
     }
   }
 
@@ -139,7 +133,7 @@ export class AuthController {
     const result = await this.authService.resendingEmail(inputEmail.email);
 
     if (result.hasError()) {
-      new ErrorProcessor(result.code, result.extensions).errorHandling();
+      new ErrorProcessor(result).errorHandling();
     }
   }
 
@@ -151,7 +145,7 @@ export class AuthController {
     );
 
     if (result.hasError()) {
-      new ErrorProcessor(result.code, result.extensions).errorHandling();
+      new ErrorProcessor(result).errorHandling();
     }
   }
 

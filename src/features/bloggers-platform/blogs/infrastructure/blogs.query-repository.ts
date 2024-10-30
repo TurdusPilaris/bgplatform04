@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Blog, BlogModelType } from '../domain/entiities/blog.entity';
 import {
-  BlogOutputModel,
-  blogOutputModelMapper,
-} from '../api/models/output/blog.output.model';
-import { paginationBlogModelMapper } from '../api/models/output/pagination-blog.model';
+  Blog,
+  BlogDocument,
+  BlogModelType,
+} from '../domain/entiities/blog.entity';
+import { BlogOutputModel } from '../api/models/output/blog.output.model';
 import { QueryBlogInputModel } from '../api/models/input/query-blog.model';
 import { PaginationOutputModel } from '../../../../base/models/output/pagination.output.model';
 
@@ -19,7 +19,7 @@ export class BlogsQueryRepository {
     const blog = await this.BlogModel.findById(blogId, { __v: false });
 
     if (!blog) return null;
-    return blogOutputModelMapper(blog);
+    return this.blogOutputModelMapper(blog);
   }
 
   async findAll(
@@ -38,9 +38,40 @@ export class BlogsQueryRepository {
       .limit(queryDto.pageSize)
       .exec();
 
-    const itemsForPaginator = items.map(blogOutputModelMapper);
+    const itemsForPaginator: BlogOutputModel[] = items.map(
+      this.blogOutputModelMapper,
+    );
     const countBlogs = await this.BlogModel.countDocuments(filterName);
 
-    return paginationBlogModelMapper(queryDto, countBlogs, itemsForPaginator);
+    return this.paginationBlogModelMapper(
+      queryDto,
+      countBlogs,
+      itemsForPaginator,
+    );
   }
+
+  paginationBlogModelMapper = (
+    query: QueryBlogInputModel,
+    countBlogs: number,
+    items: BlogOutputModel[],
+  ): PaginationOutputModel<BlogOutputModel[]> => {
+    return {
+      pagesCount: Math.ceil(countBlogs / query.pageSize),
+      page: +query.pageNumber,
+      pageSize: +query.pageSize,
+      totalCount: countBlogs,
+      items: items,
+    };
+  };
+
+  blogOutputModelMapper = (blog: BlogDocument): BlogOutputModel => {
+    return {
+      id: blog.id,
+      name: blog.name,
+      description: blog.description,
+      websiteUrl: blog.websiteUrl,
+      createdAt: blog.createdAt.toISOString(),
+      isMembership: blog.isMembership,
+    };
+  };
 }

@@ -3,5 +3,5 @@ import { likeStatus } from '../../../../../../base/models/likesStatus';
 
 export class CreateLikeInputModel {
   @IsEnum(likeStatus)
-  likeStatus: string;
+  likeStatus: likeStatus;
 }

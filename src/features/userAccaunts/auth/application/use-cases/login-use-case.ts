@@ -29,10 +29,7 @@ export class LoginUseCase implements ICommandHandler<LoginCommand> {
       user.accountData.passwordHash,
     );
     if (resultCheckCredentials.hasError()) {
-      new ErrorProcessor(
-        resultCheckCredentials.code,
-        resultCheckCredentials.extensions,
-      ).errorHandling();
+      new ErrorProcessor(resultCheckCredentials).errorHandling();
     }
 
     //сначала сделаем аксесс токен
