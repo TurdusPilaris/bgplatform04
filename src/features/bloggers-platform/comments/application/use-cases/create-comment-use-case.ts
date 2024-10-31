@@ -1,13 +1,11 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import {
-  CommentOutputModel,
-  commentOutputModelMapper,
-} from '../../api/model/output/comment.output.model';
+import { CommentOutputModel } from '../../api/model/output/comment.output.model';
 import { PostsRepository } from '../../../posts/infrastructure/posts.repository';
 import { CommentsRepository } from '../../infrastructure/comments.repository';
 import { UsersRepository } from '../../../../userAccaunts/users/infrastructure/users.repository';
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
 import { likeStatus } from '../../../../../base/models/likesStatus';
+import { CommentsQueryRepository } from '../../infrastructure/comments.query-repository';
 
 export class CreateCommentCommand {
   constructor(
@@ -25,6 +23,7 @@ export class CreateCommentUseCase
     private postsRepository: PostsRepository,
     private usersRepository: UsersRepository,
     private commentsRepository: CommentsRepository,
+    private commentsQueryRepository: CommentsQueryRepository,
   ) {}
 
   async execute(
@@ -47,7 +46,10 @@ export class CreateCommentUseCase
     );
 
     return new InterlayerNotice(
-      commentOutputModelMapper(newComment, likeStatus.None),
+      this.commentsQueryRepository.commentOutputModelMapper(
+        newComment,
+        likeStatus.None,
+      ),
     );
   }
 }

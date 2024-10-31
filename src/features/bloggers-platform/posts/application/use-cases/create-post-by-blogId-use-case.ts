@@ -1,13 +1,11 @@
 import { CreatePostWithoutBlogIdInputModel } from '../../api/models/input/create-post-withoutBlogId.input.model';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { PostsRepository } from '../../infrastructure/posts.repository';
-import {
-  PostOutputModel,
-  postOutputModelMapper,
-} from '../../api/models/output/post.output.model';
+import { PostOutputModel } from '../../api/models/output/post.output.model';
 import { PostCreateInputModel } from '../../api/models/input/create-post.input.model';
 import { BlogsRepository } from '../../../blogs/infrastructure/blogs.repository';
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
+import { PostsQueryRepository } from '../../infrastructure/posts.query-repository';
 
 export class CreatePostByBlogIdCommand {
   constructor(
@@ -22,6 +20,7 @@ export class CreatePostByBlogIdUseCase
 {
   constructor(
     private postsRepository: PostsRepository,
+    private postsQueryRepository: PostsQueryRepository,
     private blogsQRepository: BlogsRepository,
   ) {}
 
@@ -45,7 +44,7 @@ export class CreatePostByBlogIdUseCase
     dtoModel.shortDescription = command.inputModel.shortDescription;
 
     //and finally map model
-    const outputPostModel = postOutputModelMapper(
+    const outputPostModel = this.postsQueryRepository.postOutputModelMapper(
       await this.postsRepository.createPost(dtoModel, foundedBlog.name),
     );
 

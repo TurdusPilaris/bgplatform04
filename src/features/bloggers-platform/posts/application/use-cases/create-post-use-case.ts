@@ -2,12 +2,10 @@ import { PostCreateInputModel } from '../../api/models/input/create-post.input.m
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { PostsRepository } from '../../infrastructure/posts.repository';
 
-import {
-  PostOutputModel,
-  postOutputModelMapper,
-} from '../../api/models/output/post.output.model';
+import { PostOutputModel } from '../../api/models/output/post.output.model';
 import { BlogsRepository } from '../../../blogs/infrastructure/blogs.repository';
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
+import { PostsQueryRepository } from '../../infrastructure/posts.query-repository';
 
 export class CreatePostCommand {
   constructor(public inputModel: PostCreateInputModel) {}
@@ -17,6 +15,7 @@ export class CreatePostCommand {
 export class CreatePostUseCase implements ICommandHandler<CreatePostCommand> {
   constructor(
     private postsRepository: PostsRepository,
+    private postsQueryRepository: PostsQueryRepository,
     private blogsRepository: BlogsRepository,
   ) {}
 
@@ -33,7 +32,7 @@ export class CreatePostUseCase implements ICommandHandler<CreatePostCommand> {
       return result;
     }
 
-    const outputPostModel = postOutputModelMapper(
+    const outputPostModel = this.postsQueryRepository.postOutputModelMapper(
       await this.postsRepository.createPost(
         command.inputModel,
         foundedBlog.name,

@@ -55,15 +55,13 @@ export class User {
      * нужно навешивать декоратор схема для регистрации модели в базе
      */
 
-    const createdUser = new UserModel({
+    return new UserModel({
       accountData: {
         email: dto.email,
         userName: dto.login,
         createdAt: new Date(),
       },
     });
-
-    return createdUser;
   }
 
   static createNewUser(
@@ -75,7 +73,7 @@ export class User {
      * нужно навешивать декоратор схема для регистрации модели в базе
      */
 
-    const createdUser = new UserModel({
+    return new UserModel({
       accountData: {
         email: dto.email,
         userName: dto.login,
@@ -91,8 +89,6 @@ export class User {
         isConfirmed: false,
       },
     });
-
-    return createdUser;
   }
 }
 
