@@ -41,15 +41,12 @@ export class SecurityRepository {
   }
 
   async updateSession(id: string, iat: Date, exp: Date) {
-    const updatedSession = await this.DeviceAuthSessionModel.findByIdAndUpdate(
-      id,
-      {
-        $set: {
-          iat: iat,
-          exp: exp,
-        },
+    await this.DeviceAuthSessionModel.findByIdAndUpdate(id, {
+      $set: {
+        iat: iat,
+        exp: exp,
       },
-    );
+    });
   }
 
   async deleteCurrentSessions(userId: string, currentDeviceId: string) {

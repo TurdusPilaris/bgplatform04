@@ -32,7 +32,7 @@ export class DeviceAuthSession {
     ip: string,
     exp: Date,
   ) {
-    const createdSession = new SessionModel({
+    return new SessionModel({
       userId: userId,
       deviceId: deviceId,
       iat: iat,
@@ -40,8 +40,6 @@ export class DeviceAuthSession {
       ip: ip,
       exp: exp,
     });
-
-    return createdSession;
   }
 }
 
