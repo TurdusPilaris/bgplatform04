@@ -38,7 +38,7 @@ export class CommentsRepository {
     return newComment.save();
   }
 
-  async findLikesByUserAndParent(
+  async findLikeByUserAndParent(
     parentID: string,
     userId: string,
   ): Promise<LikeDocument | null> {

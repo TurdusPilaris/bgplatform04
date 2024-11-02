@@ -41,7 +41,7 @@ export class UsersController {
   async createUsers(@Body() createModel: UserCreateModel) {
     const result = await this.usersService.create(createModel);
     if (result.hasError()) {
-      new ErrorProcessor(result).errorHandling();
+      new ErrorProcessor(result).handleError();
     }
 
     return result.data;
@@ -53,7 +53,7 @@ export class UsersController {
     const result = await this.usersService.delete(userId);
 
     if (result.hasError()) {
-      new ErrorProcessor(result).errorHandling();
+      new ErrorProcessor(result).handleError();
     }
   }
 }

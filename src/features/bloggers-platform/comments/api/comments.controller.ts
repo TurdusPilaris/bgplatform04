@@ -58,7 +58,7 @@ export class CommentsController {
     );
 
     if (result.hasError()) {
-      new ErrorProcessor(result).errorHandling();
+      new ErrorProcessor(result).handleError();
     }
   }
 
@@ -75,7 +75,7 @@ export class CommentsController {
     );
 
     if (result.hasError()) {
-      new ErrorProcessor(result).errorHandling();
+      new ErrorProcessor(result).handleError();
     }
   }
 
@@ -88,7 +88,7 @@ export class CommentsController {
     );
 
     if (result.hasError()) {
-      new ErrorProcessor(result).errorHandling();
+      new ErrorProcessor(result).handleError();
     }
   }
 }

@@ -14,7 +14,7 @@ export class ErrorProcessor {
     this.extensions = result.extensions;
   }
 
-  public errorHandling() {
+  public handleError() {
     switch (this.code) {
       case 400:
         throw new BadRequestException(this.extensions);

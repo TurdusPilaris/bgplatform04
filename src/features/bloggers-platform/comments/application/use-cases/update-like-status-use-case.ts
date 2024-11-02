@@ -40,7 +40,7 @@ export class UpdateLikeStatusUseCase
       return result;
     }
 
-    const foundedLikes = await this.commentsRepository.findLikesByUserAndParent(
+    const foundedLikes = await this.commentsRepository.findLikeByUserAndParent(
       command.commentId,
       command.userId,
     );

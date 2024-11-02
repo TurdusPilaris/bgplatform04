@@ -97,7 +97,7 @@ export class BlogsController {
     );
 
     if (result.hasError()) {
-      new ErrorProcessor(result).errorHandling();
+      new ErrorProcessor(result).handleError();
     }
     return result.data;
   }
@@ -114,7 +114,7 @@ export class BlogsController {
     );
 
     if (result.hasError()) {
-      new ErrorProcessor(result).errorHandling();
+      new ErrorProcessor(result).handleError();
     }
   }
 
@@ -124,7 +124,7 @@ export class BlogsController {
   async deleteBlog(@Param('id') blogId: string) {
     const result = await this.commandBus.execute(new DeleteBlogCommand(blogId));
     if (result.hasError()) {
-      new ErrorProcessor(result).errorHandling();
+      new ErrorProcessor(result).handleError();
     }
     return;
   }

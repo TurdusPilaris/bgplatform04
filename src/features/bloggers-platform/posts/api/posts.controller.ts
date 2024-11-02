@@ -89,7 +89,7 @@ export class PostsController {
       new CreatePostCommand(inputModel),
     );
     if (result.hasError()) {
-      new ErrorProcessor(result).errorHandling();
+      new ErrorProcessor(result).handleError();
     } else {
       return result.data;
     }
@@ -108,7 +108,7 @@ export class PostsController {
     );
 
     if (result.hasError()) {
-      new ErrorProcessor(result).errorHandling();
+      new ErrorProcessor(result).handleError();
     } else {
       return result.data;
     }
@@ -126,7 +126,7 @@ export class PostsController {
     );
 
     if (result.hasError()) {
-      new ErrorProcessor(result).errorHandling();
+      new ErrorProcessor(result).handleError();
     }
   }
 
@@ -143,7 +143,7 @@ export class PostsController {
     );
 
     if (result.hasError()) {
-      new ErrorProcessor(result).errorHandling();
+      new ErrorProcessor(result).handleError();
     } else {
       return result.data;
     }
@@ -155,7 +155,7 @@ export class PostsController {
   async deletePost(@Param('id') postId: string) {
     const result = await this.commandBus.execute(new DeletePostCommand(postId));
     if (result.hasError()) {
-      new ErrorProcessor(result).errorHandling();
+      new ErrorProcessor(result).handleError();
     }
   }
 }

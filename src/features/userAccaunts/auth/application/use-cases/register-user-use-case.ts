@@ -45,6 +45,7 @@ export class RegisterUserUseCase
       command.createInputUser,
       passwordHash,
     );
+    //TODO move send email to event handler
     try {
       this.businessService.sendRegisrtationEmail(
         command.createInputUser.email,

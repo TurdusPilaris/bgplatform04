@@ -25,8 +25,8 @@ export class CreateLikeUseCase implements ICommandHandler<CreateLikeCommand> {
     //приводим к enum лайк
     const newStatusLike = command.likeStatusFromDto;
     // выносим переменные из команды в отедльные переменные
-    const userId = command.userId;
-    const postId = command.postId;
+    const { userId, postId } = command;
+    // const postId = command.postId;
 
     //ищем пост
     const foundedPost = await this.postsRepository.findById(postId);
@@ -39,7 +39,7 @@ export class CreateLikeUseCase implements ICommandHandler<CreateLikeCommand> {
     }
 
     //ищем лайки для конкретных поста и пользователя
-    const foundedLikes = await this.commentsRepository.findLikesByUserAndParent(
+    const foundedLike = await this.commentsRepository.findLikeByUserAndParent(
       postId,
       userId,
     );
@@ -48,7 +48,7 @@ export class CreateLikeUseCase implements ICommandHandler<CreateLikeCommand> {
     const user = await this.usersRepository.findById(userId);
 
     //проверяем был ли создан лайк
-    if (!foundedLikes) {
+    if (!foundedLike) {
       return await this.createNewLike(
         postId,
         userId,
@@ -56,13 +56,14 @@ export class CreateLikeUseCase implements ICommandHandler<CreateLikeCommand> {
         newStatusLike,
         foundedPost,
       );
+      //TODO убрать ненужный else
     } else {
       //сохранили старый статус лайка для пересчета в комментарии
-      const oldStatusLike = foundedLikes.statusLike;
+      const oldStatusLike = foundedLike.statusLike;
 
       //установили новый статус лайка и обновили дату изменения лайка
-      foundedLikes.putNewLike(newStatusLike);
-      await this.commentsRepository.saveLikes(foundedLikes);
+      foundedLike.putNewLike(newStatusLike);
+      await this.commentsRepository.saveLikes(foundedLike);
 
       //пересчитаем количество если отличаются новй статус от старого
       if (oldStatusLike !== newStatusLike) {
