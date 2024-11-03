@@ -29,10 +29,10 @@ export class CreateLikeUseCase implements ICommandHandler<CreateLikeCommand> {
     // const postId = command.postId;
 
     //ищем пост
-    const foundedPost = await this.postsRepository.findById(postId);
+    const foundPost = await this.postsRepository.findById(postId);
 
     //возвращаем ошибку если пост не найден
-    if (!foundedPost) {
+    if (!foundPost) {
       const result = new InterlayerNotice(null);
       result.addError('Post is not exists', 'postId', 404);
       return result;
@@ -54,47 +54,45 @@ export class CreateLikeUseCase implements ICommandHandler<CreateLikeCommand> {
         userId,
         user.accountData.userName,
         newStatusLike,
-        foundedPost,
+        foundPost,
       );
-      //TODO убрать ненужный else
-    } else {
-      //сохранили старый статус лайка для пересчета в комментарии
-      const oldStatusLike = foundedLike.statusLike;
-
-      //установили новый статус лайка и обновили дату изменения лайка
-      foundedLike.putNewLike(newStatusLike);
-      await this.commentsRepository.saveLikes(foundedLike);
-
-      //пересчитаем количество если отличаются новй статус от старого
-      if (oldStatusLike !== newStatusLike) {
-        const lastThreeLikes =
-          await this.commentsRepository.findThreeLastLikesByParent(postId);
-
-        let resultLastThreeLikes: {
-          addedAt: Date;
-          login: string;
-          userId: string;
-        }[] = [];
-
-        if (lastThreeLikes) {
-          resultLastThreeLikes = lastThreeLikes.map(function (newestLikes) {
-            return {
-              userId: newestLikes.userID,
-              addedAt: newestLikes.updatedAt,
-              login: newestLikes.login,
-            };
-          });
-        }
-        await foundedPost.recountLikes(
-          oldStatusLike,
-          newStatusLike,
-          resultLastThreeLikes,
-        );
-        await this.postsRepository.save(foundedPost);
-      }
-
-      return new InterlayerNotice();
     }
+    //сохранили старый статус лайка для пересчета в комментарии
+    const oldStatusLike = foundedLike.statusLike;
+
+    //установили новый статус лайка и обновили дату изменения лайка
+    foundedLike.putNewLike(newStatusLike);
+    await this.commentsRepository.saveLikes(foundedLike);
+
+    //пересчитаем количество если отличаются новй статус от старого
+    if (oldStatusLike !== newStatusLike) {
+      const lastThreeLikes =
+        await this.commentsRepository.findThreeLastLikesByParent(postId);
+
+      let resultLastThreeLikes: {
+        addedAt: Date;
+        login: string;
+        userId: string;
+      }[] = [];
+
+      if (lastThreeLikes) {
+        resultLastThreeLikes = lastThreeLikes.map(function (newestLikes) {
+          return {
+            userId: newestLikes.userID,
+            addedAt: newestLikes.updatedAt,
+            login: newestLikes.login,
+          };
+        });
+      }
+      await foundPost.recountLikes(
+        oldStatusLike,
+        newStatusLike,
+        resultLastThreeLikes,
+      );
+      await this.postsRepository.save(foundPost);
+    }
+
+    return new InterlayerNotice();
   }
 
   async createNewLike(
