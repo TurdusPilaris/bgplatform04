@@ -1,6 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CommentsRepository } from '../../infrastructure/comments.repository';
-import { UsersRepository } from '../../../../userAccaunts/users/infrastructure/users.repository';
+import { UsersRepository } from '../../../../user-accaunts/users/infrastructure/users.repository';
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
 import { likeStatus } from '../../../../../base/models/likesStatus';
 

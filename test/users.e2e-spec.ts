@@ -10,7 +10,7 @@ import { BusinessService } from '../src/base/domain/business-service';
 import { BusinessServiceMock } from './mock/business.service.mock';
 
 import { TestingController } from '../src/features/testing/testing-controller';
-import { UsersService } from '../src/features/userAccaunts/users/application/users.service';
+import { UsersService } from '../src/features/user-accaunts/users/application/users.service';
 
 const CORRECT_ADMIN_AUTH_BASE64 = 'Basic YWRtaW46cXdlcnR5';
 

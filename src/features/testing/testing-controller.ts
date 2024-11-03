@@ -7,7 +7,7 @@ import {
 import {
   User,
   UserModelType,
-} from '../userAccaunts/users/domain/entities/user.entity';
+} from '../user-accaunts/users/domain/entities/user.entity';
 import {
   PostClass,
   PostModelType,
@@ -23,7 +23,7 @@ import {
 import {
   DeviceAuthSession,
   DeviceAuthSessionModelType,
-} from '../userAccaunts/security/domain/deviceAuthSession.entity';
+} from '../user-accaunts/security/domain/deviceAuthSession.entity';
 
 @Controller('testing')
 export class TestingController {

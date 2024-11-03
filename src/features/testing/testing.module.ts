@@ -20,11 +20,11 @@ import { TestingController } from './testing-controller';
 import {
   User,
   UserSchema,
-} from '../userAccaunts/users/domain/entities/user.entity';
+} from '../user-accaunts/users/domain/entities/user.entity';
 import {
   DeviceAuthSession,
   DeviceAuthSessionSchema,
-} from '../userAccaunts/security/domain/deviceAuthSession.entity';
+} from '../user-accaunts/security/domain/deviceAuthSession.entity';
 
 @Module({
   imports: [

@@ -19,7 +19,7 @@ import {
   CommentSchema,
 } from './comments/domain/entities/comment.entity';
 import { Like, LikeSchema } from './comments/domain/entities/like.entity';
-import { UserAccountsModule } from '../userAccaunts/users.accounts.module';
+import { UserAccountsModule } from '../user-accaunts/users.accounts.module';
 import { BlogsController } from './blogs/api/blogs.controller';
 import { PostsController } from './posts/api/posts.controller';
 import { CommentsController } from './comments/api/comments.controller';
