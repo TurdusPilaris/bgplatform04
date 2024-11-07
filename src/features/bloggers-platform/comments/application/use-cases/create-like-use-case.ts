@@ -5,6 +5,7 @@ import { UsersRepository } from '../../../../user-accaunts/users/infrastructure/
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
 import { likeStatus } from '../../../../../base/models/likesStatus';
 import { PostDocument } from '../../../posts/domain/entiities/post.entity';
+import { UsersSqlRepository } from '../../../../user-accaunts/users/infrastructure/users.sql.repositories';
 
 export class CreateLikeCommand {
   constructor(
@@ -19,6 +20,7 @@ export class CreateLikeUseCase implements ICommandHandler<CreateLikeCommand> {
     private postsRepository: PostsRepository,
     private commentsRepository: CommentsRepository,
     private usersRepository: UsersRepository,
+    private usersSqlRepository: UsersSqlRepository,
   ) {}
 
   async execute(command: CreateLikeCommand): Promise<InterlayerNotice> {
@@ -45,7 +47,7 @@ export class CreateLikeUseCase implements ICommandHandler<CreateLikeCommand> {
     );
 
     //получаем пользователя что бы забрать имя для создания нового лайка, в дальнейшем проще геты строить
-    const user = await this.usersRepository.findById(userId);
+    const user = await this.usersSqlRepository.findById(userId);
 
     //проверяем был ли создан лайк
     if (!foundedLike) {

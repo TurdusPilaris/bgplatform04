@@ -24,14 +24,17 @@ import {
   DeviceAuthSession,
   DeviceAuthSessionModelType,
 } from '../user-accaunts/security/domain/deviceAuthSession.entity';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 
 @Controller('testing')
 export class TestingController {
   constructor(
+    @InjectDataSource() protected dataSource: DataSource,
     @InjectModel(Blog.name)
     private BlogModel: BlogModelType,
-    @InjectModel(User.name)
-    private UserModel: UserModelType,
+    // @InjectModel(User.name)
+    // private UserModel: UserModelType,
     @InjectModel(PostClass.name)
     private PostModel: PostModelType,
     @InjectModel(Comment.name)
@@ -46,9 +49,16 @@ export class TestingController {
   async allDelete() {
     await this.BlogModel.deleteMany({});
     await this.PostModel.deleteMany({});
-    await this.UserModel.deleteMany({});
+    //truncate devices
+    const queryForDevices = `TRUNCATE TABLE public."DeviceAuthSession" CASCADE`;
+    await this.dataSource.query(queryForDevices);
+    //truncate users
+    // await this.UserModel.deleteMany({});
+    const queryForUsers = `TRUNCATE TABLE public."Users" CASCADE`;
+    await this.dataSource.query(queryForUsers);
+
     await this.CommentModel.deleteMany({});
     await this.LikeModel.deleteMany({});
-    await this.DeviceAuthSessionModel.deleteMany({});
+    // await this.DeviceAuthSessionModel.deleteMany({});
   }
 }

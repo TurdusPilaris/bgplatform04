@@ -7,14 +7,18 @@ import {
 } from 'class-validator';
 import { Injectable } from '@nestjs/common';
 import { UsersRepository } from '../../../features/user-accaunts/users/infrastructure/users.repository';
+import { UsersSqlRepository } from '../../../features/user-accaunts/users/infrastructure/users.sql.repositories';
 
 @ValidatorConstraint({ name: 'NameIsExist', async: true })
 @Injectable()
 export class NameIsExistConstraint implements ValidatorConstraintInterface {
-  constructor(private readonly usersRepository: UsersRepository) {}
+  constructor(
+    private readonly usersRepository: UsersRepository,
+    private readonly usersSqlRepository: UsersSqlRepository,
+  ) {}
 
   async validate(value: any, args: ValidationArguments) {
-    const nameIsExist = await this.usersRepository.findByLoginOrEmail(value);
+    const nameIsExist = await this.usersSqlRepository.findByLoginOrEmail(value);
     return !nameIsExist;
   }
 

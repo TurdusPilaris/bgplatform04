@@ -3,6 +3,7 @@ import { CommentsRepository } from '../../infrastructure/comments.repository';
 import { UsersRepository } from '../../../../user-accaunts/users/infrastructure/users.repository';
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
 import { likeStatus } from '../../../../../base/models/likesStatus';
+import { UsersSqlRepository } from '../../../../user-accaunts/users/infrastructure/users.sql.repositories';
 
 export class UpdateLikeStatusCommand {
   constructor(
@@ -19,6 +20,7 @@ export class UpdateLikeStatusUseCase
   constructor(
     private commentsRepository: CommentsRepository,
     private usersRepository: UsersRepository,
+    private usersSqlRepository: UsersSqlRepository,
   ) {}
 
   async execute(command: UpdateLikeStatusCommand): Promise<InterlayerNotice> {
@@ -45,7 +47,7 @@ export class UpdateLikeStatusUseCase
       command.userId,
     );
 
-    const user = await this.usersRepository.findById(command.userId);
+    const user = await this.usersSqlRepository.findById(command.userId);
 
     //проверяем был ли создан лайк
     if (!foundedLikes) {

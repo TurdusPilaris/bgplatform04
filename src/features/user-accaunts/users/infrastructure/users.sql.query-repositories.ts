@@ -5,32 +5,13 @@ import { UserCreateSqlModel } from '../api/models/sql/create-user.sql.model';
 import { UserOutputModel } from '../api/models/output/user.output.model';
 import { QueryUserInputModel } from '../api/models/input/query-user.input.model';
 import { PaginationOutputModel } from '../../../../base/models/output/pagination.output.model';
+import { AboutMeOutputModel } from '../../auth/api/models/output/about-me-output-model';
+import { UserDocument } from '../domain/entities/user.entity';
+import { UserSQL } from '../api/models/sql/user.model.sql';
 
 @Injectable()
-export class UsersSqlRepository {
+export class UsersSqlQueryRepository {
   constructor(@InjectDataSource() protected dataSource: DataSource) {}
-
-  async createUser(createModel: UserCreateSqlModel) {
-    const query = `
-    INSERT INTO public."Users"(
-        "userName", email, "passwordHash", "createdAt", "confirmationCode", "expirationDate", "isConfirmed")
-        VALUES ( $1, $2, $3, $4, $5, $6, $7) RETURNING id;
-    `;
-
-    const res = await this.dataSource.query(query, [
-      createModel.userName,
-      createModel.email,
-      createModel.passwordHash,
-      createModel.createdAt,
-      createModel.confirmationCode,
-      createModel.expirationDate,
-      createModel.isConfirmed,
-    ]);
-
-    const createdUser: UserOutputModel | null = await this.findById(res[0].id);
-
-    return createdUser;
-  }
 
   async findById(id: string): Promise<UserOutputModel | null> {
     const query = `
@@ -50,40 +31,20 @@ export class UsersSqlRepository {
     })[0];
   }
 
-  async findByLoginOrEmail(
-    loginOrEmail: string,
-  ): Promise<UserOutputModel | null> {
-    const query = `
-    SELECT id, "userName" as login, email, "createdAt"
-        FROM public."Users"
-        WHERE "userName" = $1 OR email = $1;
-    `;
-
-    const res = await this.dataSource.query(query, [loginOrEmail]);
-
-    if (res.length === 0) return null;
-
-    return res.map((e) => {
-      return {
-        ...e,
-      };
-    })[0];
-  }
-
   async findAll(
     queryDto: QueryUserInputModel,
   ): Promise<PaginationOutputModel<UserOutputModel[]>> {
     const query = `
-    SELECT u.id, u."userName" as login, u.email, "createdAt"
-        FROM public."Users" u
-        WHERE "userName" ILIKE $3 AND email ILIKE $4
-        ORDER BY ${queryDto.sortBy} ${queryDto.sortDirection}
+    SELECT id, "userName" as login, email, "createdAt"
+        FROM public."Users" 
+        WHERE "userName" ILIKE $3 OR email ILIKE $4
+        ORDER BY "${queryDto.sortBy}" ${queryDto.sortDirection}
         LIMIT $1 OFFSET $2
     `;
 
     const res = await this.dataSource.query(query, [
       queryDto.pageSize,
-      queryDto.pageNumber - 1,
+      (queryDto.pageNumber - 1) * queryDto.pageSize,
       `%${queryDto.searchLoginTerm}%`,
       `%${queryDto.searchEmailTerm}%`,
     ]);
@@ -103,7 +64,7 @@ export class UsersSqlRepository {
     const query = `
     SELECT  count(*) as "countOfUsers"
 	      FROM public."Users" u
-	      WHERE "userName" ILIKE $1 AND email ILIKE $2
+	      WHERE "userName" ILIKE $1 OR email ILIKE $2
     `;
 
     const res = await this.dataSource.query(query, [
@@ -136,4 +97,27 @@ export class UsersSqlRepository {
 
     await this.dataSource.query(query, [id]);
   }
+
+  async getAboutMe(userId: string): Promise<AboutMeOutputModel | null> {
+    const user = await this.findById(userId);
+
+    if (!user) return null;
+    return this.aboutMeOutputModelMapper(user);
+  }
+  aboutMeOutputModelMapper = (user: UserOutputModel): AboutMeOutputModel => {
+    return {
+      login: user.login,
+      email: user.email,
+      userId: user.id,
+    };
+  };
+
+  userOutputModelMapper = (user: UserSQL): UserOutputModel => {
+    return {
+      id: user.id,
+      login: user.accountData.userName,
+      email: user.accountData.email,
+      createdAt: user.accountData.createdAt.toISOString(),
+    };
+  };
 }

@@ -6,6 +6,7 @@ import { UsersRepository } from '../../../../user-accaunts/users/infrastructure/
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
 import { likeStatus } from '../../../../../base/models/likesStatus';
 import { CommentsQueryRepository } from '../../infrastructure/comments.query-repository';
+import { UsersSqlRepository } from '../../../../user-accaunts/users/infrastructure/users.sql.repositories';
 
 export class CreateCommentCommand {
   constructor(
@@ -22,6 +23,7 @@ export class CreateCommentUseCase
   constructor(
     private postsRepository: PostsRepository,
     private usersRepository: UsersRepository,
+    private usersSqlRepository: UsersSqlRepository,
     private commentsRepository: CommentsRepository,
     private commentsQueryRepository: CommentsQueryRepository,
   ) {}
@@ -36,7 +38,7 @@ export class CreateCommentUseCase
       return result;
     }
 
-    const user = await this.usersRepository.findById(command.userId);
+    const user = await this.usersSqlRepository.findById(command.userId);
 
     const newComment = await this.commentsRepository.createComment(
       command.comment,
