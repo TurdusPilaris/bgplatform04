@@ -19,6 +19,8 @@ import { BloggersPlatformModule } from './features/bloggers-platform/bloggers.pl
 import { UserAccountsModule } from './features/user-accaunts/users.accounts.module';
 import { TestingModule } from './features/testing/testing.module';
 import { NameIsExistConstraint } from './infrastructure/decorators/validate/name-is-exist.decorator';
+import { WalletsModule } from './wallets/wallets.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 const adapters = [EmailAdapter, EmailRouter, JwtService, BcryptService];
 
@@ -50,9 +52,20 @@ const adapters = [EmailAdapter, EmailRouter, JwtService, BcryptService];
       },
       inject: [ConfigService],
     }),
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      host: '127.0.0.1',
+      port: 5432,
+      username: 'nodejs',
+      password: 'nodejs',
+      database: 'BloggerPlatform',
+      autoLoadEntities: false,
+      synchronize: false,
+    }),
     UserAccountsModule,
     BloggersPlatformModule,
     TestingModule,
+    WalletsModule,
   ],
   providers: [...adapters, NameIsExistConstraint],
 })
