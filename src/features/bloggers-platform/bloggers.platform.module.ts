@@ -29,6 +29,8 @@ import { PostsRepository } from './posts/infrastructure/posts.repository';
 import { PostsQueryRepository } from './posts/infrastructure/posts.query-repository';
 import { CommentsRepository } from './comments/infrastructure/comments.repository';
 import { CommentsQueryRepository } from './comments/infrastructure/comments.query-repository';
+import { BlogsSqlRepository } from './blogs/infrastructure/blogs.sql.repository';
+import { BlogsSqlQueryRepository } from './blogs/infrastructure/blogs.sql.query-repository';
 
 const useCasesForPost = [
   CreatePostUseCase,
@@ -65,6 +67,8 @@ const useCasesForComment = [
     ...useCasesForComment,
     BlogsRepository,
     BlogsQueryRepository,
+    BlogsSqlRepository,
+    BlogsSqlQueryRepository,
     PostsRepository,
     PostsQueryRepository,
     CommentsRepository,

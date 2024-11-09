@@ -28,12 +28,14 @@ import { AuthBasicGuard } from '../../../../infrastructure/guards/auth.basic.gua
 import { GetOptionalUserGard } from '../../../../infrastructure/guards/get-optional-user-gard.service';
 import { ErrorProcessor } from '../../../../base/models/errorProcessor';
 import { Request } from 'express';
+import { BlogsSqlQueryRepository } from '../infrastructure/blogs.sql.query-repository';
 
 @Controller('blogs')
 export class BlogsController {
   constructor(
     private commandBus: CommandBus,
     protected blogsQueryRepository: BlogsQueryRepository,
+    protected blogsSqlQueryRepository: BlogsSqlQueryRepository,
     protected postsQueryRepository: PostsQueryRepository,
   ) {}
 
@@ -82,7 +84,7 @@ export class BlogsController {
     const blogId = await this.commandBus.execute(
       new CreateBlogCommand(inputModel),
     );
-    return await this.blogsQueryRepository.findById(blogId);
+    return await this.blogsSqlQueryRepository.findById(blogId);
   }
 
   @HttpCode(201)

@@ -1,12 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { UserCreateSqlModel } from '../api/models/sql/create-user.sql.model';
 import { UserOutputModel } from '../api/models/output/user.output.model';
 import { QueryUserInputModel } from '../api/models/input/query-user.input.model';
 import { PaginationOutputModel } from '../../../../base/models/output/pagination.output.model';
 import { AboutMeOutputModel } from '../../auth/api/models/output/about-me-output-model';
-import { UserDocument } from '../domain/entities/user.entity';
 import { UserSQL } from '../api/models/sql/user.model.sql';
 
 @Injectable()
