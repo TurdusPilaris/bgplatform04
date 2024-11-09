@@ -3,9 +3,9 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { PostsRepository } from '../../infrastructure/posts.repository';
 import { PostOutputModel } from '../../api/models/output/post.output.model';
 import { PostCreateInputModel } from '../../api/models/input/create-post.input.model';
-import { BlogsRepository } from '../../../blogs/infrastructure/blogs.repository';
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
 import { PostsQueryRepository } from '../../infrastructure/posts.query-repository';
+import { BlogsSqlRepository } from '../../../blogs/infrastructure/blogs.sql.repository';
 
 export class CreatePostByBlogIdCommand {
   constructor(
@@ -21,14 +21,14 @@ export class CreatePostByBlogIdUseCase
   constructor(
     private postsRepository: PostsRepository,
     private postsQueryRepository: PostsQueryRepository,
-    private blogsQRepository: BlogsRepository,
+    private blogsSqlRepository: BlogsSqlRepository,
   ) {}
 
   async execute(
     command: CreatePostByBlogIdCommand,
   ): Promise<InterlayerNotice<PostOutputModel | null>> {
     //we need to find blog
-    const foundedBlog = await this.blogsQRepository.findById(command.blogId);
+    const foundedBlog = await this.blogsSqlRepository.findById(command.blogId);
 
     if (!foundedBlog) {
       const result = new InterlayerNotice(null);

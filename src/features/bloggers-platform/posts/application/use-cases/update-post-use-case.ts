@@ -3,6 +3,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { PostsRepository } from '../../infrastructure/posts.repository';
 import { BlogsRepository } from '../../../blogs/infrastructure/blogs.repository';
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
+import { BlogsSqlRepository } from '../../../blogs/infrastructure/blogs.sql.repository';
 
 export class UpdatePostCommand {
   constructor(
@@ -16,10 +17,11 @@ export class UpdatePostUseCase implements ICommandHandler<UpdatePostCommand> {
   constructor(
     private postsRepository: PostsRepository,
     private blogsRepository: BlogsRepository,
+    private blogsSqlRepository: BlogsSqlRepository,
   ) {}
 
   async execute(command: UpdatePostCommand): Promise<InterlayerNotice<null>> {
-    const foundedBlog = await this.blogsRepository.findById(
+    const foundedBlog = await this.blogsSqlRepository.findById(
       command.inputModel.blogId,
     );
 

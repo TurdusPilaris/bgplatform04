@@ -13,7 +13,6 @@ import {
   UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
-import { BlogsQueryRepository } from '../infrastructure/blogs.query-repository';
 import { BlogCreateInputModel } from './models/input/create-blog.input.model';
 import { QueryBlogInputModel } from './models/input/query-blog.model';
 import { QueryPostInputModel } from '../../posts/api/models/input/query-post.model';
@@ -30,11 +29,10 @@ import { ErrorProcessor } from '../../../../base/models/errorProcessor';
 import { Request } from 'express';
 import { BlogsSqlQueryRepository } from '../infrastructure/blogs.sql.query-repository';
 
-@Controller('blogs')
+@Controller('sa/blogs')
 export class BlogsController {
   constructor(
     private commandBus: CommandBus,
-    protected blogsQueryRepository: BlogsQueryRepository,
     protected blogsSqlQueryRepository: BlogsSqlQueryRepository,
     protected postsQueryRepository: PostsQueryRepository,
   ) {}
@@ -44,12 +42,12 @@ export class BlogsController {
     @Query()
     queryDto: QueryBlogInputModel,
   ) {
-    return await this.blogsQueryRepository.findAll(queryDto);
+    return await this.blogsSqlQueryRepository.findAll(queryDto);
   }
 
   @Get(':id')
   async getBlog(@Param('id') blogId: string) {
-    const foundedBlog = await this.blogsQueryRepository.findById(blogId);
+    const foundedBlog = await this.blogsSqlQueryRepository.findById(blogId);
     if (!foundedBlog) {
       throw new NotFoundException();
     }
@@ -64,7 +62,7 @@ export class BlogsController {
     @Param('id') blogId: string,
     @Req() req: Request,
   ) {
-    const foundedBlog = await this.blogsQueryRepository.findById(blogId);
+    const foundedBlog = await this.blogsSqlQueryRepository.findById(blogId);
     if (!foundedBlog) {
       throw new NotFoundException();
     }

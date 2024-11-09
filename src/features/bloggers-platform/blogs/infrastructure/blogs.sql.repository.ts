@@ -1,22 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { BlogCreateInputModel } from '../api/models/input/create-blog.input.model';
-import {
-  Blog,
-  BlogDocument,
-  BlogModelType,
-} from '../domain/entiities/blog.entity';
-import { InjectModel } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
+import { BlogSQL } from '../api/models/sql/blog.model.sql';
 
 @Injectable()
 export class BlogsSqlRepository {
-  constructor(
-    @InjectModel(Blog.name)
-    private BlogModel: BlogModelType,
-    @InjectDataSource() protected dataSource: DataSource,
-  ) {}
+  constructor(@InjectDataSource() protected dataSource: DataSource) {}
 
   async createBlog(createModel: BlogCreateInputModel): Promise<string> {
     const query = `
@@ -36,19 +26,46 @@ export class BlogsSqlRepository {
     return res[0].id;
   }
 
-  async findById(id: string): Promise<BlogDocument | null> {
-    const blog = await this.BlogModel.findById(id, { __v: false });
-    if (!blog) return null;
-    return blog;
-  }
+  async findById(id: string): Promise<BlogSQL | null> {
+    const query = `
+    SELECT id, name, description, "websiteUrl", "createdAt", "isMembership"
+        FROM public."Blogs"
+        WHERE id = ;
+    `;
 
-  async save(foundedBlog: BlogDocument) {
-    return foundedBlog.save();
+    const foundBlogs: BlogSQL[] = await this.dataSource.query(query, [id]);
+
+    if (foundBlogs.length === 0) return null;
+
+    return foundBlogs[0];
+    // return res.map((e) => {
+    //   return {
+    //     ...e,
+    //   };
+    // })[0];
   }
 
   async delete(blogId: string) {
-    return this.BlogModel.deleteOne({
-      _id: new Types.ObjectId(blogId),
-    });
+    const query = `
+    DELETE FROM public."Blogs"
+        WHERE id = $1;
+    `;
+
+    await this.dataSource.query(query, [blogId]);
+  }
+
+  async updateBlog(inputModel: BlogCreateInputModel, blogId: string) {
+    const query = `
+    UPDATE public."Blogs"
+        SET  name=$2, description=$3, "websiteUrl"=$4
+        WHERE id = $1;
+    `;
+
+    await this.dataSource.query(query, [
+      blogId,
+      inputModel.name,
+      inputModel.description,
+      inputModel.description,
+    ]);
   }
 }
