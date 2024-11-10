@@ -6,6 +6,8 @@ import { PostCreateInputModel } from '../../api/models/input/create-post.input.m
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
 import { PostsQueryRepository } from '../../infrastructure/posts.query-repository';
 import { BlogsSqlRepository } from '../../../blogs/infrastructure/blogs.sql.repository';
+import { PostsSqlRepository } from '../../infrastructure/posts.sql.repository';
+import { PostsSqlQueryRepository } from '../../infrastructure/posts.sql.query-repository';
 
 export class CreatePostByBlogIdCommand {
   constructor(
@@ -20,7 +22,9 @@ export class CreatePostByBlogIdUseCase
 {
   constructor(
     private postsRepository: PostsRepository,
+    private postsSqlRepository: PostsSqlRepository,
     private postsQueryRepository: PostsQueryRepository,
+    private postsSqlQueryRepository: PostsSqlQueryRepository,
     private blogsSqlRepository: BlogsSqlRepository,
   ) {}
 
@@ -28,6 +32,7 @@ export class CreatePostByBlogIdUseCase
     command: CreatePostByBlogIdCommand,
   ): Promise<InterlayerNotice<PostOutputModel | null>> {
     //we need to find blog
+    console.log('command.blogId', command.blogId);
     const foundedBlog = await this.blogsSqlRepository.findById(command.blogId);
 
     if (!foundedBlog) {
@@ -44,10 +49,14 @@ export class CreatePostByBlogIdUseCase
     dtoModel.shortDescription = command.inputModel.shortDescription;
 
     //and finally map model
-    const outputPostModel = this.postsQueryRepository.postOutputModelMapper(
-      await this.postsRepository.createPost(dtoModel, foundedBlog.name),
-    );
+    // const outputPostModel = this.postsQueryRepository.postOutputModelMapper(
+    //   await this.postsRepository.createPost(dtoModel, foundedBlog.name),
+    // );
 
-    return new InterlayerNotice(outputPostModel);
+    const newPostId = await this.postsSqlRepository.createPost(dtoModel);
+
+    const createdPost = await this.postsSqlQueryRepository.findById(newPostId);
+
+    return new InterlayerNotice(createdPost);
   }
 }

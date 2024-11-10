@@ -17,9 +17,9 @@ export class BlogsSqlQueryRepository {
     private BlogModel: BlogModelType,
     protected dataSource: DataSource,
   ) {}
-  async findById(blogId: string) {
+  async findById(blogId: string): Promise<BlogOutputModel> {
     const query = `
-    SELECT name, description, "websiteUrl"
+    SELECT id, name, description, "websiteUrl", "createdAt", "isMembership"
         FROM public."Blogs"
         WHERE id = $1;
     `;
@@ -28,11 +28,12 @@ export class BlogsSqlQueryRepository {
 
     if (res.length === 0) return null;
 
-    return res.map((e) => {
-      return {
-        ...e,
-      };
-    })[0];
+    return res[0];
+    // return res.map((e) => {
+    //   return {
+    //     ...e,
+    //   };
+    // })[0];
   }
 
   async findAll(
@@ -52,12 +53,6 @@ export class BlogsSqlQueryRepository {
       `%${queryDto.searchNameTerm}%`,
     ]);
 
-    console.log('res', res);
-    console.log('query', query);
-    console.log(
-      '`%${queryDto.searchNameTerm}%`',
-      `%${queryDto.searchNameTerm}%`,
-    );
     const countBlogs = await this.getCountBlogsByFilter(
       queryDto.searchNameTerm,
     );

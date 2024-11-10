@@ -4,6 +4,7 @@ import { PostsRepository } from '../../infrastructure/posts.repository';
 import { BlogsRepository } from '../../../blogs/infrastructure/blogs.repository';
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
 import { BlogsSqlRepository } from '../../../blogs/infrastructure/blogs.sql.repository';
+import { PostsSqlRepository } from '../../infrastructure/posts.sql.repository';
 
 export class UpdatePostCommand {
   constructor(
@@ -16,11 +17,13 @@ export class UpdatePostCommand {
 export class UpdatePostUseCase implements ICommandHandler<UpdatePostCommand> {
   constructor(
     private postsRepository: PostsRepository,
+    private postsSqlRepository: PostsSqlRepository,
     private blogsRepository: BlogsRepository,
     private blogsSqlRepository: BlogsSqlRepository,
   ) {}
 
   async execute(command: UpdatePostCommand): Promise<InterlayerNotice<null>> {
+    console.log('Im here');
     const foundedBlog = await this.blogsSqlRepository.findById(
       command.inputModel.blogId,
     );
@@ -31,7 +34,7 @@ export class UpdatePostUseCase implements ICommandHandler<UpdatePostCommand> {
       return result;
     }
 
-    const foundedPost = await this.postsRepository.findById(command.postId);
+    const foundedPost = await this.postsSqlRepository.findById(command.postId);
 
     if (!foundedPost) {
       const result = new InterlayerNotice(null);
@@ -39,11 +42,7 @@ export class UpdatePostUseCase implements ICommandHandler<UpdatePostCommand> {
       return result;
     }
 
-    await this.postsRepository.update(
-      foundedPost,
-      command.inputModel,
-      foundedBlog.name,
-    );
+    await this.postsSqlRepository.update(command.inputModel, command.postId);
 
     return new InterlayerNotice(null);
   }

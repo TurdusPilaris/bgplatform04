@@ -20,7 +20,7 @@ import {
 } from './comments/domain/entities/comment.entity';
 import { Like, LikeSchema } from './comments/domain/entities/like.entity';
 import { UserAccountsModule } from '../user-accaunts/users.accounts.module';
-import { BlogsController } from './blogs/api/blogs.controller';
+import { BlogsSaController } from './blogs/api/blogs.sa.controller';
 import { PostsController } from './posts/api/posts.controller';
 import { CommentsController } from './comments/api/comments.controller';
 import { BlogsRepository } from './blogs/infrastructure/blogs.repository';
@@ -31,6 +31,9 @@ import { CommentsRepository } from './comments/infrastructure/comments.repositor
 import { CommentsQueryRepository } from './comments/infrastructure/comments.query-repository';
 import { BlogsSqlRepository } from './blogs/infrastructure/blogs.sql.repository';
 import { BlogsSqlQueryRepository } from './blogs/infrastructure/blogs.sql.query-repository';
+import { PostsSqlRepository } from './posts/infrastructure/posts.sql.repository';
+import { PostsSqlQueryRepository } from './posts/infrastructure/posts.sql.query-repository';
+import { BlogsController } from './blogs/api/blogs.controller';
 
 const useCasesForPost = [
   CreatePostUseCase,
@@ -60,7 +63,12 @@ const useCasesForComment = [
     UserAccountsModule,
     CqrsModule,
   ],
-  controllers: [BlogsController, PostsController, CommentsController],
+  controllers: [
+    BlogsSaController,
+    PostsController,
+    CommentsController,
+    BlogsController,
+  ],
   providers: [
     ...useCasesForPost,
     ...useCasesForBlog,
@@ -70,10 +78,12 @@ const useCasesForComment = [
     BlogsSqlRepository,
     BlogsSqlQueryRepository,
     PostsRepository,
+    PostsSqlRepository,
     PostsQueryRepository,
+    PostsSqlQueryRepository,
     CommentsRepository,
     CommentsQueryRepository,
   ],
-  exports: [],
+  exports: [BlogsSqlRepository],
 })
 export class BloggersPlatformModule {}

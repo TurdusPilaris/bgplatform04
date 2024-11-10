@@ -30,7 +30,7 @@ export class BlogsSqlRepository {
     const query = `
     SELECT id, name, description, "websiteUrl", "createdAt", "isMembership"
         FROM public."Blogs"
-        WHERE id = ;
+        WHERE id = $1;
     `;
 
     const foundBlogs: BlogSQL[] = await this.dataSource.query(query, [id]);
@@ -38,11 +38,6 @@ export class BlogsSqlRepository {
     if (foundBlogs.length === 0) return null;
 
     return foundBlogs[0];
-    // return res.map((e) => {
-    //   return {
-    //     ...e,
-    //   };
-    // })[0];
   }
 
   async delete(blogId: string) {
@@ -65,7 +60,7 @@ export class BlogsSqlRepository {
       blogId,
       inputModel.name,
       inputModel.description,
-      inputModel.description,
+      inputModel.websiteUrl,
     ]);
   }
 }

@@ -21,6 +21,7 @@ import { TestingModule } from './features/testing/testing.module';
 import { NameIsExistConstraint } from './infrastructure/decorators/validate/name-is-exist.decorator';
 import { WalletsModule } from './wallets/wallets.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { BlogIdIsValidConstraint } from './infrastructure/decorators/validate/blog-id-is-valid';
 
 const adapters = [EmailAdapter, EmailRouter, JwtService, BcryptService];
 
@@ -67,6 +68,6 @@ const adapters = [EmailAdapter, EmailRouter, JwtService, BcryptService];
     TestingModule,
     WalletsModule,
   ],
-  providers: [...adapters, NameIsExistConstraint],
+  providers: [...adapters, NameIsExistConstraint, BlogIdIsValidConstraint],
 })
 export class AppModule {}

@@ -6,6 +6,8 @@ import { BlogsRepository } from '../../../blogs/infrastructure/blogs.repository'
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
 import { PostsQueryRepository } from '../../infrastructure/posts.query-repository';
 import { BlogsSqlRepository } from '../../../blogs/infrastructure/blogs.sql.repository';
+import { PostsSqlRepository } from '../../infrastructure/posts.sql.repository';
+import { PostsSqlQueryRepository } from '../../infrastructure/posts.sql.query-repository';
 
 export class CreatePostCommand {
   constructor(public inputModel: PostCreateInputModel) {}
@@ -15,7 +17,9 @@ export class CreatePostCommand {
 export class CreatePostUseCase implements ICommandHandler<CreatePostCommand> {
   constructor(
     private postsRepository: PostsRepository,
+    private postsSqlRepository: PostsSqlRepository,
     private postsQueryRepository: PostsQueryRepository,
+    private postsSqlQueryRepository: PostsSqlQueryRepository,
     private blogsRepository: BlogsRepository,
     private blogsSqlRepository: BlogsSqlRepository,
   ) {}
@@ -33,13 +37,19 @@ export class CreatePostUseCase implements ICommandHandler<CreatePostCommand> {
       return result;
     }
 
-    const outputPostModel = this.postsQueryRepository.postOutputModelMapper(
-      await this.postsRepository.createPost(
-        command.inputModel,
-        foundedBlog.name,
-      ),
+    const newPostId = await this.postsSqlRepository.createPost(
+      command.inputModel,
     );
 
-    return new InterlayerNotice(outputPostModel);
+    const createdPost = await this.postsSqlQueryRepository.findById(newPostId);
+
+    // const outputPostModel = this.postsQueryRepository.postOutputModelMapper(
+    //   await this.postsSqlRepository.createPost(
+    //     command.inputModel,
+    //     // foundedBlog.name,
+    //   ),
+    // );
+
+    return new InterlayerNotice(createdPost);
   }
 }

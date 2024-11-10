@@ -30,12 +30,14 @@ import { GetOptionalUserGard } from '../../../../infrastructure/guards/get-optio
 import { AuthBearerGuard } from '../../../../infrastructure/guards/auth.bearer.guard';
 import { ErrorProcessor } from '../../../../base/models/errorProcessor';
 import { Request } from 'express';
+import { PostsSqlQueryRepository } from '../infrastructure/posts.sql.query-repository';
 
 @Controller('posts')
 export class PostsController {
   constructor(
     private commandBus: CommandBus,
     protected postsQueryRepository: PostsQueryRepository,
+    protected postsSqlQueryRepository: PostsSqlQueryRepository,
     protected commentsQueryRepository: CommentsQueryRepository,
   ) {}
 
@@ -46,13 +48,13 @@ export class PostsController {
     queryDto: QueryPostInputModel,
     @Req() req: Request,
   ) {
-    return await this.postsQueryRepository.findAll(queryDto, req.userId);
+    return await this.postsSqlQueryRepository.findAll(queryDto, req.userId);
   }
 
   @UseGuards(GetOptionalUserGard)
   @Get(':id')
   async getPost(@Param('id') postId: string, @Req() req: Request) {
-    const foundedPost = await this.postsQueryRepository.findById(
+    const foundedPost = await this.postsSqlQueryRepository.findById(
       postId,
       req.userId,
     );
