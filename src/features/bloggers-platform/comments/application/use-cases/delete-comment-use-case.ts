@@ -32,7 +32,7 @@ export class DeleteCommentUseCase
       return result;
     }
 
-    await this.commentsRepository.deleteComment(command.commentId);
+    // await this.commentsRepository.deleteComment(command.commentId);
 
     return new InterlayerNotice();
   }

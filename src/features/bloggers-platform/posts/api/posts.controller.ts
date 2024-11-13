@@ -18,7 +18,7 @@ import { PostsQueryRepository } from '../infrastructure/posts.query-repository';
 import { CreateCommentInputModel } from '../../comments/api/model/input/create-comment.input.model';
 import { QueryCommentModel } from '../../comments/api/model/input/query-comment.model';
 import { CommentsQueryRepository } from '../../comments/infrastructure/comments.query-repository';
-import { CreateLikeInputModel } from '../../comments/api/model/input/create-like.input.model';
+import { CreateLikeInputModel } from '../../likes/api/model/input/create-like.input.model';
 import { CommandBus } from '@nestjs/cqrs';
 import { CreatePostCommand } from '../application/use-cases/create-post-use-case';
 import { UpdatePostCommand } from '../application/use-cases/update-post-use-case';

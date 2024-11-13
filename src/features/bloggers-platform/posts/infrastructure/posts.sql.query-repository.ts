@@ -93,10 +93,11 @@ export class PostsSqlQueryRepository {
     `;
 
     const foundPosts: PostSQL[] = await this.dataSource.query(query, [postId]);
-    // const post = await this.PostModel.findById(postId, { __v: false });
-    // if (!post) return null;
-    //
-    // const myLike = await this.getLikesInfo(postId, userId);
+
+    if (foundPosts.length === 0) return null;
+
+    console.log('!foundPosts', !foundPosts);
+
     return this.postOutputModelMapper(foundPosts[0], likeStatus.None);
   }
 

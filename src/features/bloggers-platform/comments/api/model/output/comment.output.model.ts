@@ -1,6 +1,3 @@
-import { CommentDocument } from '../../../domain/entities/comment.entity';
-import { likeStatus } from '../../../../../../base/models/likesStatus';
-
 export class CommentOutputModel {
   id: string;
   content: string;

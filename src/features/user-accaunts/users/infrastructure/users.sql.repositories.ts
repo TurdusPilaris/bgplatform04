@@ -30,7 +30,7 @@ export class UsersSqlRepository {
 
   async findById(id: string): Promise<UserSQL | null> {
     const query = `
-    SELECT id, "userName", email, "createdAt", "confirmationCode", "expirationDate", "isConfirmed"
+    SELECT id, "userName", email, "createdAt", "confirmationCode", "expirationDate", "isConfirmed", "passwordHash"
         FROM public."Users"
         WHERE id = $1;
     `;
@@ -40,21 +40,16 @@ export class UsersSqlRepository {
     if (res.length === 0) return null;
 
     const users: UserSQL[] = res.map((e) => {
-      return {
-        id: e.id,
-        login: e.userName,
-        accountData: {
-          userName: e.userName,
-          email: e.email,
-          passwordHash: e.passwordHash,
-          createdAt: e.createdAt,
-        },
-        emailConfirmation: {
-          confirmationCode: e.confirmationCode,
-          expirationDate: e.expirationDate,
-          isConfirmed: e.isConfirmed,
-        },
-      };
+      return new UserSQL(
+        e.id,
+        e.userName,
+        e.email,
+        e.passwordHash,
+        e.createdAt,
+        e.confirmationCode,
+        e.expirationDate,
+        e.isConfirmed,
+      );
     });
 
     return users[0];
@@ -72,21 +67,16 @@ export class UsersSqlRepository {
     if (res.length === 0) return null;
 
     const users: UserSQL[] = res.map((e) => {
-      return {
-        id: e.id,
-        login: e.userName,
-        accountData: {
-          userName: e.userName,
-          email: e.email,
-          passwordHash: e.passwordHash,
-          createdAt: e.createdAt,
-        },
-        emailConfirmation: {
-          confirmationCode: e.confirmationCode,
-          expirationDate: e.expirationDate,
-          isConfirmed: e.isConfirmed,
-        },
-      };
+      return new UserSQL(
+        e.id,
+        e.userName,
+        e.email,
+        e.passwordHash,
+        e.createdAt,
+        e.confirmationCode,
+        e.expirationDate,
+        e.isConfirmed,
+      );
     });
 
     return users[0];
@@ -112,11 +102,7 @@ export class UsersSqlRepository {
         WHERE id = $1;
     `;
 
-    const res = await this.dataSource.query(query, [
-      id,
-      confirmationCode,
-      expirationDate,
-    ]);
+    await this.dataSource.query(query, [id, confirmationCode, expirationDate]);
   }
 
   async findByCodeConfirmation(code: string) {
@@ -131,21 +117,16 @@ export class UsersSqlRepository {
     if (res.length === 0) return null;
 
     const users: UserSQL[] = res.map((e) => {
-      return {
-        id: e.id,
-        login: e.userName,
-        accountData: {
-          userName: e.userName,
-          email: e.email,
-          passwordHash: e.passwordHash,
-          createdAt: e.createdAt,
-        },
-        emailConfirmation: {
-          confirmationCode: e.confirmationCode,
-          expirationDate: e.expirationDate,
-          isConfirmed: e.isConfirmed,
-        },
-      };
+      return new UserSQL(
+        e.id,
+        e.userName,
+        e.email,
+        e.passwordHash,
+        e.createdAt,
+        e.confirmationCode,
+        e.expirationDate,
+        e.isConfirmed,
+      );
     });
 
     return users[0];
@@ -158,6 +139,6 @@ export class UsersSqlRepository {
         WHERE id = $1;
     `;
 
-    const res = await this.dataSource.query(query, [id]);
+    await this.dataSource.query(query, [id]);
   }
 }

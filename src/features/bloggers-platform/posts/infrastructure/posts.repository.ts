@@ -50,9 +50,9 @@ export class PostsRepository {
     return post;
   }
 
-  async delete(postId: string) {
-    return this.PostModel.deleteOne({
-      _id: new Types.ObjectId(postId),
-    });
-  }
+  // async delete(postId: string) {
+  //   return this.PostModel.deleteOne({
+  //     _id: new Types.ObjectId(postId),
+  //   });
+  // }
 }

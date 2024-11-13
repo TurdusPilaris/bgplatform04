@@ -11,30 +11,32 @@ import {
 } from '../domain/entities/like.entity';
 import { CreateCommentInputModel } from '../api/model/input/create-comment.input.model';
 import { likeStatus } from '../../../../base/models/likesStatus';
+import { DataSource } from 'typeorm';
 
-export class CommentsRepository {
+export class CommentsSqlRepository {
   constructor(
     @InjectModel(Comment.name)
     private CommentModel: CommentModelType,
     @InjectModel(Like.name)
     private LikeModel: LikeModelType,
+    protected dataSource: DataSource,
   ) {}
 
-  async createComment(
-    comment: string,
-    postId: string,
-    userId: string,
-    userName: string,
-  ) {
-    const newComment = this.CommentModel.createNewComment(
-      this.CommentModel,
-      comment,
+  async createComment(comment: string, postId: string, userId: string) {
+    const query = `
+    INSERT INTO public."Comments"(
+        "postId", "commentatorId", content, "createdAt")
+        VALUES ( $1, $2, $3, $4) RETURNING id;
+    `;
+
+    const res = await this.dataSource.query(query, [
       postId,
       userId,
-      userName,
-    );
+      comment,
+      new Date(),
+    ]);
 
-    return newComment.save();
+    return res[0].id;
   }
 
   async findLikeByUserAndParent(

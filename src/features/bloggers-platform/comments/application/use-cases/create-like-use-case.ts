@@ -6,6 +6,7 @@ import { InterlayerNotice } from '../../../../../base/models/Interlayer';
 import { likeStatus } from '../../../../../base/models/likesStatus';
 import { PostDocument } from '../../../posts/domain/entiities/post.entity';
 import { UsersSqlRepository } from '../../../../user-accaunts/users/infrastructure/users.sql.repositories';
+import { PostsSqlRepository } from '../../../posts/infrastructure/posts.sql.repository';
 
 export class CreateLikeCommand {
   constructor(
@@ -17,6 +18,7 @@ export class CreateLikeCommand {
 @CommandHandler(CreateLikeCommand)
 export class CreateLikeUseCase implements ICommandHandler<CreateLikeCommand> {
   constructor(
+    private postsSqlRepository: PostsSqlRepository,
     private postsRepository: PostsRepository,
     private commentsRepository: CommentsRepository,
     private usersRepository: UsersRepository,
@@ -31,7 +33,7 @@ export class CreateLikeUseCase implements ICommandHandler<CreateLikeCommand> {
     // const postId = command.postId;
 
     //ищем пост
-    const foundPost = await this.postsRepository.findById(postId);
+    const foundPost = await this.postsSqlRepository.findById(postId);
 
     //возвращаем ошибку если пост не найден
     if (!foundPost) {

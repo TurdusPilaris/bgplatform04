@@ -23,7 +23,6 @@ export class DeletePostUseCase implements ICommandHandler<DeletePostCommand> {
       return result;
     }
 
-    console.log('Im here');
     //delete post
     await this.postsSqlRepository.delete(command.postId);
 

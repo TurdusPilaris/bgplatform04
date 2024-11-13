@@ -7,6 +7,8 @@ import { InterlayerNotice } from '../../../../../base/models/Interlayer';
 import { likeStatus } from '../../../../../base/models/likesStatus';
 import { CommentsQueryRepository } from '../../infrastructure/comments.query-repository';
 import { UsersSqlRepository } from '../../../../user-accaunts/users/infrastructure/users.sql.repositories';
+import { CommentsSqlRepository } from '../../infrastructure/comments.sql.repository';
+import { PostsSqlRepository } from '../../../posts/infrastructure/posts.sql.repository';
 
 export class CreateCommentCommand {
   constructor(
@@ -21,37 +23,44 @@ export class CreateCommentUseCase
   implements ICommandHandler<CreateCommentCommand>
 {
   constructor(
-    private postsRepository: PostsRepository,
+    private postsSqlRepository: PostsSqlRepository,
     private usersRepository: UsersRepository,
     private usersSqlRepository: UsersSqlRepository,
     private commentsRepository: CommentsRepository,
+    private commentsSqlRepository: CommentsSqlRepository,
     private commentsQueryRepository: CommentsQueryRepository,
   ) {}
 
   async execute(
-    command: CreateCommentCommand,
-  ): Promise<InterlayerNotice<CommentOutputModel | null>> {
-    const foundedPost = await this.postsRepository.findById(command.postId);
+    command: CreateCommentCommand, // : Promise<InterlayerNotice<CommentOutputModel | null>>
+  ): Promise<InterlayerNotice<null>> {
+    const foundedPost = await this.postsSqlRepository.findById(command.postId);
     if (!foundedPost) {
       const result = new InterlayerNotice(null);
       result.addError('Post is not exists', 'postId', 404);
       return result;
     }
 
-    const user = await this.usersSqlRepository.findById(command.userId);
+    // const user = await this.usersSqlRepository.findById(command.userId);
 
-    const newComment = await this.commentsRepository.createComment(
+    // const newComment = await this.commentsRepository.createComment(
+    //   command.comment,
+    //   command.postId,
+    //   user.id,
+    //   user.accountData.userName,
+    // );
+    const newCommentId = await this.commentsSqlRepository.createComment(
       command.comment,
       command.postId,
-      user.id,
-      user.accountData.userName,
+      command.userId,
     );
 
     return new InterlayerNotice(
-      this.commentsQueryRepository.commentOutputModelMapper(
-        newComment,
-        likeStatus.None,
-      ),
+      newCommentId,
+      // this.commentsQueryRepository.commentOutputModelMapper(
+      //   newComment,
+      //   likeStatus.None,
+      // ),
     );
   }
 }

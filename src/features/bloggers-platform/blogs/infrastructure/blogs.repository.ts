@@ -30,9 +30,9 @@ export class BlogsRepository {
     return foundedBlog.save();
   }
 
-  async delete(blogId: string) {
-    return this.BlogModel.deleteOne({
-      _id: new Types.ObjectId(blogId),
-    });
-  }
+  // async delete(blogId: string) {
+  //   return this.BlogModel.deleteOne({
+  //     _id: new Types.ObjectId(blogId),
+  //   });
+  // }
 }
