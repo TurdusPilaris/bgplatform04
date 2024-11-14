@@ -21,9 +21,7 @@ export class CreatePostByBlogIdUseCase
   implements ICommandHandler<CreatePostByBlogIdCommand>
 {
   constructor(
-    private postsRepository: PostsRepository,
     private postsSqlRepository: PostsSqlRepository,
-    private postsQueryRepository: PostsQueryRepository,
     private postsSqlQueryRepository: PostsSqlQueryRepository,
     private blogsSqlRepository: BlogsSqlRepository,
   ) {}
@@ -32,7 +30,6 @@ export class CreatePostByBlogIdUseCase
     command: CreatePostByBlogIdCommand,
   ): Promise<InterlayerNotice<PostOutputModel | null>> {
     //we need to find blog
-    console.log('command.blogId', command.blogId);
     const foundedBlog = await this.blogsSqlRepository.findById(command.blogId);
 
     if (!foundedBlog) {
@@ -47,11 +44,6 @@ export class CreatePostByBlogIdUseCase
     dtoModel.content = command.inputModel.content;
     dtoModel.title = command.inputModel.title;
     dtoModel.shortDescription = command.inputModel.shortDescription;
-
-    //and finally map model
-    // const outputPostModel = this.postsQueryRepository.postOutputModelMapper(
-    //   await this.postsRepository.createPost(dtoModel, foundedBlog.name),
-    // );
 
     const newPostId = await this.postsSqlRepository.createPost(dtoModel);
 

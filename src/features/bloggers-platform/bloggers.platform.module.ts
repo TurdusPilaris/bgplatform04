@@ -37,6 +37,7 @@ import { BlogsController } from './blogs/api/blogs.controller';
 import { CommentsSqlRepository } from './comments/infrastructure/comments.sql.repository';
 import { CommentsSqlQueryRepository } from './comments/infrastructure/comments.sql.query-repository';
 import { LikesSqlRepository } from './likes/infrastructure/likes.sql.repository';
+import { UpdateLikeStatusUseCase } from './comments/application/use-cases/update-like-status-use-case';
 
 const useCasesForPost = [
   CreatePostUseCase,
@@ -52,6 +53,7 @@ const useCasesForBlog = [
 const useCasesForComment = [
   UpdateCommentUseCase,
   CreateLikeUseCase,
+  UpdateLikeStatusUseCase,
   CreateCommentUseCase,
   DeleteCommentUseCase,
 ];

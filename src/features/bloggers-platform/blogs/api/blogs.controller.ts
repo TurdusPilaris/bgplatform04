@@ -6,12 +6,14 @@ import {
   ParseUUIDPipe,
   Query,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import { QueryBlogInputModel } from './models/input/query-blog.model';
 import { QueryPostInputModel } from '../../posts/api/models/input/query-post.model';
 import { Request } from 'express';
 import { BlogsSqlQueryRepository } from '../infrastructure/blogs.sql.query-repository';
 import { PostsSqlQueryRepository } from '../../posts/infrastructure/posts.sql.query-repository';
+import { GetOptionalUserGard } from '../../../../infrastructure/guards/get-optional-user-gard.service';
 
 @Controller('blogs')
 export class BlogsController {
@@ -37,6 +39,7 @@ export class BlogsController {
     return foundedBlog;
   }
 
+  @UseGuards(GetOptionalUserGard)
   @Get(':id/posts')
   async getPostsByBlogId(
     @Query()

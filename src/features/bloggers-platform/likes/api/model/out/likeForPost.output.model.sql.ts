@@ -1,13 +1,15 @@
 import { likeStatus } from '../../../../../../base/models/likesStatus';
 
-export class CommentOutputModel {
+export class LikeForPostOutputSQL {
   id: string;
+  postId: string;
   content: string;
   commentatorInfo: CommentatorInfo;
-  createdAt: string;
+  createdAt: Date;
   likesInfo: CommentLikesInfo;
   constructor(
     id: string,
+    postId: string,
     commentatorId: string,
     commentatorName: string,
     content: string,
@@ -17,13 +19,14 @@ export class CommentOutputModel {
     myStatus: likeStatus,
   ) {
     this.id = id;
+    this.postId = postId;
     this.content = content;
     this.commentatorInfo = new CommentatorInfo(commentatorId, commentatorName);
-    this.createdAt = createdAt.toISOString();
+    this.createdAt = createdAt;
     this.likesInfo = new CommentLikesInfo(countLikes, countDislikes, myStatus);
   }
 }
-export class CommentatorInfo {
+class CommentatorInfo {
   userId: string;
   userLogin: string;
   constructor(userId: string, userLogin: string) {
@@ -32,13 +35,13 @@ export class CommentatorInfo {
   }
 }
 
-export class CommentLikesInfo {
-  likesCount: number;
-  dislikesCount: number;
+class CommentLikesInfo {
+  countLikes: number;
+  countDislikes: number;
   myStatus: likeStatus;
   constructor(countLikes: number, countDislikes: number, myStatus: likeStatus) {
-    this.likesCount = +countLikes;
-    this.dislikesCount = +countDislikes;
+    this.countLikes = countLikes;
+    this.countDislikes = countDislikes;
     this.myStatus = myStatus;
   }
 }

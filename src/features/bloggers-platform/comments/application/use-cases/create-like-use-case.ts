@@ -7,25 +7,28 @@ import { likeStatus } from '../../../../../base/models/likesStatus';
 import { PostDocument } from '../../../posts/domain/entiities/post.entity';
 import { UsersSqlRepository } from '../../../../user-accaunts/users/infrastructure/users.sql.repositories';
 import { PostsSqlRepository } from '../../../posts/infrastructure/posts.sql.repository';
+import { LikesSqlRepository } from '../../../likes/infrastructure/likes.sql.repository';
 
-export class CreateLikeCommand {
+export class CreateLikeForPostCommand {
   constructor(
     public likeStatusFromDto: likeStatus,
     public postId: string,
     public userId: string,
   ) {}
 }
-@CommandHandler(CreateLikeCommand)
-export class CreateLikeUseCase implements ICommandHandler<CreateLikeCommand> {
+@CommandHandler(CreateLikeForPostCommand)
+export class CreateLikeUseCase
+  implements ICommandHandler<CreateLikeForPostCommand>
+{
   constructor(
     private postsSqlRepository: PostsSqlRepository,
     private postsRepository: PostsRepository,
     private commentsRepository: CommentsRepository,
-    private usersRepository: UsersRepository,
+    private likesSqlRepository: LikesSqlRepository,
     private usersSqlRepository: UsersSqlRepository,
   ) {}
 
-  async execute(command: CreateLikeCommand): Promise<InterlayerNotice> {
+  async execute(command: CreateLikeForPostCommand): Promise<InterlayerNotice> {
     //приводим к enum лайк
     const newStatusLike = command.likeStatusFromDto;
     // выносим переменные из команды в отедльные переменные
@@ -43,7 +46,7 @@ export class CreateLikeUseCase implements ICommandHandler<CreateLikeCommand> {
     }
 
     //ищем лайки для конкретных поста и пользователя
-    const foundedLike = await this.commentsRepository.findLikeByUserAndParent(
+    const foundedLike = await this.likesSqlRepository.findLikeByUserAndPost(
       postId,
       userId,
     );
@@ -56,45 +59,47 @@ export class CreateLikeUseCase implements ICommandHandler<CreateLikeCommand> {
       return await this.createNewLike(
         postId,
         userId,
-        user.accountData.userName,
+        // user.accountData.userName,
         newStatusLike,
-        foundPost,
+        // foundPost,
       );
     }
-    //сохранили старый статус лайка для пересчета в комментарии
-    const oldStatusLike = foundedLike.statusLike;
+    // //сохранили старый статус лайка для пересчета в комментарии
+    // const oldStatusLike = foundedLike.statusLike;
 
     //установили новый статус лайка и обновили дату изменения лайка
-    foundedLike.putNewLike(newStatusLike);
-    await this.commentsRepository.saveLikes(foundedLike);
+    await this.likesSqlRepository.updateLikeForPost(
+      foundedLike.id,
+      newStatusLike,
+    );
 
     //пересчитаем количество если отличаются новй статус от старого
-    if (oldStatusLike !== newStatusLike) {
-      const lastThreeLikes =
-        await this.commentsRepository.findThreeLastLikesByParent(postId);
-
-      let resultLastThreeLikes: {
-        addedAt: Date;
-        login: string;
-        userId: string;
-      }[] = [];
-
-      if (lastThreeLikes) {
-        resultLastThreeLikes = lastThreeLikes.map(function (newestLikes) {
-          return {
-            userId: newestLikes.userID,
-            addedAt: newestLikes.updatedAt,
-            login: newestLikes.login,
-          };
-        });
-      }
-      await foundPost.recountLikes(
-        oldStatusLike,
-        newStatusLike,
-        resultLastThreeLikes,
-      );
-      await this.postsRepository.save(foundPost);
-    }
+    // if (oldStatusLike !== newStatusLike) {
+    //   const lastThreeLikes =
+    //     await this.commentsRepository.findThreeLastLikesByParent(postId);
+    //
+    //   let resultLastThreeLikes: {
+    //     addedAt: Date;
+    //     login: string;
+    //     userId: string;
+    //   }[] = [];
+    //
+    //   if (lastThreeLikes) {
+    //     resultLastThreeLikes = lastThreeLikes.map(function (newestLikes) {
+    //       return {
+    //         userId: newestLikes.userID,
+    //         addedAt: newestLikes.updatedAt,
+    //         login: newestLikes.login,
+    //       };
+    //     });
+    //   }
+    //   await foundPost.recountLikes(
+    //     oldStatusLike,
+    //     newStatusLike,
+    //     resultLastThreeLikes,
+    //   );
+    //   await this.postsRepository.save(foundPost);
+    // }
 
     return new InterlayerNotice();
   }
@@ -102,39 +107,38 @@ export class CreateLikeUseCase implements ICommandHandler<CreateLikeCommand> {
   async createNewLike(
     postId: string,
     userId: string,
-    userName: string,
+    // userName: string,
     newStatusLike: likeStatus,
-    foundedPost: PostDocument,
+    // foundedPost: PostDocument,
   ): Promise<InterlayerNotice> {
     //если нет, то создаем новый лайк и сохраняем его
-    await this.commentsRepository.createLike(
+    await this.likesSqlRepository.createLikeForPost(
       postId,
       userId,
-      userName,
       newStatusLike,
     );
     //в пост добавляем количество лайков по статусу
 
-    const lastThreeLikes =
-      await this.commentsRepository.findThreeLastLikesByParent(postId);
-
-    let resultLastThreeLikes: {
-      addedAt: Date;
-      login: string;
-      userId: string;
-    }[] = [];
-
-    if (lastThreeLikes) {
-      resultLastThreeLikes = lastThreeLikes.map(function (newestLikes) {
-        return {
-          userId: newestLikes.userID,
-          addedAt: newestLikes.updatedAt,
-          login: newestLikes.login,
-        };
-      });
-    }
-    await foundedPost.addCountLikes(newStatusLike, resultLastThreeLikes);
-    await this.postsRepository.save(foundedPost);
+    // const lastThreeLikes =
+    //   await this.likesSqlRepository.findThreeLastLikesByPost(postId);
+    //
+    // let resultLastThreeLikes: {
+    //   addedAt: Date;
+    //   login: string;
+    //   userId: string;
+    // }[] = [];
+    //
+    // if (lastThreeLikes) {
+    //   resultLastThreeLikes = lastThreeLikes.map(function (newestLikes) {
+    //     return {
+    //       userId: newestLikes.userId,
+    //       addedAt: newestLikes.updatedAt,
+    //       login: newestLikes.login,
+    //     };
+    //   });
+    // }
+    // await foundedPost.addCountLikes(newStatusLike, resultLastThreeLikes);
+    // await this.postsRepository.save(foundedPost);
 
     return new InterlayerNotice();
   }

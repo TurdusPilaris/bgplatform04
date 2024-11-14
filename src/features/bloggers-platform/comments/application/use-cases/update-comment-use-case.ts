@@ -2,6 +2,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CommentsRepository } from '../../infrastructure/comments.repository';
 import { CreateCommentInputModel } from '../../api/model/input/create-comment.input.model';
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
+import { CommentsSqlRepository } from '../../infrastructure/comments.sql.repository';
 
 export class UpdateCommentCommand {
   constructor(
@@ -15,10 +16,13 @@ export class UpdateCommentCommand {
 export class UpdateCommentUseCase
   implements ICommandHandler<UpdateCommentCommand>
 {
-  constructor(private commentsRepository: CommentsRepository) {}
+  constructor(
+    private commentsRepository: CommentsRepository,
+    private commentsSqlRepository: CommentsSqlRepository,
+  ) {}
 
   async execute(command: UpdateCommentCommand): Promise<InterlayerNotice> {
-    const foundedComment = await this.commentsRepository.findCommentById(
+    const foundedComment = await this.commentsSqlRepository.findCommentById(
       command.commentId,
     );
 
@@ -28,15 +32,15 @@ export class UpdateCommentUseCase
       return result;
     }
 
-    if (foundedComment.commentatorInfo.userId !== command.userId) {
+    if (foundedComment.commentatorId !== command.userId) {
       const result = new InterlayerNotice(null);
       result.addError('You are not owner', 'user', 403);
       return result;
     }
 
-    await this.commentsRepository.updateComment(
-      foundedComment,
-      command.inputModel,
+    await this.commentsSqlRepository.updateComment(
+      foundedComment.id,
+      command.inputModel.content,
     );
 
     return new InterlayerNotice();

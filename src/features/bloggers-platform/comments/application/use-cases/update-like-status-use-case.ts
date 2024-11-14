@@ -4,27 +4,33 @@ import { UsersRepository } from '../../../../user-accaunts/users/infrastructure/
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
 import { likeStatus } from '../../../../../base/models/likesStatus';
 import { UsersSqlRepository } from '../../../../user-accaunts/users/infrastructure/users.sql.repositories';
+import { CommentsSqlRepository } from '../../infrastructure/comments.sql.repository';
+import { LikesSqlRepository } from '../../../likes/infrastructure/likes.sql.repository';
 
-export class UpdateLikeStatusCommand {
+export class UpdateLikeStatusForCommentCommand {
   constructor(
     public commentId: string,
     public userId: string,
-    public likeStatusFromDto: string,
+    public likeStatus: likeStatus,
   ) {}
 }
 
-@CommandHandler(UpdateLikeStatusCommand)
+@CommandHandler(UpdateLikeStatusForCommentCommand)
 export class UpdateLikeStatusUseCase
-  implements ICommandHandler<UpdateLikeStatusCommand>
+  implements ICommandHandler<UpdateLikeStatusForCommentCommand>
 {
   constructor(
     private commentsRepository: CommentsRepository,
+    private commentsSqlRepository: CommentsSqlRepository,
     private usersRepository: UsersRepository,
     private usersSqlRepository: UsersSqlRepository,
+    private likesSqlRepository: LikesSqlRepository,
   ) {}
 
-  async execute(command: UpdateLikeStatusCommand): Promise<InterlayerNotice> {
-    const newStatusLike = likeStatus[command.likeStatusFromDto];
+  async execute(
+    command: UpdateLikeStatusForCommentCommand,
+  ): Promise<InterlayerNotice> {
+    const newStatusLike = likeStatus[command.likeStatus];
 
     if (!newStatusLike) {
       const result = new InterlayerNotice(null);
@@ -32,7 +38,7 @@ export class UpdateLikeStatusUseCase
       return result;
     }
 
-    const comment = await this.commentsRepository.findCommentById(
+    const comment = await this.commentsSqlRepository.findCommentById(
       command.commentId,
     );
 
@@ -42,7 +48,7 @@ export class UpdateLikeStatusUseCase
       return result;
     }
 
-    const foundedLikes = await this.commentsRepository.findLikeByUserAndParent(
+    const foundLike = await this.likesSqlRepository.findLikeByUserAndComment(
       command.commentId,
       command.userId,
     );
@@ -50,33 +56,34 @@ export class UpdateLikeStatusUseCase
     const user = await this.usersSqlRepository.findById(command.userId);
 
     //проверяем был ли создан лайк
-    if (!foundedLikes) {
+    if (!foundLike) {
       //если нет, то создаем новый лайк и сохраняем его
-      await this.commentsRepository.createLike(
+      await this.likesSqlRepository.createLikeForComment(
         command.commentId,
         command.userId,
-        user.accountData.userName,
         newStatusLike,
       );
 
       //в комментарий добавляем количество лайков по статусу
 
-      comment.addCountLikes(newStatusLike);
+      // comment.addCountLikes(newStatusLike);
 
-      await this.commentsRepository.saveComment(comment);
+      // await this.commentsRepository.saveComment(comment);
     } else {
       //сохранили старый статус лайка для пересчета в комментарии
-      const oldStatusLike = foundedLikes.statusLike;
+      const oldStatusLike = foundLike.statusLike;
 
       //установили новый статус лайка и обновили дату изменения лайка
-      foundedLikes.putNewLike(newStatusLike);
-      await this.commentsRepository.saveLikes(foundedLikes);
+      await this.likesSqlRepository.updateLikeForPost(
+        foundLike.id,
+        newStatusLike,
+      );
 
       //пересчитаем количество если отличаются новй статус от старого
-      if (oldStatusLike !== newStatusLike) {
-        comment.recountLikes(oldStatusLike, newStatusLike);
-        await this.commentsRepository.saveComment(comment);
-      }
+      // if (oldStatusLike !== newStatusLike) {
+      //   comment.recountLikes(oldStatusLike, newStatusLike);
+      //   await this.commentsRepository.saveComment(comment);
+      // }
     }
 
     return new InterlayerNotice();

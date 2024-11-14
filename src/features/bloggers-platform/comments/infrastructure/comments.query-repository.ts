@@ -6,11 +6,7 @@ import {
 } from '../domain/entities/comment.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { QueryCommentModel } from '../api/model/input/query-comment.model';
-import {
-  CommentatorInfo,
-  CommentOutputModel,
-  LikesInfo,
-} from '../api/model/output/comment.output.model';
+import { CommentOutputModel } from '../api/model/output/comment.output.model';
 import { Like, LikeModelType } from '../domain/entities/like.entity';
 import { likeStatus } from '../../../../base/models/likesStatus';
 import { PaginationOutputModel } from '../../../../base/models/output/pagination.output.model';
@@ -125,23 +121,16 @@ export class CommentsQueryRepository {
     comment: CommentDocument,
     myLikes?: likeStatus,
   ): CommentOutputModel => {
-    const outputCommentModel = new CommentOutputModel();
-    outputCommentModel.id = comment.id.toString();
-    outputCommentModel.content = comment.content;
-    outputCommentModel.commentatorInfo = new CommentatorInfo();
-    outputCommentModel.commentatorInfo.userId = comment.commentatorInfo.userId;
-    outputCommentModel.commentatorInfo.userLogin =
-      comment.commentatorInfo.userLogin;
-    outputCommentModel.createdAt = comment.createdAt.toISOString();
-    outputCommentModel.likesInfo = new LikesInfo();
-    outputCommentModel.likesInfo.dislikesCount =
-      comment.likesInfo.countDislikes;
-    outputCommentModel.likesInfo.likesCount = comment.likesInfo.countLikes;
-    outputCommentModel.likesInfo.myStatus = !myLikes
-      ? comment.likesInfo.myStatus
-      : myLikes;
-
-    return outputCommentModel;
+    return new CommentOutputModel(
+      comment.id,
+      comment.commentatorInfo.userId,
+      comment.commentatorInfo.userLogin,
+      comment.content,
+      comment.createdAt,
+      comment.likesInfo.countLikes,
+      comment.likesInfo.countDislikes,
+      !myLikes ? comment.likesInfo.myStatus : myLikes,
+    );
   };
 
   paginationCommentModelMapper = (

@@ -19,7 +19,6 @@ import { BloggersPlatformModule } from './features/bloggers-platform/bloggers.pl
 import { UserAccountsModule } from './features/user-accaunts/users.accounts.module';
 import { TestingModule } from './features/testing/testing.module';
 import { NameIsExistConstraint } from './infrastructure/decorators/validate/name-is-exist.decorator';
-import { WalletsModule } from './wallets/wallets.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BlogIdIsValidConstraint } from './infrastructure/decorators/validate/blog-id-is-valid';
 
@@ -66,7 +65,6 @@ const adapters = [EmailAdapter, EmailRouter, JwtService, BcryptService];
     UserAccountsModule,
     BloggersPlatformModule,
     TestingModule,
-    WalletsModule,
   ],
   providers: [...adapters, NameIsExistConstraint, BlogIdIsValidConstraint],
 })

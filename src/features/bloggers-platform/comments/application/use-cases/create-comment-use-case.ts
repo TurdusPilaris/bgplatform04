@@ -9,6 +9,7 @@ import { CommentsQueryRepository } from '../../infrastructure/comments.query-rep
 import { UsersSqlRepository } from '../../../../user-accaunts/users/infrastructure/users.sql.repositories';
 import { CommentsSqlRepository } from '../../infrastructure/comments.sql.repository';
 import { PostsSqlRepository } from '../../../posts/infrastructure/posts.sql.repository';
+import { CommentsSqlQueryRepository } from '../../infrastructure/comments.sql.query-repository';
 
 export class CreateCommentCommand {
   constructor(
@@ -28,12 +29,12 @@ export class CreateCommentUseCase
     private usersSqlRepository: UsersSqlRepository,
     private commentsRepository: CommentsRepository,
     private commentsSqlRepository: CommentsSqlRepository,
-    private commentsQueryRepository: CommentsQueryRepository,
+    private commentsSqlQueryRepository: CommentsSqlQueryRepository,
   ) {}
 
   async execute(
-    command: CreateCommentCommand, // : Promise<InterlayerNotice<CommentOutputModel | null>>
-  ): Promise<InterlayerNotice<null>> {
+    command: CreateCommentCommand,
+  ): Promise<InterlayerNotice<CommentOutputModel | null>> {
     const foundedPost = await this.postsSqlRepository.findById(command.postId);
     if (!foundedPost) {
       const result = new InterlayerNotice(null);
@@ -56,11 +57,10 @@ export class CreateCommentUseCase
     );
 
     return new InterlayerNotice(
-      newCommentId,
-      // this.commentsQueryRepository.commentOutputModelMapper(
-      //   newComment,
-      //   likeStatus.None,
-      // ),
+      await this.commentsSqlQueryRepository.findCommentById(
+        newCommentId,
+        command.userId,
+      ),
     );
   }
 }

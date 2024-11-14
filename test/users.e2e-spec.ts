@@ -16,7 +16,6 @@ const CORRECT_ADMIN_AUTH_BASE64 = 'Basic YWRtaW46cXdlcnR5';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let usersTestManger: UsersTestManager;
   let testingController: TestingController;
 
@@ -63,7 +62,6 @@ describe('AppController (e2e)', () => {
       CORRECT_ADMIN_AUTH_BASE64,
       createModel,
     );
-    // console.log('badRequsetResponse.body', badRequsetResponse.body);
   });
 
   it('/ create user tests (POST) Bad Request (400) invalid password', async () => {

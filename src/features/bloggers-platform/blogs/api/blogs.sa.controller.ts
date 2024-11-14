@@ -16,7 +16,6 @@ import {
 import { BlogCreateInputModel } from './models/input/create-blog.input.model';
 import { QueryBlogInputModel } from './models/input/query-blog.model';
 import { QueryPostInputModel } from '../../posts/api/models/input/query-post.model';
-import { PostsQueryRepository } from '../../posts/infrastructure/posts.query-repository';
 import { DeleteBlogCommand } from '../application/use-cases/delete-blog-use-case';
 import { CreateBlogCommand } from '../application/use-cases/create-blog-use-case';
 import { CommandBus } from '@nestjs/cqrs';

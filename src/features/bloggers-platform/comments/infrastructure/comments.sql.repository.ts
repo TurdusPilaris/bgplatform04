@@ -12,6 +12,9 @@ import {
 import { CreateCommentInputModel } from '../api/model/input/create-comment.input.model';
 import { likeStatus } from '../../../../base/models/likesStatus';
 import { DataSource } from 'typeorm';
+import { CommentSQL } from '../api/model/sql/comment.model.sql';
+import { UserSQL } from '../../../user-accaunts/users/api/models/sql/user.model.sql';
+import { CommentOutputModel } from '../api/model/output/comment.output.model';
 
 export class CommentsSqlRepository {
   constructor(
@@ -62,38 +65,37 @@ export class CommentsSqlRepository {
     await newLike.save();
   }
 
-  async findCommentById(id: string): Promise<CommentDocument | null> {
-    return this.CommentModel.findById(id);
+  async findCommentById(id: string): Promise<CommentSQL | null> {
+    const query = `
+      SELECT "Comments".id, "Comments"."postId", "Comments"."commentatorId", "Comments".content, "Comments"."createdAt", "Users"."userName" as "commentatorName"
+        FROM public."Comments"
+        LEFT JOIN "Users" ON "Users".id = "Comments"."commentatorId"
+        WHERE "Comments".id = $1;
+      `;
+
+    const res: CommentSQL[] = await this.dataSource.query(query, [id]);
+
+    if (res.length === 0) return null;
+
+    return res[0];
   }
 
-  async updateComment(comment: CommentDocument, dto: CreateCommentInputModel) {
-    comment.content = dto.content;
-    await comment.save();
+  async updateComment(commentId: string, content: string) {
+    const query = `
+    UPDATE public."Comments"
+        SET content= $2
+        WHERE id = $1;
+    `;
+
+    await this.dataSource.query(query, [commentId, content]);
   }
 
-  async saveComment(comment: CommentDocument) {
-    await comment.save();
-  }
+  async deleteComment(commentId: string) {
+    const query = `
+    DELETE FROM public."Comments"
+        WHERE id = $1;
+    `;
 
-  // async deleteComment(commentId: string) {
-  //   return this.CommentModel.deleteOne({
-  //     _id: new Types.ObjectId(commentId),
-  //   });
-  // }
-
-  createLike(
-    parentID: string,
-    userId: string,
-    userName: string,
-    newStatusLike: any,
-  ) {
-    const newLike = this.LikeModel.createNewLike(
-      this.LikeModel,
-      parentID,
-      userId,
-      userName,
-      newStatusLike,
-    );
-    return newLike.save();
+    await this.dataSource.query(query, [commentId]);
   }
 }

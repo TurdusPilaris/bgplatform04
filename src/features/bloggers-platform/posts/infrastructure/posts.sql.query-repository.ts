@@ -1,60 +1,88 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { PostClass, PostModelType } from '../domain/entiities/post.entity';
 import { QueryPostInputModel } from '../api/models/input/query-post.model';
 import {
-  LikesInfoOut,
+  NewestLike,
   PostOutputModel,
 } from '../api/models/output/post.output.model';
-
-import {
-  Like,
-  LikeModelType,
-} from '../../comments/domain/entities/like.entity';
-import { likeStatus } from '../../../../base/models/likesStatus';
 import { PaginationOutputModel } from '../../../../base/models/output/pagination.output.model';
 import { DataSource } from 'typeorm';
 import { PostSQL } from '../api/models/sql/post.sql.model';
 
 @Injectable()
 export class PostsSqlQueryRepository {
-  constructor(
-    @InjectModel(PostClass.name)
-    private PostModel: PostModelType,
-    @InjectModel(Like.name)
-    private LikeModel: LikeModelType,
-    protected dataSource: DataSource,
-  ) {}
+  constructor(protected dataSource: DataSource) {}
   async findAll(
     queryDto: QueryPostInputModel,
     userId: string | null,
     blogId?: string,
   ) {
-    const conditionForBlog = !blogId ? '' : ' WHERE b.id = $3';
+    const conditionForBlog = !blogId ? '' : ' WHERE b.id = $4';
+
     const query = `
-    SELECT p.id, p."blogId", p.title, p."shortDescription", p.content, p."createdAt", b.name as "blogName"
-    FROM public."Posts" as p
-    LEFT JOIN public."Blogs" as b
-    ON p."blogId" = b.id
-    ${conditionForBlog}
-        ORDER BY "${queryDto.sortBy}" ${queryDto.sortDirection}
-        LIMIT $1 OFFSET $2
+        with countLikesAndDislike AS(
+            SELECT count(*) as "count", "statusLike", "postId"
+                FROM "LikeForPost"
+                GROUP BY "statusLike", "postId"
+        ),
+        likeForCurrentUser AS(
+            SELECT "statusLike", "postId"
+            FROM "LikeForPost"
+            WHERE "userId" = $3
+
+        )
+        SELECT 
+        p.id, 
+        p.title,
+        p."shortDescription", 
+        p.content,
+        p."blogId",  
+        b.name as "blogName",
+        p."createdAt", 
+        COALESCE(countDislike."count", 0) as "dislikesCount",
+        COALESCE(countLike."count", 0) as "likesCount",
+        COALESCE(likeForCurrentUser."statusLike", 'None') as "myStatus",
+        (select array(select row_to_json(row) from (
+        SELECT "LikeForPost".id, "LikeForPost"."postId", TO_CHAR("LikeForPost"."updatedAt", 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as "addedAt", "LikeForPost"."updatedAt", "LikeForPost"."userId", "Users"."userName" as login
+        FROM public."LikeForPost"
+        LEFT JOIN "Users" ON "LikeForPost"."userId" = "Users".id
+        WHERE "statusLike" = 'Like' and "LikeForPost"."postId" =  p.id 
+        ORDER BY "updatedAt" desc 
+        limit 3
+        
+        ) as row
+        
+        ) )as "newestLikes"
+
+            FROM public."Posts" as p
+            LEFT JOIN public."Blogs" as b
+            ON p."blogId" = b.id
+            LEFT JOIN countLikesAndDislike as countDislike ON p.id = countDislike."postId" AND countDislike."statusLike" = 'Dislike'
+            LEFT JOIN countLikesAndDislike as countLike  ON p.id = countLike."postId" AND countLike."statusLike" = 'Like'
+            LEFT JOIN likeForCurrentUser ON  p.id = likeForCurrentUser."postId"
+            ${conditionForBlog}
+            ORDER BY "${queryDto.sortBy}" ${queryDto.sortDirection}
+            LIMIT $1 OFFSET $2
+ 
     `;
 
     const parametersForPosts: (number | string)[] = [
       queryDto.pageSize,
       (queryDto.pageNumber - 1) * queryDto.pageSize,
+      !userId ? '00000000-0000-0000-0000-000000000000' : userId,
     ];
     if (blogId) parametersForPosts.push(blogId);
-    const res: PostSQL[] = await this.dataSource.query(
-      query,
-      parametersForPosts,
-    );
+
+    const res = await this.dataSource.query(query, parametersForPosts);
 
     const countPosts = await this.getCountPostByFilter(blogId);
 
     const itemsForPaginator = res.map((post) =>
-      this.postOutputModelMapper(post, likeStatus.None),
+      this.postOutputModelMapper(
+        post,
+        post.newestLikes.map((e) => {
+          return new NewestLike(e.addedAt, e.userId, e.login);
+        }),
+      ),
     );
 
     return this.paginationPostModelMapper(
@@ -85,87 +113,83 @@ export class PostsSqlQueryRepository {
   }
   async findById(postId: string, userId?: string) {
     const query = `
-    SELECT p.id, p."blogId", p.title, p."shortDescription", p.content, p."createdAt", b.name as "blogName"
-    FROM public."Posts" as p
-    LEFT JOIN public."Blogs" as b
-    ON p."blogId" = b.id
-    WHERE p.id = $1
-    `;
+    with countLikesAndDislike AS(
+            SELECT count(*) as "count", "statusLike", "postId"
+                FROM "LikeForPost"
+                WHERE "postId" = $1
+                GROUP BY "statusLike", "postId"
+        ),
+        likeForCurrentUser AS(
+            SELECT "statusLike", "postId"
+            FROM "LikeForPost"
+            WHERE "postId" = $1 AND "userId" = $2
 
-    const foundPosts: PostSQL[] = await this.dataSource.query(query, [postId]);
+        )
+        SELECT 
+        p.id, 
+        p.title,
+        p."shortDescription", 
+        p.content,
+        p."blogId",  
+        b.name as "blogName",
+        p."createdAt", 
+        b.name as "blogName",
+        COALESCE(countDislike."count", 0) as "dislikesCount",
+        COALESCE(countLike."count", 0) as "likesCount",
+        COALESCE(likeForCurrentUser."statusLike", 'None') as "myStatus"
+
+            FROM public."Posts" as p
+            LEFT JOIN public."Blogs" as b
+            ON p."blogId" = b.id
+            LEFT JOIN countLikesAndDislike as countDislike ON p.id = countDislike."postId" AND countDislike."statusLike" = 'Dislike'
+            LEFT JOIN countLikesAndDislike as countLike  ON p.id = countLike."postId" AND countLike."statusLike" = 'Like'
+            LEFT JOIN likeForCurrentUser ON  p.id = likeForCurrentUser."postId"
+            WHERE p.id = $1
+    `;
+    const foundPosts: PostSQL[] = await this.dataSource.query(query, [
+      postId,
+      !userId ? '00000000-0000-0000-0000-000000000000' : userId,
+    ]);
 
     if (foundPosts.length === 0) return null;
 
-    console.log('!foundPosts', !foundPosts);
+    const queryForNewestLikes = `
+    SELECT "LikeForPost".id, TO_CHAR("LikeForPost"."updatedAt", 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as "addedAt", "LikeForPost"."updatedAt", "LikeForPost"."userId", "Users"."userName" as login
+        FROM public."LikeForPost"
+        LEFT JOIN "Users" ON "LikeForPost"."userId" = "Users".id
+        WHERE "postId" = $1 AND "statusLike" = 'Like'
+        ORDER BY "updatedAt" desc
+        LIMIT 3;
+    `;
 
-    return this.postOutputModelMapper(foundPosts[0], likeStatus.None);
-  }
+    const resNewestLikes = await this.dataSource.query(queryForNewestLikes, [
+      postId,
+    ]);
 
-  async getLikesByUser(postIds: string[], userId: string) {
-    const likes = await this.LikeModel.find()
-      .where('parentID')
-      .in(postIds)
-      .where('userID')
-      .equals(userId)
-      .lean();
+    const newestLikes: NewestLike[] = resNewestLikes.map((e) => {
+      return new NewestLike(e.addedAt, e.userId, e.login);
+    });
 
-    return likes.reduce((acc, like) => {
-      const likeCommentID = like.parentID.toString();
-
-      acc[likeCommentID] = like;
-      return acc;
-    }, {});
-  }
-
-  async getLikesInfo(
-    postId: string,
-    userId: string | null,
-  ): Promise<likeStatus> {
-    if (userId) {
-      const myLike = await this.LikeModel.findOne({
-        parentID: postId,
-        userID: userId,
-      }).lean();
-      if (!myLike) {
-        return likeStatus.None;
-      } else {
-        return myLike.statusLike;
-      }
-    } else {
-      return likeStatus.None;
-    }
+    return this.postOutputModelMapper(foundPosts[0], newestLikes);
   }
 
   postOutputModelMapper = (
     post: PostSQL,
-    myLikes?: likeStatus,
+    newestLikes: NewestLike[],
   ): PostOutputModel => {
-    const outputPostModel = new PostOutputModel();
-    outputPostModel.id = post.id;
-    outputPostModel.title = post.title;
-    outputPostModel.shortDescription = post.shortDescription;
-    outputPostModel.content = post.content;
-    outputPostModel.blogId = post.blogId;
-    outputPostModel.blogName = post.blogName;
-    outputPostModel.createdAt = post.createdAt.toISOString();
-    outputPostModel.extendedLikesInfo = new LikesInfoOut();
-    outputPostModel.extendedLikesInfo.likesCount = 0;
-    // post.likesInfo.countLikes || 0;
-    outputPostModel.extendedLikesInfo.dislikesCount = 0;
-    // post.likesInfo.countDislikes || 0;
-    outputPostModel.extendedLikesInfo.myStatus = myLikes;
-    // !myLikes
-    // ? post.likesInfo.myStatus
-    // : myLikes;
-    outputPostModel.extendedLikesInfo.newestLikes = [];
-    // post.likesInfo.newestLikes.map(function (newestLikes) {
-    //   return {
-    //     userId: newestLikes.userId,
-    //     addedAt: newestLikes.addedAt.toISOString(),
-    //     login: newestLikes.login,
-    //   };
-    // });
-    return outputPostModel;
+    return new PostOutputModel(
+      post.id,
+      post.title,
+      post.shortDescription,
+      post.content,
+      post.blogId,
+      post.blogName,
+      post.createdAt,
+      post.dislikesCount,
+      post.likesCount,
+      post.myStatus,
+      newestLikes,
+    );
   };
 
   paginationPostModelMapper = (

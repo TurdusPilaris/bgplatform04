@@ -1,3 +1,5 @@
+import { likeStatus } from '../../../../../../base/models/likesStatus';
+
 export class PostSQL {
   id: string;
 
@@ -12,4 +14,10 @@ export class PostSQL {
   content: string;
 
   createdAt: Date;
+
+  dislikesCount: number;
+
+  likesCount: number;
+
+  myStatus: likeStatus;
 }

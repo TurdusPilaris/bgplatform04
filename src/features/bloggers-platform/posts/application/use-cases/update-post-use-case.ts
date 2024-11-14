@@ -1,7 +1,5 @@
 import { PostCreateInputModel } from '../../api/models/input/create-post.input.model';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { PostsRepository } from '../../infrastructure/posts.repository';
-import { BlogsRepository } from '../../../blogs/infrastructure/blogs.repository';
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
 import { BlogsSqlRepository } from '../../../blogs/infrastructure/blogs.sql.repository';
 import { PostsSqlRepository } from '../../infrastructure/posts.sql.repository';
@@ -16,14 +14,11 @@ export class UpdatePostCommand {
 @CommandHandler(UpdatePostCommand)
 export class UpdatePostUseCase implements ICommandHandler<UpdatePostCommand> {
   constructor(
-    private postsRepository: PostsRepository,
     private postsSqlRepository: PostsSqlRepository,
-    private blogsRepository: BlogsRepository,
     private blogsSqlRepository: BlogsSqlRepository,
   ) {}
 
-  async execute(command: UpdatePostCommand): Promise<InterlayerNotice<null>> {
-    console.log('Im here');
+  async execute(command: UpdatePostCommand): Promise<InterlayerNotice> {
     const foundedBlog = await this.blogsSqlRepository.findById(
       command.inputModel.blogId,
     );

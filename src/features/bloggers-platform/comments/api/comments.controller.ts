@@ -15,25 +15,27 @@ import { CommentsQueryRepository } from '../infrastructure/comments.query-reposi
 import { CreateCommentInputModel } from './model/input/create-comment.input.model';
 import { CreateLikeInputModel } from '../../likes/api/model/input/create-like.input.model';
 import { UpdateCommentCommand } from '../application/use-cases/update-comment-use-case';
-import { UpdateLikeStatusCommand } from '../application/use-cases/update-like-status-use-case';
 import { DeleteCommentCommand } from '../application/use-cases/delete-comment-use-case';
 import { GetOptionalUserGard } from '../../../../infrastructure/guards/get-optional-user-gard.service';
 import { AuthBearerGuard } from '../../../../infrastructure/guards/auth.bearer.guard';
 import { ErrorProcessor } from '../../../../base/models/errorProcessor';
 import { Request } from 'express';
+import { CommentsSqlQueryRepository } from '../infrastructure/comments.sql.query-repository';
+import { UpdateLikeStatusForCommentCommand } from '../application/use-cases/update-like-status-use-case';
 
 @Controller('comments')
 export class CommentsController {
   constructor(
     private commandBus: CommandBus,
     protected commentsQueryRepository: CommentsQueryRepository,
+    protected commentsSqlQueryRepository: CommentsSqlQueryRepository,
   ) {}
 
   @UseGuards(GetOptionalUserGard)
   @Get(':id')
   async getCommentByID(@Param('id') commentId: string, @Req() req: Request) {
     const foundedComment =
-      await this.commentsQueryRepository.findCommentWithLikesForOutput(
+      await this.commentsSqlQueryRepository.findCommentById(
         commentId,
         req.userId,
       );
@@ -71,7 +73,11 @@ export class CommentsController {
     @Req() req: Request,
   ) {
     const result = await this.commandBus.execute(
-      new UpdateLikeStatusCommand(commentId, req.userId, inputModel.likeStatus),
+      new UpdateLikeStatusForCommentCommand(
+        commentId,
+        req.userId,
+        inputModel.likeStatus,
+      ),
     );
 
     if (result.hasError()) {

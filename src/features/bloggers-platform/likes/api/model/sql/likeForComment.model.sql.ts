@@ -3,45 +3,26 @@ import { likeStatus } from '../../../../../../base/models/likesStatus';
 export class LikeForCommentSQL {
   id: string;
   commentId: string;
-  content: string;
-  commentatorInfo: CommentatorInfo;
+  userId: string;
+  login: string;
+  statusLike: likeStatus;
   createdAt: Date;
-  likesInfo: CommentLikesInfo;
+  updatedAt: Date;
   constructor(
     id: string,
-    postId: string,
-    commentatorId: string,
-    commentatorName: string,
-    content: string,
+    commentId: string,
+    userId: string,
+    login: string,
+    statusLike: likeStatus,
     createdAt: Date,
-    countLikes: number,
-    countDislikes: number,
-    myStatus: likeStatus,
+    updatedAt: Date,
   ) {
     this.id = id;
-    this.commentId = postId;
-    this.content = content;
-    this.commentatorInfo = new CommentatorInfo(commentatorId, commentatorName);
-    this.createdAt = createdAt;
-    this.likesInfo = new CommentLikesInfo(countLikes, countDislikes, myStatus);
-  }
-}
-class CommentatorInfo {
-  userId: string;
-  userLogin: string;
-  constructor(userId: string, userLogin: string) {
+    this.commentId = commentId;
     this.userId = userId;
-    this.userLogin = userLogin;
-  }
-}
-
-class CommentLikesInfo {
-  countLikes: number;
-  countDislikes: number;
-  myStatus: likeStatus;
-  constructor(countLikes: number, countDislikes: number, myStatus: likeStatus) {
-    this.countLikes = countLikes;
-    this.countDislikes = countDislikes;
-    this.myStatus = myStatus;
+    this.login = login;
+    this.statusLike = statusLike;
+    this.createdAt = createdAt;
+    this.updatedAt = updatedAt;
   }
 }
