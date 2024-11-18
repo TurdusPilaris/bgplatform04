@@ -163,8 +163,8 @@ export class CommentsSqlQueryRepository {
       comment.commentatorName,
       comment.content,
       comment.createdAt,
-      comment.dislikesCount,
       comment.likesCount,
+      comment.dislikesCount,
       comment.myStatus,
     );
   };
