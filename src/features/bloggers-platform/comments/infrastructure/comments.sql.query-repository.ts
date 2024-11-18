@@ -137,8 +137,8 @@ export class CommentsSqlQueryRepository {
         e.commentatorName,
         e.content,
         e.createdAt,
-        e.dislikesCount,
         e.likesCount,
+        e.dislikesCount,
         e.myStatus,
       );
     })[0];
