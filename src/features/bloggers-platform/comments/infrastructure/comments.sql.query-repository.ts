@@ -128,6 +128,7 @@ export class CommentsSqlQueryRepository {
       !userId ? '00000000-0000-0000-0000-000000000000' : userId,
     ]);
 
+    console.log('userId', userId);
     if (res.length === 0) return null;
 
     return res.map((e) => {

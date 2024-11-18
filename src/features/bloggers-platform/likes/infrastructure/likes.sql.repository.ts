@@ -111,33 +111,6 @@ export class LikesSqlRepository {
 
     return likes[0];
   }
-  async findThreeLastLikesByPost(
-    postId: string,
-  ): Promise<LikeForPostSQL[] | null> {
-    const query = `
-    SELECT likes.id, likes."postId", likes."userId", likes."statusLike", likes."createdAt", likes."updatedAt", users."userName" as login
-        FROM public."LikeForPost" as likes
-        LEFT JOIN "Users" as users ON users.id = likes."userId"
-        WHERE "postId" = $1 AND "statusLike" = 'Like'
-        LIMIT 3;
-    `;
-
-    const res = await this.dataSource.query(query, [postId]);
-
-    if (res.length === 0) return null;
-
-    return res.map((e) => {
-      return new LikeForPostSQL(
-        e.id,
-        e.postId,
-        e.userId,
-        e.login,
-        e.statusLike,
-        e.createdAt,
-        e.updatedAt,
-      );
-    });
-  }
 
   async updateLikeForPost(id: string, newStatusLike: likeStatus) {
     const query = `

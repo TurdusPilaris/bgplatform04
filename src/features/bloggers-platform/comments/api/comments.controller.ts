@@ -11,7 +11,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
-import { CommentsQueryRepository } from '../infrastructure/comments.query-repository';
 import { CreateCommentInputModel } from './model/input/create-comment.input.model';
 import { CreateLikeInputModel } from '../../likes/api/model/input/create-like.input.model';
 import { UpdateCommentCommand } from '../application/use-cases/update-comment-use-case';
@@ -27,7 +26,6 @@ import { UpdateLikeStatusForCommentCommand } from '../application/use-cases/upda
 export class CommentsController {
   constructor(
     private commandBus: CommandBus,
-    protected commentsQueryRepository: CommentsQueryRepository,
     protected commentsSqlQueryRepository: CommentsSqlQueryRepository,
   ) {}
 

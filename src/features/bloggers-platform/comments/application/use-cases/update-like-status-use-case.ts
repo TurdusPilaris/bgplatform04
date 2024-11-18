@@ -1,9 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { CommentsRepository } from '../../infrastructure/comments.repository';
-import { UsersRepository } from '../../../../user-accaunts/users/infrastructure/users.repository';
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
 import { likeStatus } from '../../../../../base/models/likesStatus';
-import { UsersSqlRepository } from '../../../../user-accaunts/users/infrastructure/users.sql.repositories';
 import { CommentsSqlRepository } from '../../infrastructure/comments.sql.repository';
 import { LikesSqlRepository } from '../../../likes/infrastructure/likes.sql.repository';
 
@@ -20,10 +17,7 @@ export class UpdateLikeStatusUseCase
   implements ICommandHandler<UpdateLikeStatusForCommentCommand>
 {
   constructor(
-    private commentsRepository: CommentsRepository,
     private commentsSqlRepository: CommentsSqlRepository,
-    private usersRepository: UsersRepository,
-    private usersSqlRepository: UsersSqlRepository,
     private likesSqlRepository: LikesSqlRepository,
   ) {}
 
@@ -53,8 +47,6 @@ export class UpdateLikeStatusUseCase
       command.userId,
     );
 
-    const user = await this.usersSqlRepository.findById(command.userId);
-
     //проверяем был ли создан лайк
     if (!foundLike) {
       //если нет, то создаем новый лайк и сохраняем его
@@ -63,27 +55,12 @@ export class UpdateLikeStatusUseCase
         command.userId,
         newStatusLike,
       );
-
-      //в комментарий добавляем количество лайков по статусу
-
-      // comment.addCountLikes(newStatusLike);
-
-      // await this.commentsRepository.saveComment(comment);
     } else {
-      //сохранили старый статус лайка для пересчета в комментарии
-      const oldStatusLike = foundLike.statusLike;
-
       //установили новый статус лайка и обновили дату изменения лайка
-      await this.likesSqlRepository.updateLikeForPost(
+      await this.likesSqlRepository.updateLikeForComment(
         foundLike.id,
         newStatusLike,
       );
-
-      //пересчитаем количество если отличаются новй статус от старого
-      // if (oldStatusLike !== newStatusLike) {
-      //   comment.recountLikes(oldStatusLike, newStatusLike);
-      //   await this.commentsRepository.saveComment(comment);
-      // }
     }
 
     return new InterlayerNotice();
