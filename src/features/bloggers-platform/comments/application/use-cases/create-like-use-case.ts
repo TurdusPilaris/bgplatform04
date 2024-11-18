@@ -1,11 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { PostsRepository } from '../../../posts/infrastructure/posts.repository';
-import { CommentsRepository } from '../../infrastructure/comments.repository';
-import { UsersRepository } from '../../../../user-accaunts/users/infrastructure/users.repository';
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
 import { likeStatus } from '../../../../../base/models/likesStatus';
-import { PostDocument } from '../../../posts/domain/entiities/post.entity';
-import { UsersSqlRepository } from '../../../../user-accaunts/users/infrastructure/users.sql.repositories';
 import { PostsSqlRepository } from '../../../posts/infrastructure/posts.sql.repository';
 import { LikesSqlRepository } from '../../../likes/infrastructure/likes.sql.repository';
 
@@ -22,10 +17,7 @@ export class CreateLikeUseCase
 {
   constructor(
     private postsSqlRepository: PostsSqlRepository,
-    private postsRepository: PostsRepository,
-    private commentsRepository: CommentsRepository,
     private likesSqlRepository: LikesSqlRepository,
-    private usersSqlRepository: UsersSqlRepository,
   ) {}
 
   async execute(command: CreateLikeForPostCommand): Promise<InterlayerNotice> {
@@ -51,56 +43,16 @@ export class CreateLikeUseCase
       userId,
     );
 
-    //получаем пользователя что бы забрать имя для создания нового лайка, в дальнейшем проще геты строить
-    const user = await this.usersSqlRepository.findById(userId);
-
     //проверяем был ли создан лайк
     if (!foundedLike) {
-      return await this.createNewLike(
-        postId,
-        userId,
-        // user.accountData.userName,
-        newStatusLike,
-        // foundPost,
-      );
+      return await this.createNewLike(postId, userId, newStatusLike);
     }
-    // //сохранили старый статус лайка для пересчета в комментарии
-    // const oldStatusLike = foundedLike.statusLike;
 
     //установили новый статус лайка и обновили дату изменения лайка
     await this.likesSqlRepository.updateLikeForPost(
       foundedLike.id,
       newStatusLike,
     );
-
-    //пересчитаем количество если отличаются новй статус от старого
-    // if (oldStatusLike !== newStatusLike) {
-    //   const lastThreeLikes =
-    //     await this.commentsRepository.findThreeLastLikesByParent(postId);
-    //
-    //   let resultLastThreeLikes: {
-    //     addedAt: Date;
-    //     login: string;
-    //     userId: string;
-    //   }[] = [];
-    //
-    //   if (lastThreeLikes) {
-    //     resultLastThreeLikes = lastThreeLikes.map(function (newestLikes) {
-    //       return {
-    //         userId: newestLikes.userID,
-    //         addedAt: newestLikes.updatedAt,
-    //         login: newestLikes.login,
-    //       };
-    //     });
-    //   }
-    //   await foundPost.recountLikes(
-    //     oldStatusLike,
-    //     newStatusLike,
-    //     resultLastThreeLikes,
-    //   );
-    //   await this.postsRepository.save(foundPost);
-    // }
-
     return new InterlayerNotice();
   }
 
@@ -117,28 +69,6 @@ export class CreateLikeUseCase
       userId,
       newStatusLike,
     );
-    //в пост добавляем количество лайков по статусу
-
-    // const lastThreeLikes =
-    //   await this.likesSqlRepository.findThreeLastLikesByPost(postId);
-    //
-    // let resultLastThreeLikes: {
-    //   addedAt: Date;
-    //   login: string;
-    //   userId: string;
-    // }[] = [];
-    //
-    // if (lastThreeLikes) {
-    //   resultLastThreeLikes = lastThreeLikes.map(function (newestLikes) {
-    //     return {
-    //       userId: newestLikes.userId,
-    //       addedAt: newestLikes.updatedAt,
-    //       login: newestLikes.login,
-    //     };
-    //   });
-    // }
-    // await foundedPost.addCountLikes(newStatusLike, resultLastThreeLikes);
-    // await this.postsRepository.save(foundedPost);
 
     return new InterlayerNotice();
   }

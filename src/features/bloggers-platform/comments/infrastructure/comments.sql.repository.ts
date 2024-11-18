@@ -1,29 +1,8 @@
-import {
-  Comment,
-  CommentDocument,
-  CommentModelType,
-} from '../domain/entities/comment.entity';
-import { InjectModel } from '@nestjs/mongoose';
-import {
-  Like,
-  LikeDocument,
-  LikeModelType,
-} from '../domain/entities/like.entity';
-import { CreateCommentInputModel } from '../api/model/input/create-comment.input.model';
-import { likeStatus } from '../../../../base/models/likesStatus';
 import { DataSource } from 'typeorm';
 import { CommentSQL } from '../api/model/sql/comment.model.sql';
-import { UserSQL } from '../../../user-accaunts/users/api/models/sql/user.model.sql';
-import { CommentOutputModel } from '../api/model/output/comment.output.model';
 
 export class CommentsSqlRepository {
-  constructor(
-    @InjectModel(Comment.name)
-    private CommentModel: CommentModelType,
-    @InjectModel(Like.name)
-    private LikeModel: LikeModelType,
-    protected dataSource: DataSource,
-  ) {}
+  constructor(protected dataSource: DataSource) {}
 
   async createComment(comment: string, postId: string, userId: string) {
     const query = `
@@ -40,29 +19,6 @@ export class CommentsSqlRepository {
     ]);
 
     return res[0].id;
-  }
-
-  async findLikeByUserAndParent(
-    parentID: string,
-    userId: string,
-  ): Promise<LikeDocument | null> {
-    return this.LikeModel.findOne({ parentID: parentID, userID: userId });
-  }
-
-  async findThreeLastLikesByParent(
-    parentID: string,
-  ): Promise<LikeDocument[] | null> {
-    return this.LikeModel.find({
-      parentID: parentID,
-      statusLike: likeStatus.Like,
-    })
-      .sort({ createdAt: -1 })
-      .limit(3)
-      .lean();
-  }
-
-  async saveLikes(newLike: LikeDocument) {
-    await newLike.save();
   }
 
   async findCommentById(id: string): Promise<CommentSQL | null> {

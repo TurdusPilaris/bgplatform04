@@ -1,5 +1,4 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { CommentsRepository } from '../../infrastructure/comments.repository';
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
 import { CommentsSqlRepository } from '../../infrastructure/comments.sql.repository';
 
@@ -14,10 +13,7 @@ export class DeleteCommentCommand {
 export class DeleteCommentUseCase
   implements ICommandHandler<DeleteCommentCommand>
 {
-  constructor(
-    private commentsRepository: CommentsRepository,
-    private commentsSqlRepository: CommentsSqlRepository,
-  ) {}
+  constructor(private commentsSqlRepository: CommentsSqlRepository) {}
 
   async execute(command: DeleteCommentCommand): Promise<InterlayerNotice> {
     const comment = await this.commentsSqlRepository.findCommentById(

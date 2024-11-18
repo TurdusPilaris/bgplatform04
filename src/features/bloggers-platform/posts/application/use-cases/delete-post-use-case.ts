@@ -1,5 +1,4 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { PostsRepository } from '../../infrastructure/posts.repository';
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
 import { PostsSqlRepository } from '../../infrastructure/posts.sql.repository';
 
@@ -9,12 +8,9 @@ export class DeletePostCommand {
 
 @CommandHandler(DeletePostCommand)
 export class DeletePostUseCase implements ICommandHandler<DeletePostCommand> {
-  constructor(
-    private postsRepository: PostsRepository,
-    private postsSqlRepository: PostsSqlRepository,
-  ) {}
+  constructor(private postsSqlRepository: PostsSqlRepository) {}
 
-  async execute(command: DeletePostCommand): Promise<InterlayerNotice<null>> {
+  async execute(command: DeletePostCommand): Promise<InterlayerNotice> {
     // if post wasn't found we will return an error
     const foundedPost = await this.postsSqlRepository.findById(command.postId);
     if (!foundedPost) {

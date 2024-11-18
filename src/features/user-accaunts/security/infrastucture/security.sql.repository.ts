@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { UserOutputModel } from '../../users/api/models/output/user.output.model';
 
 @Injectable()
 export class SecuritySqlRepository {
@@ -51,7 +50,7 @@ export class SecuritySqlRepository {
         WHERE id = $1;
     `;
 
-    const res = await this.dataSource.query(query, [id, iat, exp]);
+    await this.dataSource.query(query, [id, iat, exp]);
   }
 
   async deleteCurrentSessions(userId: string, currentDeviceId: string) {
@@ -60,7 +59,7 @@ export class SecuritySqlRepository {
         WHERE "userId" = $1 AND "deviceId" = $2;
     `;
 
-    const res = await this.dataSource.query(query, [userId, currentDeviceId]);
+    await this.dataSource.query(query, [userId, currentDeviceId]);
   }
 
   async deleteSessionByDeviceID(id: string) {
@@ -69,7 +68,7 @@ export class SecuritySqlRepository {
         WHERE id = $1;
     `;
 
-    const res = await this.dataSource.query(query, [id]);
+    await this.dataSource.query(query, [id]);
   }
 
   async deleteNonCurrentSessions(userId: string, currentDeviceId: string) {
@@ -78,7 +77,7 @@ export class SecuritySqlRepository {
         WHERE "userId" = $1 AND "deviceId" <> $2;
     `;
 
-    const res = await this.dataSource.query(query, [userId, currentDeviceId]);
+    await this.dataSource.query(query, [userId, currentDeviceId]);
   }
   async getSessionByDeviceID(deviceId: string) {
     const query = `

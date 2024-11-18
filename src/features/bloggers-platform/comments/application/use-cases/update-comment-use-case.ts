@@ -1,5 +1,4 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { CommentsRepository } from '../../infrastructure/comments.repository';
 import { CreateCommentInputModel } from '../../api/model/input/create-comment.input.model';
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
 import { CommentsSqlRepository } from '../../infrastructure/comments.sql.repository';
@@ -16,10 +15,7 @@ export class UpdateCommentCommand {
 export class UpdateCommentUseCase
   implements ICommandHandler<UpdateCommentCommand>
 {
-  constructor(
-    private commentsRepository: CommentsRepository,
-    private commentsSqlRepository: CommentsSqlRepository,
-  ) {}
+  constructor(private commentsSqlRepository: CommentsSqlRepository) {}
 
   async execute(command: UpdateCommentCommand): Promise<InterlayerNotice> {
     const foundedComment = await this.commentsSqlRepository.findCommentById(

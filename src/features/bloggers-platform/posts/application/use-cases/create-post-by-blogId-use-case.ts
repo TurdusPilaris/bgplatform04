@@ -1,10 +1,8 @@
 import { CreatePostWithoutBlogIdInputModel } from '../../api/models/input/create-post-withoutBlogId.input.model';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { PostsRepository } from '../../infrastructure/posts.repository';
 import { PostOutputModel } from '../../api/models/output/post.output.model';
 import { PostCreateInputModel } from '../../api/models/input/create-post.input.model';
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
-import { PostsQueryRepository } from '../../infrastructure/posts.query-repository';
 import { BlogsSqlRepository } from '../../../blogs/infrastructure/blogs.sql.repository';
 import { PostsSqlRepository } from '../../infrastructure/posts.sql.repository';
 import { PostsSqlQueryRepository } from '../../infrastructure/posts.sql.query-repository';
