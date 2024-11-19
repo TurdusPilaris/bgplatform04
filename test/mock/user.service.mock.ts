@@ -1,7 +1,8 @@
 import { BcryptService } from '../../src/base/adapters/bcrypt-service';
 import { BusinessServiceMock } from './business.service.mock';
 import { UsersService } from '../../src/features/user-accaunts/users/application/users.service';
-import { UsersRepository } from '../../src/features/user-accaunts/users/infrastructure/users.repository';
+import { UsersSqlRepository } from '../../src/features/user-accaunts/users/infrastructure/users.sql.repositories';
+import { UsersSqlQueryRepository } from '../../src/features/user-accaunts/users/infrastructure/users.sql.query-repositories';
 
 //  .overrideProvider(UsersService)
 //  .useValue(UserServiceMockObject)
@@ -29,11 +30,17 @@ export const UserServiceMockObject = {
 
 export class UserServiceMock extends UsersService {
   constructor(
-    usersRepository: UsersRepository,
+    usersSqlRepository: UsersSqlRepository,
     bcryptService: BcryptService,
     businessService: BusinessServiceMock,
+    usersSqlQueryRepository: UsersSqlQueryRepository,
   ) {
-    super(usersRepository, bcryptService, businessService);
+    super(
+      usersSqlRepository,
+      bcryptService,
+      businessService,
+      usersSqlQueryRepository,
+    );
   }
 
   // sendMessageOnEmail() {
