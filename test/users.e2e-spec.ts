@@ -14,7 +14,7 @@ import { UsersService } from '../src/features/user-accaunts/users/application/us
 
 const CORRECT_ADMIN_AUTH_BASE64 = 'Basic YWRtaW46cXdlcnR5';
 
-describe('AppController (e2e)', () => {
+describe('Users (e2e)', () => {
   let app: INestApplication;
   let usersTestManger: UsersTestManager;
   let testingController: TestingController;

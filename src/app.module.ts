@@ -52,15 +52,30 @@ const adapters = [EmailAdapter, EmailRouter, JwtService, BcryptService];
       },
       inject: [ConfigService],
     }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: '127.0.0.1',
-      port: 5432,
-      username: 'nodejs',
-      password: 'nodejs',
-      database: 'BloggerPlatform',
-      autoLoadEntities: false,
-      synchronize: false,
+    TypeOrmModule.forRootAsync({
+      imports: undefined,
+      useFactory: (configService: ConfigService<Configuration, true>) => {
+        const environmentSettings = configService.get('environmentSettings', {
+          infer: true,
+        });
+        const databaseSettings = configService.get('databaseSettings', {
+          infer: true,
+        });
+
+        return {
+          type: 'postgres',
+          host: '127.0.0.1',
+          port: 5432,
+          username: 'nodejs',
+          password: 'nodejs',
+          database: environmentSettings.isTesting
+            ? databaseSettings.POSTGRES_DB_NAME_TEST
+            : databaseSettings.POSTGRES_DB_NAME,
+          autoLoadEntities: false,
+          synchronize: false,
+        };
+      },
+      inject: [ConfigService],
     }),
     UserAccountsModule,
     BloggersPlatformModule,

@@ -26,7 +26,7 @@ export class UsersTestManager {
     createModel: UserCreateModel,
   ) {
     return request(this.app.getHttpServer())
-      .post('/users')
+      .post('/sa/users')
       .set({ authorization: CORRECT_ADMIN_AUTH_BASE64 })
       .send(createModel)
       .expect(201);
