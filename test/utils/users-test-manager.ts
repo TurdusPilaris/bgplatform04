@@ -3,6 +3,7 @@ import request from 'supertest';
 import { UserCreateModel } from '../../src/features/user-accaunts/users/api/models/input/create-user.input.model';
 
 export class UsersTestManager {
+  readonly path: string = '/sa/users';
   constructor(protected readonly app: INestApplication) {}
 
   // можно выносить некоторые проверки в отдельные методы для лучшей читаемости тестов
@@ -26,7 +27,7 @@ export class UsersTestManager {
     createModel: UserCreateModel,
   ) {
     return request(this.app.getHttpServer())
-      .post('/sa/users')
+      .post(this.path)
       .set({ authorization: CORRECT_ADMIN_AUTH_BASE64 })
       .send(createModel)
       .expect(201);
@@ -37,14 +38,14 @@ export class UsersTestManager {
     createModel: UserCreateModel,
   ) {
     return request(this.app.getHttpServer())
-      .post('/users')
+      .post(this.path)
       .set({ authorization: CORRECT_ADMIN_AUTH_BASE64 })
       .send(createModel)
       .expect(400);
   }
   async updateUser(adminAccessToken: string, updateModel: any) {
     return request(this.app.getHttpServer())
-      .put('/users')
+      .put(this.path)
       .auth(adminAccessToken, {
         type: 'bearer',
       })
