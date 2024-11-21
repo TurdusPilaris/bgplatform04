@@ -40,16 +40,23 @@ export class UsersSqlQueryRepository {
         LIMIT $1 OFFSET $2
     `;
 
+    const searchLoginTerm = queryDto.searchLoginTerm
+      ? `%${queryDto.searchLoginTerm}%`
+      : '';
+    const searchEmailTerm = queryDto.searchEmailTerm
+      ? `%${queryDto.searchEmailTerm}%`
+      : '';
+
     const res = await this.dataSource.query(query, [
       queryDto.pageSize,
       (queryDto.pageNumber - 1) * queryDto.pageSize,
-      `%${queryDto.searchLoginTerm}%`,
-      `%${queryDto.searchEmailTerm}%`,
+      searchLoginTerm,
+      searchEmailTerm,
     ]);
 
     const countUsers = await this.getCountUsersByFilter(
-      queryDto.searchLoginTerm,
-      queryDto.searchEmailTerm,
+      searchLoginTerm,
+      searchEmailTerm,
     );
 
     return this.paginationUserOutputModelMapper(queryDto, countUsers, res);
@@ -66,8 +73,8 @@ export class UsersSqlQueryRepository {
     `;
 
     const res = await this.dataSource.query(query, [
-      `%${searchLoginTerm}%`,
-      `%${searchEmailTerm}%`,
+      searchLoginTerm,
+      searchEmailTerm,
     ]);
 
     return +res[0].countOfUsers;
