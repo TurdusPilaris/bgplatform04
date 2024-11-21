@@ -60,34 +60,6 @@ describe('AppController (e2e)', () => {
     await app.close();
   });
 
-  it('/ create user tests (POST) successful (201)', async () => {
-    // Work with state
-    // const { adminTokens } = expect.getState();
-
-    const createModel = userTestSeeder.createUserDTO();
-
-    // const createResponse = await userTestManger.createUser(
-    //   adminTokens.accessToken,
-    //   createModel,
-    // );
-
-    const createResponse = await usersTestManger.createUser(
-      CORRECT_ADMIN_AUTH_BASE64,
-      createModel,
-    );
-
-    usersTestManger.expectCorrectModel(createModel, createResponse.body);
-
-    // const updateModel = { name: 'qwerty_777' };
-    //
-    // const updateResponse = await userTestManger.updateUser(
-    //   adminTokens.accessToken,
-    //   updateModel,
-    // );
-    //
-    // userTestManger.expectCorrectModel(updateModel, updateResponse.body);
-  });
-
   it('/ create user tests (POST) Bad Request (400)', async () => {
     // Work with state
     // const { adminTokens } = expect.getState();

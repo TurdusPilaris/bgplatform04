@@ -53,6 +53,28 @@ export class UsersTestManager {
       .expect(204);
   }
 
+  async deleteUser(CORRECT_ADMIN_AUTH_BASE64: string, userId: string) {
+    return request(this.app.getHttpServer())
+      .delete(`${this.path + '/' + userId}`)
+      .set({ authorization: CORRECT_ADMIN_AUTH_BASE64 })
+      .expect(204);
+  }
+
+  async deleteUserBadUserId(CORRECT_ADMIN_AUTH_BASE64: string, userId: string) {
+    return request(this.app.getHttpServer())
+      .delete(`${this.path + '/' + userId}`)
+      .set({ authorization: CORRECT_ADMIN_AUTH_BASE64 })
+      .expect(404);
+  }
+  async deleteUserUnauthorized(
+    UNCORRECT_ADMIN_AUTH_BASE64: string,
+    userId: string,
+  ) {
+    return request(this.app.getHttpServer())
+      .delete(`${this.path + '/' + userId}`)
+      .set({ authorization: UNCORRECT_ADMIN_AUTH_BASE64 })
+      .expect(401);
+  }
   // async login(
   //   login: string,
   //   password: string,
@@ -69,4 +91,49 @@ export class UsersTestManager {
   //       .split(';')[0],
   //   };
   // }
+
+  async createUsersForGet(
+    CORRECT_ADMIN_AUTH_BASE64: string,
+    arrayUsers: UserCreateModel[],
+  ) {
+    // arrayUsers.forEach((user) => {
+    for (let i = 0; i < arrayUsers.length; i++) {
+      await request(this.app.getHttpServer())
+        .post(this.path)
+        .set({ authorization: CORRECT_ADMIN_AUTH_BASE64 })
+        .send(arrayUsers[i])
+        .expect(201);
+    }
+    // });
+  }
+
+  async getAllUsers(
+    CORRECT_ADMIN_AUTH_BASE64: string,
+    queryString: string = ``,
+  ) {
+    return request(this.app.getHttpServer())
+      .get(this.path + queryString)
+      .set({ authorization: CORRECT_ADMIN_AUTH_BASE64 })
+      .expect(200);
+  }
+
+  async getAllUsersUnauthorized(UNCORRECT_ADMIN_AUTH_BASE64: string) {
+    request(this.app.getHttpServer())
+      .get(this.path)
+      .set({ authorization: UNCORRECT_ADMIN_AUTH_BASE64 })
+      .expect(200);
+  }
+  expectPaginator(
+    requestBody: any,
+    countItems: number,
+    pageSize: number = 10,
+    pageNumber: number = 1,
+  ) {
+    expect(requestBody.totalCount).toBe(
+      countItems - pageSize * (pageNumber - 1),
+    );
+    expect(requestBody.pageSize).toBe(pageSize);
+    expect(requestBody.page).toBe(pageNumber);
+    expect(requestBody.pagesCount).toBe(Math.ceil(countItems / pageSize));
+  }
 }
