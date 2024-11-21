@@ -132,21 +132,43 @@ describe('Users (e2e)', () => {
     await usersTestManger.getAllUsersUnauthorized(UNCORRECT_ADMIN_AUTH_BASE64);
   });
 
-  it('/ get all users tests (GET) successful (201)', async () => {
-    const countUsers = 9;
+  it('/ get all users tests (GET) successful with pageSize and pageNumber (201)', async () => {
+    const countUsers = 10;
+    const pageSize = 3;
+    const pageNumber = 4;
     const arrayUsers = userTestSeeder.createArrayUserDTO(countUsers);
     await usersTestManger.createUsersForGet(
       CORRECT_ADMIN_AUTH_BASE64,
       arrayUsers,
     );
 
-    const queryString = `?pageSize=3&pageNumber=2`;
+    const queryString = `?pageSize=${pageSize}&pageNumber=${pageNumber}`;
     const req = await usersTestManger.getAllUsers(
       CORRECT_ADMIN_AUTH_BASE64,
       queryString,
     );
 
+    usersTestManger.expectPaginator(req.body, countUsers, pageSize, pageNumber);
+    usersTestManger.expectCorrectModel(req.body.items[0], arrayUsers[0]);
+  });
+
+  it('/ get all users tests (GET) successful with search login (201)', async () => {
+    const countUsers = 10;
+    const arrayUsers = userTestSeeder.createArrayUserDTO(countUsers);
+    await usersTestManger.createUsersForGet(
+      CORRECT_ADMIN_AUTH_BASE64,
+      arrayUsers,
+    );
+
+    const queryString = `?&searchLoginTerm=${arrayUsers[0].login}`;
+    const req = await usersTestManger.getAllUsers(
+      CORRECT_ADMIN_AUTH_BASE64,
+      queryString,
+    );
+
+    console.log('queryString', queryString);
     console.log('req', req.body);
-    // usersTestManger.expectPaginator(req.body, countUsers, 3, 2);
+    // usersTestManger.expectPaginator(req.body, 1);
+    // usersTestManger.expectCorrectModel(req.body.items[0], arrayUsers[0]);
   });
 });
