@@ -71,8 +71,8 @@ const adapters = [EmailAdapter, EmailRouter, JwtService, BcryptService];
           database: environmentSettings.isTesting
             ? databaseSettings.POSTGRES_DB_NAME_TEST
             : databaseSettings.POSTGRES_DB_NAME,
-          autoLoadEntities: false,
-          synchronize: false,
+          autoLoadEntities: true,
+          synchronize: true,
         };
       },
       inject: [ConfigService],
