@@ -20,7 +20,7 @@ export class TestingController {
     const queryForDevices = `TRUNCATE TABLE public."DeviceAuthSession" CASCADE`;
     await this.dataSource.query(queryForDevices);
     //truncate users
-    const queryForUsers = `TRUNCATE TABLE public."Users" CASCADE`;
+    const queryForUsers = `TRUNCATE TABLE public."user_tor" CASCADE`;
     await this.dataSource.query(queryForUsers);
     //truncate "Comments"
     const queryForComments = `TRUNCATE TABLE public."Comments" CASCADE`;

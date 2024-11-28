@@ -3,6 +3,8 @@ import { BusinessServiceMock } from './business.service.mock';
 import { UsersService } from '../../src/features/user-accaunts/users/application/users.service';
 import { UsersSqlRepository } from '../../src/features/user-accaunts/users/infrastructure/users.sql.repositories';
 import { UsersSqlQueryRepository } from '../../src/features/user-accaunts/users/infrastructure/users.sql.query-repositories';
+import { UsersTorQueryRepository } from '../../src/features/user-accaunts/users/infrastructure/users.tor.query-repositories';
+import { UsersTorRepository } from '../../src/features/user-accaunts/users/infrastructure/users.tor.repository';
 
 //  .overrideProvider(UsersService)
 //  .useValue(UserServiceMockObject)
@@ -33,13 +35,15 @@ export class UserServiceMock extends UsersService {
     usersSqlRepository: UsersSqlRepository,
     bcryptService: BcryptService,
     businessService: BusinessServiceMock,
-    usersSqlQueryRepository: UsersSqlQueryRepository,
+    usersQueryRepository: UsersTorQueryRepository,
+    usersTorRepository: UsersTorRepository,
   ) {
     super(
       usersSqlRepository,
       bcryptService,
       businessService,
-      usersSqlQueryRepository,
+      usersQueryRepository,
+      usersTorRepository,
     );
   }
 

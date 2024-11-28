@@ -30,23 +30,23 @@ export class CreateUserUseCase implements ICommandHandler<CreateUserCommand> {
   async execute(
     command: CreateUserCommand,
   ): Promise<InterlayerNotice<UserOutputModel | null>> {
-    const foundedUserEmail = await this.usersSqlRepository.findByLoginOrEmail(
-      command.inputModel.email,
-    );
-
-    if (foundedUserEmail) {
-      const result = new InterlayerNotice(null);
-      result.addError('email is not unique', 'email', 400);
-      return result;
-    }
-    const foundedUserLogin = await this.usersSqlRepository.findByLoginOrEmail(
-      command.inputModel.login,
-    );
-    if (foundedUserLogin) {
-      const result = new InterlayerNotice(null);
-      result.addError('Login is not unique', 'login', 400);
-      return result;
-    }
+    // const foundedUserEmail = await this.usersSqlRepository.findByLoginOrEmail(
+    //   command.inputModel.email,
+    // );
+    //
+    // if (foundedUserEmail) {
+    //   const result = new InterlayerNotice(null);
+    //   result.addError('email is not unique', 'email', 400);
+    //   return result;
+    // }
+    // const foundedUserLogin = await this.usersSqlRepository.findByLoginOrEmail(
+    //   command.inputModel.login,
+    // );
+    // if (foundedUserLogin) {
+    //   const result = new InterlayerNotice(null);
+    //   result.addError('Login is not unique', 'login', 400);
+    //   return result;
+    // }
 
     // return UserOutputModelMapper(
     //   await this.usersRepository.createBasicUser(createInputUser),

@@ -31,8 +31,10 @@ import { UsersSqlQueryRepository } from './users/infrastructure/users.sql.query-
 import { UsersSqlRepository } from './users/infrastructure/users.sql.repositories';
 import { SecuritySqlQueryRepository } from './security/infrastucture/security.sql.query-repository';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Users } from './users/domain/entities/user.sql.entity';
+import { UserTor } from './users/domain/entities/user.sql.entity';
 import { Sessions } from './security/domain/session.sql';
+import { UsersTorRepository } from './users/infrastructure/users.tor.repository';
+import { UsersTorQueryRepository } from './users/infrastructure/users.tor.query-repositories';
 
 const useCasesForSecurity = [CreateSessionUseCase, UpdateSessionUseCase];
 const useCasesForAuth = [
@@ -47,7 +49,7 @@ const useCasesForAuth = [
       { name: DeviceAuthSession.name, schema: DeviceAuthSessionSchema },
     ]),
     CqrsModule,
-    TypeOrmModule.forFeature([Users, Sessions]),
+    TypeOrmModule.forFeature([UserTor, Sessions]),
   ],
 
   controllers: [UsersController, DevicesController, AuthController],
@@ -59,6 +61,7 @@ const useCasesForAuth = [
     UsersQueryRepository,
     UsersSqlRepository,
     UsersSqlQueryRepository,
+    UsersTorQueryRepository,
     SecurityService,
     SecurityRepository,
     SecurityQueryRepository,
@@ -70,6 +73,7 @@ const useCasesForAuth = [
     JwtService,
     EmailAdapter,
     EmailRouter,
+    UsersTorRepository,
   ],
   exports: [
     UsersService,
@@ -77,6 +81,7 @@ const useCasesForAuth = [
     AuthService,
     UsersRepository,
     UsersSqlRepository,
+    UsersTorRepository,
   ],
 })
 export class UserAccountsModule {}

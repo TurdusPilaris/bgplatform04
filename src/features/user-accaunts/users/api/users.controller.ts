@@ -15,6 +15,7 @@ import { AuthBasicGuard } from '../../../../infrastructure/guards/auth.basic.gua
 import { ErrorProcessor } from '../../../../base/models/errorProcessor';
 import { QueryUserInputModel } from './models/input/query-user.input.model';
 import { UsersSqlQueryRepository } from '../infrastructure/users.sql.query-repositories';
+import { UsersTorQueryRepository } from '../infrastructure/users.tor.query-repositories';
 
 @UseGuards(AuthBasicGuard)
 @Controller('sa/users')
@@ -22,6 +23,7 @@ export class UsersController {
   constructor(
     protected usersService: UsersService,
     protected usersSqlQueryRepository: UsersSqlQueryRepository,
+    protected usersQueryRepository: UsersTorQueryRepository,
   ) {}
 
   @Get()

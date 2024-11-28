@@ -6,10 +6,10 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 
-export class ErrorProcessor {
+export class ErrorProcessor<D = null> {
   public extensions: InterlayerNoticeExtension[];
   public code = 0;
-  constructor(result: InterlayerNotice) {
+  constructor(result: InterlayerNotice<D>) {
     this.code = result.code;
     this.extensions = result.extensions;
   }

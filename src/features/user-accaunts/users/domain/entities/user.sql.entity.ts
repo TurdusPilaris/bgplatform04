@@ -2,10 +2,11 @@ import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Sessions } from '../../../security/domain/session.sql';
 
 @Entity()
-export class Users {
+export class UserTor {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column()
   userName: string;
 
   @Column()

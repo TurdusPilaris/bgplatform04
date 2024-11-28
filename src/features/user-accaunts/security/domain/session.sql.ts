@@ -1,5 +1,5 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { Users } from '../../users/domain/entities/user.sql.entity';
+import { UserTor } from '../../users/domain/entities/user.sql.entity';
 
 @Entity()
 export class Sessions {
@@ -9,8 +9,8 @@ export class Sessions {
   @Column()
   userId: string;
 
-  @ManyToOne(() => Users, (u) => u.sessions)
-  user: Users;
+  @ManyToOne(() => UserTor, (u) => u.sessions)
+  user: UserTor;
 
   @Column()
   deviceId: string;
