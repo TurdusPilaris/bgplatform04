@@ -1,8 +1,8 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-
-import { SecurityRepository } from '../../infrastucture/security.repository';
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
-import { SecuritySqlRepository } from '../../infrastucture/security.sql.repository';
+import { Sessions } from '../../domain/session.sql';
+import { UsersTorRepository } from '../../../users/infrastructure/users.tor.repository';
+import { SecurityTorRepository } from '../../infrastucture/security.tor.repository';
 
 export class CreateSessionCommand {
   constructor(
@@ -16,7 +16,10 @@ export class CreateSessionCommand {
 export class CreateSessionUseCase
   implements ICommandHandler<CreateSessionCommand>
 {
-  constructor(private securitySqlRepository: SecuritySqlRepository) {}
+  constructor(
+    private securityTorRepository: SecurityTorRepository,
+    private usersTorRepository: UsersTorRepository,
+  ) {}
 
   async execute(
     command: CreateSessionCommand,
@@ -34,12 +37,27 @@ export class CreateSessionUseCase
     //   command.ip,
     // );
 
-    const sessionId = await this.securitySqlRepository.createSession(
-      command.payload,
-      command.deviceName,
-      command.ip,
-    );
+    //sql
+    // const sessionId = await this.securitySqlRepository.createSession(
+    //   command.payload,
+    //   command.deviceName,
+    //   command.ip,
+    // );
 
+    //tor
+    const newSession = new Sessions();
+    newSession.userId = command.payload.userId;
+    newSession.user = await this.usersTorRepository.findById(
+      command.payload.userId,
+    );
+    newSession.deviceId = command.payload.deviceId;
+    newSession.iat = new Date(command.payload.iat * 1000);
+    newSession.deviceName = command.deviceName;
+    newSession.ip = command.ip;
+    newSession.exp = new Date(command.payload.exp * 1000);
+
+    const sessionId =
+      await this.securityTorRepository.createSession(newSession);
     return new InterlayerNotice(sessionId);
   }
 }

@@ -2,7 +2,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UserTor } from '../domain/entities/user.sql.entity';
 import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
-import { UserSQL } from '../api/models/sql/user.model.sql';
 
 @Injectable()
 export class UsersTorRepository {

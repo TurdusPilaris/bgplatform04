@@ -13,12 +13,14 @@ import { ErrorProcessor } from '../../../../base/models/errorProcessor';
 import { Request } from 'express';
 import { SecuritySqlRepository } from '../infrastucture/security.sql.repository';
 import { SecuritySqlQueryRepository } from '../infrastucture/security.sql.query-repository';
+import { SecurityTorRepository } from '../infrastucture/security.tor.repository';
 
 @UseGuards(AuthRefreshTokenGuard)
 @Controller('security')
 export class DevicesController {
   constructor(
     protected securitySqlRepository: SecuritySqlRepository,
+    protected securityTorRepository: SecurityTorRepository,
     protected securitySqlQueryRepository: SecuritySqlQueryRepository,
     protected securityService: SecurityService,
   ) {}
@@ -33,7 +35,7 @@ export class DevicesController {
   @HttpCode(204)
   @Delete('devices')
   async deleteDevices(@Req() req: Request) {
-    await this.securitySqlRepository.deleteNonCurrentSessions(
+    await this.securityTorRepository.deleteNonCurrentSessions(
       req.userId,
       req.deviceId,
     );

@@ -1,17 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { InterlayerNotice } from '../../../../base/models/Interlayer';
 import { SecuritySqlRepository } from '../infrastucture/security.sql.repository';
+import { SecurityTorRepository } from '../infrastucture/security.tor.repository';
 
 @Injectable()
 export class SecurityService {
-  constructor(protected securitySqlRepository: SecuritySqlRepository) {}
+  constructor(
+    protected securitySqlRepository: SecuritySqlRepository,
+    protected securityTorRepository: SecurityTorRepository,
+  ) {}
 
   async updateSession(id: string, iat: Date, exp: Date) {
-    await this.securitySqlRepository.updateSession(id, iat, exp);
+    await this.securityTorRepository.updateSession(id, iat, exp);
   }
 
   async dropCurrentSession(userId: string, currentDeviceId: string) {
-    await this.securitySqlRepository.deleteCurrentSessions(
+    await this.securityTorRepository.deleteCurrentSessions(
       userId,
       currentDeviceId,
     );
@@ -19,7 +23,7 @@ export class SecurityService {
 
   async deleteSessionByDeviceID(userId: string, deviceId: string) {
     const session =
-      await this.securitySqlRepository.getSessionByDeviceID(deviceId);
+      await this.securityTorRepository.getSessionByDeviceID(deviceId);
 
     if (!session) {
       const result = new InterlayerNotice(null);
@@ -37,7 +41,7 @@ export class SecurityService {
       return result;
     }
 
-    await this.securitySqlRepository.deleteSessionByDeviceID(session.id);
+    await this.securityTorRepository.deleteSessionByDeviceID(session.id);
 
     return new InterlayerNotice();
   }

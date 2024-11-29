@@ -14,6 +14,7 @@ import { PayloadTokenType } from '../../../../base/type/types';
 
 import { UsersSqlRepository } from '../../users/infrastructure/users.sql.repositories';
 import { SecuritySqlRepository } from '../../security/infrastucture/security.sql.repository';
+import { SecurityTorRepository } from '../../security/infrastucture/security.tor.repository';
 
 @Injectable()
 export class AuthService {
@@ -22,6 +23,7 @@ export class AuthService {
     protected bcryptService: BcryptService,
     protected securityService: SecurityService,
     protected securitySqlRepository: SecuritySqlRepository,
+    protected securityTorRepository: SecurityTorRepository,
     protected businessService: BusinessService,
     private jwtService: JwtService,
     private configService: ConfigService<Configuration, true>,
@@ -259,7 +261,7 @@ export class AuthService {
       return result;
     }
 
-    const session = await this.securitySqlRepository.getSession(
+    const session = await this.securityTorRepository.getSession(
       payloadRefreshToken.userId,
       payloadRefreshToken.deviceId!,
       new Date(decode.iat * 1000),
@@ -279,7 +281,7 @@ export class AuthService {
 
     const payloadOldRefreshToken = await this.decodeToken(oldRefreshToken);
 
-    const session = await this.securitySqlRepository.getSession(
+    const session = await this.securityTorRepository.getSession(
       payloadOldRefreshToken.userId,
       payloadOldRefreshToken.deviceId!,
       new Date(payloadOldRefreshToken.iat * 1000),
