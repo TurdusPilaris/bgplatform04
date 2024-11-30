@@ -5,9 +5,7 @@ import { UserOutputModel } from '../api/models/output/user.output.model';
 import { QueryUserInputModel } from '../api/models/input/query-user.input.model';
 import { PaginationOutputModel } from '../../../../base/models/output/pagination.output.model';
 import { AboutMeOutputModel } from '../../auth/api/models/output/about-me-output-model';
-import { UserSQL } from '../api/models/sql/user.model.sql';
 import { UserTor } from '../domain/entities/user.sql.entity';
-import { uuid } from 'uuidv4';
 
 @Injectable()
 export class UsersTorQueryRepository {

@@ -1,6 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { UserCreateModel } from '../../src/features/user-accaunts/users/api/models/input/create-user.input.model';
+import { UserCreateModel } from '../../../src/features/user-accaunts/users/api/models/input/create-user.input.model';
 
 export class UsersTestManager {
   readonly path: string = '/sa/users';

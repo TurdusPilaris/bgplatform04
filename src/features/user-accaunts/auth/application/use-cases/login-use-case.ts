@@ -4,6 +4,7 @@ import { BcryptService } from '../../../../../base/adapters/bcrypt-service';
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
 import { ErrorProcessor } from '../../../../../base/models/errorProcessor';
 import { UsersSqlRepository } from '../../../users/infrastructure/users.sql.repositories';
+import { UsersTorRepository } from '../../../users/infrastructure/users.tor.repository';
 
 export class LoginCommand {
   constructor(public loginInput: LoginInputModel) {}
@@ -12,6 +13,7 @@ export class LoginCommand {
 export class LoginUseCase implements ICommandHandler<LoginCommand> {
   constructor(
     private usersSqlRepository: UsersSqlRepository,
+    private usersTorRepository: UsersTorRepository,
     private bcryptService: BcryptService,
   ) {}
 
@@ -19,14 +21,14 @@ export class LoginUseCase implements ICommandHandler<LoginCommand> {
     const loginInput = command.loginInput;
 
     //check user
-    const user = await this.usersSqlRepository.findByLoginOrEmail(
+    const user = await this.usersTorRepository.findByLoginOrEmail(
       loginInput.loginOrEmail,
     );
 
     //check password
     const resultCheckCredentials = await this.checkCredentials(
       loginInput.password,
-      user.accountData.passwordHash,
+      user.passwordHash,
     );
     if (resultCheckCredentials.hasError()) {
       new ErrorProcessor(resultCheckCredentials).handleError();

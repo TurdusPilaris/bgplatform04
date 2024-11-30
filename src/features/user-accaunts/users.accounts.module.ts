@@ -35,6 +35,7 @@ import { UserTor } from './users/domain/entities/user.sql.entity';
 import { Sessions } from './security/domain/session.sql';
 import { UsersTorRepository } from './users/infrastructure/users.tor.repository';
 import { UsersTorQueryRepository } from './users/infrastructure/users.tor.query-repositories';
+import { SecurityTorRepository } from './security/infrastucture/security.tor.repository';
 
 const useCasesForSecurity = [CreateSessionUseCase, UpdateSessionUseCase];
 const useCasesForAuth = [
@@ -67,6 +68,7 @@ const useCasesForAuth = [
     SecurityQueryRepository,
     SecuritySqlRepository,
     SecuritySqlQueryRepository,
+    SecurityTorRepository,
     AuthService,
     BcryptService,
     BusinessService,

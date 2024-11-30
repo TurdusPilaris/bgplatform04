@@ -15,11 +15,13 @@ import { PayloadTokenType } from '../../../../base/type/types';
 import { UsersSqlRepository } from '../../users/infrastructure/users.sql.repositories';
 import { SecuritySqlRepository } from '../../security/infrastucture/security.sql.repository';
 import { SecurityTorRepository } from '../../security/infrastucture/security.tor.repository';
+import { UsersTorRepository } from '../../users/infrastructure/users.tor.repository';
 
 @Injectable()
 export class AuthService {
   constructor(
     protected usersSqlRepository: UsersSqlRepository,
+    protected usersTorRepository: UsersTorRepository,
     protected bcryptService: BcryptService,
     protected securityService: SecurityService,
     protected securitySqlRepository: SecuritySqlRepository,
@@ -39,9 +41,9 @@ export class AuthService {
       infer: true,
     });
 
-    const user = await this.usersSqlRepository.findById(userId);
+    const user = await this.usersTorRepository.findById(userId);
 
-    const payload = { username: user.accountData.userName, userId: user.id };
+    const payload = { username: user.userName, userId: user.id };
 
     return {
       accessToken: await this.jwtService.signAsync(payload, {
@@ -56,7 +58,7 @@ export class AuthService {
       infer: true,
     });
 
-    const user = await this.usersSqlRepository.findById(userId);
+    const user = await this.usersTorRepository.findById(userId);
 
     const payLoadRefreshToken = {
       userId: user!.id,
@@ -74,7 +76,7 @@ export class AuthService {
   }
 
   async checkCredentials(loginInput: LoginInputModel) {
-    const user = await this.usersSqlRepository.findByLoginOrEmail(
+    const user = await this.usersTorRepository.findByLoginOrEmail(
       loginInput.loginOrEmail,
     );
 
@@ -86,7 +88,7 @@ export class AuthService {
 
     const checkedResult = await this.bcryptService.checkPassword(
       loginInput.password,
-      user.accountData.passwordHash,
+      user.passwordHash,
     );
     if (!checkedResult) {
       const result = new InterlayerNotice(null);
@@ -97,14 +99,14 @@ export class AuthService {
   }
 
   async resendingEmail(email: string) {
-    const foundedUser = await this.usersSqlRepository.findByLoginOrEmail(email);
+    const foundedUser = await this.usersTorRepository.findByLoginOrEmail(email);
 
     if (!foundedUser) {
       const result = new InterlayerNotice(null);
       result.addError('Not found user', 'email', 400);
       return result;
     }
-    if (foundedUser.emailConfirmation.isConfirmed) {
+    if (foundedUser.isConfirmed) {
       const result = new InterlayerNotice(null);
       result.addError('Code confirmation already been applied', 'email', 400);
       return result;
@@ -130,7 +132,7 @@ export class AuthService {
   }
 
   async recoveryPasswordSendCode(email: string) {
-    const foundedUser = await this.usersSqlRepository.findByLoginOrEmail(email);
+    const foundedUser = await this.usersTorRepository.findByLoginOrEmail(email);
 
     if (!foundedUser) {
       const result = new InterlayerNotice(null);
@@ -192,7 +194,7 @@ export class AuthService {
       return result;
     }
 
-    const user = await this.usersSqlRepository.findById(
+    const user = await this.usersTorRepository.findById(
       payloadAccessToken.userId,
     );
 
@@ -250,7 +252,7 @@ export class AuthService {
       return result;
     }
 
-    const user = await this.usersSqlRepository.findById(
+    const user = await this.usersTorRepository.findById(
       payloadRefreshToken.userId,
     );
 

@@ -2,10 +2,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import { AppModule } from '../src/app.module';
 import { applyAppSettings } from '../src/settings/apply-app-setting';
-import { UsersTestManager } from './utils/users-test-manager';
+import { UsersTestManager } from './utils/users/users-test-manager';
 
 import { UserServiceMock } from './mock/user.service.mock';
-import { userTestSeeder } from './utils/users.test.seedr';
+import { userTestSeeder } from './utils/users/users.test.seedr';
 import { BusinessService } from '../src/base/domain/business-service';
 import { BusinessServiceMock } from './mock/business.service.mock';
 

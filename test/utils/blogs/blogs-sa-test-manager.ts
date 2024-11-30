@@ -1,6 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { BlogCreateInputModel } from '../../src/features/bloggers-platform/blogs/api/models/input/create-blog.input.model';
+import { BlogCreateInputModel } from '../../../src/features/bloggers-platform/blogs/api/models/input/create-blog.input.model';
 
 export class BlogsSaTestManager {
   readonly path: string = '/sa/blogs';

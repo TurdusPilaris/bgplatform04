@@ -14,7 +14,6 @@ import { LoginInputModel } from './models/input/login.input.model';
 import { AuthService } from '../application/auth.service';
 import { CodeConfirmationModel } from './models/input/code.confirmation.model';
 import { EmailInputModel } from './models/input/email.input.model';
-import { uuid } from 'uuidv4';
 import { SecurityService } from '../../security/application/security.service';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { CommandBus } from '@nestjs/cqrs';
@@ -28,6 +27,8 @@ import { Request, Response } from 'express';
 import { AboutMeOutputModel } from './models/output/about-me-output-model';
 import { UsersSqlRepository } from '../../users/infrastructure/users.sql.repositories';
 import { UsersSqlQueryRepository } from '../../users/infrastructure/users.sql.query-repositories';
+import { UsersTorRepository } from '../../users/infrastructure/users.tor.repository';
+import { v4 } from 'uuid';
 
 @Controller('auth')
 export class AuthController {
@@ -36,6 +37,7 @@ export class AuthController {
     protected authService: AuthService,
     protected securityService: SecurityService,
     protected usersSqlRepository: UsersSqlRepository,
+    protected usersTorRepository: UsersTorRepository,
     protected usersSqlQueryRepository: UsersSqlQueryRepository,
   ) {}
 
@@ -78,7 +80,7 @@ export class AuthController {
       new ErrorProcessor(resultCheckCredentials).handleError();
     }
 
-    const user = await this.usersSqlRepository.findByLoginOrEmail(
+    const user = await this.usersTorRepository.findByLoginOrEmail(
       loginInput.loginOrEmail,
     );
 
@@ -87,7 +89,7 @@ export class AuthController {
 
     //создадим deviceId
 
-    const newDeviceId = uuid();
+    const newDeviceId = v4();
 
     //теперь создадим рефреш токен
     const { refreshToken } = await this.authService.createRefreshToken(

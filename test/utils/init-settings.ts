@@ -6,7 +6,7 @@ import { applyAppSettings } from '../../src/settings/apply-app-setting';
 import { Connection } from 'mongoose';
 import { getConnectionToken } from '@nestjs/mongoose';
 import { deleteAllData } from './delete-all-data';
-import { UsersTestManager } from './users-test-manager';
+import { UsersTestManager } from './users/users-test-manager';
 import { UsersService } from '../../src/features/user-accaunts/users/application/users.service';
 // import { appSettings } from '../../src/settings/app-settings';
 

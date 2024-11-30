@@ -7,6 +7,8 @@ import { UsersSqlRepository } from '../../../users/infrastructure/users.sql.repo
 import { UserCreateSqlModel } from '../../../users/api/models/sql/create-user.sql.model';
 import { add } from 'date-fns';
 import { v4 } from 'uuid';
+import { UsersTorRepository } from '../../../users/infrastructure/users.tor.repository';
+import { UserTor } from '../../../users/domain/entities/user.sql.entity';
 
 export class RegisterUserCommand {
   constructor(public createInputUser: UserCreateModel) {}
@@ -18,13 +20,14 @@ export class RegisterUserUseCase
 {
   constructor(
     private usersSqlRepository: UsersSqlRepository,
+    private usersTorRepository: UsersTorRepository,
     private bcryptService: BcryptService,
     private businessService: BusinessService,
   ) {}
 
   async execute(command: RegisterUserCommand): Promise<InterlayerNotice> {
     const createInputUser = command.createInputUser;
-    const foundedUserEmail = await this.usersSqlRepository.findByLoginOrEmail(
+    const foundedUserEmail = await this.usersTorRepository.findByLoginOrEmail(
       createInputUser.email,
     );
     if (foundedUserEmail) {
@@ -32,7 +35,7 @@ export class RegisterUserUseCase
       result.addError('email is not unique', 'email', 400);
       return result;
     }
-    const foundedUserLogin = await this.usersSqlRepository.findByLoginOrEmail(
+    const foundedUserLogin = await this.usersTorRepository.findByLoginOrEmail(
       createInputUser.login,
     );
     if (foundedUserLogin) {
@@ -46,27 +49,40 @@ export class RegisterUserUseCase
     );
     const confirmationCode = v4();
 
-    const userCreateSql: UserCreateSqlModel = {
-      userName: createInputUser.login,
-      email: createInputUser.email,
-      passwordHash: passwordHash,
-      createdAt: new Date(),
-      confirmationCode: confirmationCode,
-      expirationDate: add(new Date(), {
-        hours: 99,
-        minutes: 3,
-      }),
-      isConfirmed: false,
-    };
+    // const userCreateSql: UserCreateSqlModel = {
+    //   userName: createInputUser.login,
+    //   email: createInputUser.email,
+    //   passwordHash: passwordHash,
+    //   createdAt: new Date(),
+    //   confirmationCode: confirmationCode,
+    //   expirationDate: add(new Date(), {
+    //     hours: 99,
+    //     minutes: 3,
+    //   }),
+    //   isConfirmed: false,
+    // };
+
+    const userCreateSql = new UserTor();
+    userCreateSql.userName = createInputUser.login;
+    userCreateSql.email = createInputUser.email;
+    userCreateSql.passwordHash = passwordHash;
+    userCreateSql.createdAt = new Date();
+    userCreateSql.confirmationCode = confirmationCode;
+    userCreateSql.expirationDate = add(new Date(), {
+      hours: 99,
+      minutes: 3,
+    });
+    userCreateSql.isConfirmed = false;
+
     //create user
     const createdUserId =
-      await this.usersSqlRepository.createUser(userCreateSql);
-    const createdUser = await this.usersSqlRepository.findById(createdUserId);
+      await this.usersTorRepository.createUser(userCreateSql);
+    const createdUser = await this.usersTorRepository.findById(createdUserId);
     //TODO move send email to event handler
     try {
       this.businessService.sendRegisrtationEmail(
         command.createInputUser.email,
-        createdUser.emailConfirmation.confirmationCode,
+        createdUser.confirmationCode,
       );
     } catch (e: unknown) {
       console.error('Send email error', e);

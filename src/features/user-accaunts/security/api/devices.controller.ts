@@ -14,11 +14,13 @@ import { Request } from 'express';
 import { SecuritySqlRepository } from '../infrastucture/security.sql.repository';
 import { SecuritySqlQueryRepository } from '../infrastucture/security.sql.query-repository';
 import { SecurityTorRepository } from '../infrastucture/security.tor.repository';
+import { CommandBus } from '@nestjs/cqrs';
 
 @UseGuards(AuthRefreshTokenGuard)
 @Controller('security')
 export class DevicesController {
   constructor(
+    private commandBus: CommandBus,
     protected securitySqlRepository: SecuritySqlRepository,
     protected securityTorRepository: SecurityTorRepository,
     protected securitySqlQueryRepository: SecuritySqlQueryRepository,
