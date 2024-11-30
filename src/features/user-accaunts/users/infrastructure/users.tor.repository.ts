@@ -31,4 +31,18 @@ export class UsersTorRepository {
       ],
     });
   }
+
+  async updateConfirmationCode(
+    id: string,
+    confirmationCode: string,
+    expirationDate: Date,
+  ) {
+    await this.usersRepository.update(
+      { id: id },
+      {
+        confirmationCode: confirmationCode,
+        expirationDate: expirationDate,
+      },
+    );
+  }
 }

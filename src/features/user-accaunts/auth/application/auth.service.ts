@@ -98,68 +98,6 @@ export class AuthService {
     return new InterlayerNotice(null);
   }
 
-  async resendingEmail(email: string) {
-    const foundedUser = await this.usersTorRepository.findByLoginOrEmail(email);
-
-    if (!foundedUser) {
-      const result = new InterlayerNotice(null);
-      result.addError('Not found user', 'email', 400);
-      return result;
-    }
-    if (foundedUser.isConfirmed) {
-      const result = new InterlayerNotice(null);
-      result.addError('Code confirmation already been applied', 'email', 400);
-      return result;
-    }
-
-    const newConfirmationCode = v4();
-    await this.usersSqlRepository.updateConfirmationCode(
-      foundedUser.id,
-      newConfirmationCode,
-      add(new Date(), {
-        hours: 58,
-        minutes: 3,
-      }),
-    );
-
-    try {
-      this.businessService.sendRegisrtationEmail(email, newConfirmationCode);
-    } catch (e: unknown) {
-      console.error('Send email error', e);
-    }
-
-    return new InterlayerNotice(null);
-  }
-
-  async recoveryPasswordSendCode(email: string) {
-    const foundedUser = await this.usersTorRepository.findByLoginOrEmail(email);
-
-    if (!foundedUser) {
-      const result = new InterlayerNotice(null);
-      result.addError('Not found user', 'code', 400);
-      return result;
-    }
-
-    const newConfirmationCode = v4();
-
-    await this.usersSqlRepository.updateConfirmationCode(
-      foundedUser.id,
-      newConfirmationCode,
-      add(new Date(), {
-        hours: 58,
-        minutes: 3,
-      }),
-    );
-
-    try {
-      this.businessService.sendRecoveryPassword(email, newConfirmationCode);
-    } catch (e: unknown) {
-      console.error('Send email error', e);
-    }
-
-    return new InterlayerNotice(null);
-  }
-
   async checkAccessToken(authHeader: string) {
     const auth = authHeader.split(' ');
     if (auth[0] !== 'Bearer') {

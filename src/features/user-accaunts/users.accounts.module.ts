@@ -36,12 +36,23 @@ import { Sessions } from './security/domain/session.sql';
 import { UsersTorRepository } from './users/infrastructure/users.tor.repository';
 import { UsersTorQueryRepository } from './users/infrastructure/users.tor.query-repositories';
 import { SecurityTorRepository } from './security/infrastucture/security.tor.repository';
+import { RecoveryPasswordSendUseCase } from './auth/application/use-cases/recovery-password-send-use-case';
+import { RegistrationEmailResendingUseCase } from './auth/application/use-cases/registration-email-resending-use-case';
+import { DeleteSessionUseCase } from './security/application/use-cases/delete-session-use-case';
+import { DeleteSessionByDeviceIdUseCase } from './security/application/use-cases/delete-session-by-device-id-use-case';
 
-const useCasesForSecurity = [CreateSessionUseCase, UpdateSessionUseCase];
+const useCasesForSecurity = [
+  CreateSessionUseCase,
+  UpdateSessionUseCase,
+  DeleteSessionUseCase,
+  DeleteSessionByDeviceIdUseCase,
+];
 const useCasesForAuth = [
   RegisterUserUseCase,
   RegistrationConfirmationUseCase,
   LoginUseCase,
+  RecoveryPasswordSendUseCase,
+  RegistrationEmailResendingUseCase,
 ];
 @Module({
   imports: [

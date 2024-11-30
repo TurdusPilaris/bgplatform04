@@ -15,6 +15,8 @@ import { SecuritySqlRepository } from '../infrastucture/security.sql.repository'
 import { SecuritySqlQueryRepository } from '../infrastucture/security.sql.query-repository';
 import { SecurityTorRepository } from '../infrastucture/security.tor.repository';
 import { CommandBus } from '@nestjs/cqrs';
+import { DeleteSessionCommand } from '../application/use-cases/delete-session-use-case';
+import { DeleteSessionByDeviceIdCommand } from '../application/use-cases/delete-session-by-device-id-use-case';
 
 @UseGuards(AuthRefreshTokenGuard)
 @Controller('security')
@@ -37,18 +39,16 @@ export class DevicesController {
   @HttpCode(204)
   @Delete('devices')
   async deleteDevices(@Req() req: Request) {
-    await this.securityTorRepository.deleteNonCurrentSessions(
-      req.userId,
-      req.deviceId,
+    await this.commandBus.execute(
+      new DeleteSessionCommand(req.userId, req.deviceId),
     );
   }
 
   @HttpCode(204)
   @Delete('devices/:id')
   async deleteDevicesByID(@Param('id') deviceId: string, @Req() req: Request) {
-    const result = await this.securityService.deleteSessionByDeviceID(
-      req.userId,
-      deviceId,
+    const result = await this.commandBus.execute(
+      new DeleteSessionByDeviceIdCommand(req.userId, deviceId),
     );
 
     if (result.hasError()) {

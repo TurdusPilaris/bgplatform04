@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { InterlayerNotice } from '../../../../base/models/Interlayer';
 import { SecuritySqlRepository } from '../infrastucture/security.sql.repository';
 import { SecurityTorRepository } from '../infrastucture/security.tor.repository';
 
@@ -19,30 +18,5 @@ export class SecurityService {
       userId,
       currentDeviceId,
     );
-  }
-
-  async deleteSessionByDeviceID(userId: string, deviceId: string) {
-    const session =
-      await this.securityTorRepository.getSessionByDeviceID(deviceId);
-
-    if (!session) {
-      const result = new InterlayerNotice(null);
-      result.addError('Not found ip', 'ip', 404);
-      return result;
-    }
-
-    if (session.userId !== userId) {
-      const result = new InterlayerNotice(null);
-      result.addError(
-        'try to delete the deviceId of other user',
-        'userId',
-        403,
-      );
-      return result;
-    }
-
-    await this.securityTorRepository.deleteSessionByDeviceID(session.id);
-
-    return new InterlayerNotice();
   }
 }

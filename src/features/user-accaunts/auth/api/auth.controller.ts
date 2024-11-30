@@ -29,6 +29,8 @@ import { UsersSqlRepository } from '../../users/infrastructure/users.sql.reposit
 import { UsersSqlQueryRepository } from '../../users/infrastructure/users.sql.query-repositories';
 import { UsersTorRepository } from '../../users/infrastructure/users.tor.repository';
 import { v4 } from 'uuid';
+import { RegistrationEmailResendingCommand } from '../application/use-cases/registration-email-resending-use-case';
+import { RecoveryPasswordSendCommand } from '../application/use-cases/recovery-password-send-use-case';
 
 @Controller('auth')
 export class AuthController {
@@ -132,8 +134,9 @@ export class AuthController {
   @HttpCode(204)
   @Post('registration-email-resending')
   async registrationEmailResending(@Body() inputEmail: EmailInputModel) {
-    const result = await this.authService.resendingEmail(inputEmail.email);
-
+    const result = await this.commandBus.execute(
+      new RegistrationEmailResendingCommand(inputEmail.email),
+    );
     if (result.hasError()) {
       new ErrorProcessor(result).handleError();
     }
@@ -142,8 +145,8 @@ export class AuthController {
   @HttpCode(204)
   @Post('password-recovery')
   async passwordRecovery(@Body() inputEmail: EmailInputModel) {
-    const result = await this.authService.recoveryPasswordSendCode(
-      inputEmail.email,
+    const result = await this.commandBus.execute(
+      new RecoveryPasswordSendCommand(inputEmail.email),
     );
 
     if (result.hasError()) {
