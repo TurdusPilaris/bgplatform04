@@ -13,7 +13,6 @@ import { UsersService } from '../src/features/user-accaunts/users/application/us
 import { AuthTestManager } from './utils/auth/auth-test-manager';
 import { userTestSeeder } from './utils/users/users.test.seedr';
 import { authTestSeeder } from './utils/auth/auth.test.seedr';
-import { SecurityService } from '../src/features/user-accaunts/security/application/security.service';
 
 const CORRECT_ADMIN_AUTH_BASE64 = 'Basic YWRtaW46cXdlcnR5';
 
@@ -116,5 +115,19 @@ describe('Auth (e2e)', () => {
     const requestBody = resultReq.body;
     expect(requestBody.errorsMessages).toBeDefined();
     expect(requestBody.errorsMessages[0].field).toEqual('login');
+  });
+  it('/ auth password recovery tests (POST) successful (204)', async () => {
+    //create email DTO
+    const createModel = authTestSeeder.createEmailInputModel();
+
+    //send
+    await authTestManager.passwordRecovery(createModel);
+  });
+  it('/ auth password recovery tests (POST) bad request (400)', async () => {
+    //create email DTO
+    const createModel = authTestSeeder.createBadEmailInputModel();
+
+    //send
+    await authTestManager.passwordRecoveryBad(createModel);
   });
 });

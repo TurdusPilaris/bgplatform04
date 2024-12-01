@@ -47,9 +47,9 @@ export class CreateSessionUseCase
     //tor
     const newSession = new Sessions();
     newSession.userId = command.payload.userId;
-    newSession.user = await this.usersTorRepository.findById(
-      command.payload.userId,
-    );
+    // newSession.user = await this.usersTorRepository.findById(
+    //   command.payload.userId,
+    // );
     newSession.deviceId = command.payload.deviceId;
     newSession.iat = new Date(command.payload.iat * 1000);
     newSession.deviceName = command.deviceName;

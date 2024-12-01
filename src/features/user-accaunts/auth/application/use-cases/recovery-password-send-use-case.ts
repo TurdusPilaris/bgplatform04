@@ -20,14 +20,15 @@ export class RecoveryPasswordSendUseCase
   async execute(
     command: RecoveryPasswordSendCommand,
   ): Promise<InterlayerNotice> {
+    console.log('command.email', command.email);
     const foundedUser = await this.usersTorRepository.findByLoginOrEmail(
       command.email,
     );
 
     if (!foundedUser) {
-      const result = new InterlayerNotice(null);
-      result.addError('Not found user', 'code', 400);
-      return result;
+      // const result = new InterlayerNotice(null);
+      // result.addError('Not found user', 'code', 400);
+      return new InterlayerNotice(null);
     }
 
     const newConfirmationCode = v4();
