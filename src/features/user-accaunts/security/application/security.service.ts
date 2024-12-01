@@ -8,11 +8,4 @@ export class SecurityService {
   async updateSession(id: string, iat: Date, exp: Date) {
     await this.securityTorRepository.updateSession(id, iat, exp);
   }
-
-  async dropCurrentSession(userId: string, currentDeviceId: string) {
-    await this.securityTorRepository.deleteCurrentSessions(
-      userId,
-      currentDeviceId,
-    );
-  }
 }

@@ -40,12 +40,14 @@ import { RecoveryPasswordSendUseCase } from './auth/application/use-cases/recove
 import { RegistrationEmailResendingUseCase } from './auth/application/use-cases/registration-email-resending-use-case';
 import { DeleteSessionUseCase } from './security/application/use-cases/delete-session-use-case';
 import { DeleteSessionByDeviceIdUseCase } from './security/application/use-cases/delete-session-by-device-id-use-case';
+import { LogoutUseCase } from './auth/application/use-cases/logout-use-case';
 
 const useCasesForSecurity = [
   CreateSessionUseCase,
   UpdateSessionUseCase,
   DeleteSessionUseCase,
   DeleteSessionByDeviceIdUseCase,
+  LogoutUseCase,
 ];
 const useCasesForAuth = [
   RegisterUserUseCase,

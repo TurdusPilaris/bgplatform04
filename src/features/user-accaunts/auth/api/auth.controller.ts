@@ -31,6 +31,7 @@ import { UsersTorRepository } from '../../users/infrastructure/users.tor.reposit
 import { v4 } from 'uuid';
 import { RegistrationEmailResendingCommand } from '../application/use-cases/registration-email-resending-use-case';
 import { RecoveryPasswordSendCommand } from '../application/use-cases/recovery-password-send-use-case';
+import { LogoutCommand } from '../application/use-cases/logout-use-case';
 
 @Controller('auth')
 export class AuthController {
@@ -174,6 +175,6 @@ export class AuthController {
   @HttpCode(204)
   @Post('logout')
   async logout(@Req() req: Request) {
-    await this.securityService.dropCurrentSession(req.userId, req.deviceId);
+    await this.commandBus.execute(new LogoutCommand(req.userId, req.deviceId));
   }
 }
