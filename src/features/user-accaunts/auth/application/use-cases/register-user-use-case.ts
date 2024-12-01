@@ -4,7 +4,6 @@ import { BcryptService } from '../../../../../base/adapters/bcrypt-service';
 import { BusinessService } from '../../../../../base/domain/business-service';
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
 import { UsersSqlRepository } from '../../../users/infrastructure/users.sql.repositories';
-import { UserCreateSqlModel } from '../../../users/api/models/sql/create-user.sql.model';
 import { add } from 'date-fns';
 import { v4 } from 'uuid';
 import { UsersTorRepository } from '../../../users/infrastructure/users.tor.repository';
