@@ -2,8 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { LoginInputModel } from '../api/models/input/login.input.model';
 import { ConfigService } from '@nestjs/config';
-import { v4 } from 'uuid';
-import { add } from 'date-fns';
 
 import { SecurityService } from '../../security/application/security.service';
 import { Configuration } from '@nestjs/cli/lib/configuration';
