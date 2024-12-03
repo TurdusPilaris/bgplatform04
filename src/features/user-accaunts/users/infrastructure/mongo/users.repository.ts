@@ -4,8 +4,8 @@ import {
   User,
   UserDocument,
   UserModelType,
-} from '../domain/entities/user.entity';
-import { UserCreateModel } from '../api/models/input/create-user.input.model';
+} from '../../domain/entities/user.entity';
+import { UserCreateModel } from '../../api/models/input/create-user.input.model';
 import { Types } from 'mongoose';
 
 @Injectable()

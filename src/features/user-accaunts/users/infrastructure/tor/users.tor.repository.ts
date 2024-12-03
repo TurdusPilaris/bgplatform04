@@ -1,5 +1,5 @@
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserTor } from '../domain/entities/user.sql.entity';
+import { UserTor } from '../../domain/entities/user.sql.entity';
 import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 

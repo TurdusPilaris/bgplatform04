@@ -1,26 +1,32 @@
 import { Injectable } from '@nestjs/common';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
-import { UserOutputModel } from '../api/models/output/user.output.model';
-import { QueryUserInputModel } from '../api/models/input/query-user.input.model';
-import { PaginationOutputModel } from '../../../../base/models/output/pagination.output.model';
-import { AboutMeOutputModel } from '../../auth/api/models/output/about-me-output-model';
-import { UserTor } from '../domain/entities/user.sql.entity';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
+import { UserOutputModel } from '../../api/models/output/user.output.model';
+import { QueryUserInputModel } from '../../api/models/input/query-user.input.model';
+import { PaginationOutputModel } from '../../../../../base/models/output/pagination.output.model';
+import { AboutMeOutputModel } from '../../../auth/api/models/output/about-me-output-model';
+import { UserSQL } from '../../api/models/sql/user.model.sql';
 
 @Injectable()
-export class UsersTorQueryRepository {
-  constructor(
-    @InjectDataSource() protected dataSource: DataSource,
-    @InjectRepository(UserTor)
-    private readonly usersRepository: Repository<UserTor>,
-  ) {}
+export class UsersSqlQueryRepository {
+  constructor(@InjectDataSource() protected dataSource: DataSource) {}
 
   async findById(id: string): Promise<UserOutputModel | null> {
-    const foundUser = await this.usersRepository.findOneBy({ id: id });
+    const query = `
+    SELECT id, "userName" as login, email, "createdAt"
+        FROM public."Users"
+        WHERE id = $1;
+    `;
 
-    if (!foundUser) return null;
+    const res = await this.dataSource.query(query, [id]);
 
-    return this.userOutputModelMapper(foundUser);
+    if (res.length === 0) return null;
+
+    return res.map((e) => {
+      return {
+        ...e,
+      };
+    })[0];
   }
 
   async findAll(
@@ -111,12 +117,12 @@ export class UsersTorQueryRepository {
     };
   };
 
-  userOutputModelMapper = (user: UserTor): UserOutputModel => {
+  userOutputModelMapper = (user: UserSQL): UserOutputModel => {
     return {
       id: user.id,
-      login: user.userName,
-      email: user.email,
-      createdAt: user.createdAt.toISOString(),
+      login: user.accountData.userName,
+      email: user.accountData.email,
+      createdAt: user.accountData.createdAt.toISOString(),
     };
   };
 }

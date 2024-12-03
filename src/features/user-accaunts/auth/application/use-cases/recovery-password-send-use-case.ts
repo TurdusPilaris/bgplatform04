@@ -2,7 +2,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
 import { v4 } from 'uuid';
 import { add } from 'date-fns';
-import { UsersTorRepository } from '../../../users/infrastructure/users.tor.repository';
+import { UsersTorRepository } from '../../../users/infrastructure/tor/users.tor.repository';
 import { BusinessService } from '../../../../../base/domain/business-service';
 
 export class RecoveryPasswordSendCommand {

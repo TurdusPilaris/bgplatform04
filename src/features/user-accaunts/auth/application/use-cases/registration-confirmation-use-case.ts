@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CodeConfirmationModel } from '../../api/models/input/code.confirmation.model';
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
-import { UsersSqlRepository } from '../../../users/infrastructure/users.sql.repositories';
+import { UsersSqlRepository } from '../../../users/infrastructure/sql/users.sql.repositories';
 
 export class RegistrationConfirmationCommand {
   constructor(public inputCode: CodeConfirmationModel) {}

@@ -3,13 +3,13 @@ import {
   User,
   UserDocument,
   UserModelType,
-} from '../domain/entities/user.entity';
+} from '../../domain/entities/user.entity';
 import { Injectable } from '@nestjs/common';
-import { UserOutputModel } from '../api/models/output/user.output.model';
-import { QueryUserInputModel } from '../api/models/input/query-user.input.model';
+import { UserOutputModel } from '../../api/models/output/user.output.model';
+import { QueryUserInputModel } from '../../api/models/input/query-user.input.model';
 
-import { AboutMeOutputModel } from '../../auth/api/models/output/about-me-output-model';
-import { PaginationOutputModel } from '../../../../base/models/output/pagination.output.model';
+import { AboutMeOutputModel } from '../../../auth/api/models/output/about-me-output-model';
+import { PaginationOutputModel } from '../../../../../base/models/output/pagination.output.model';
 
 @Injectable()
 export class UsersQueryRepository {

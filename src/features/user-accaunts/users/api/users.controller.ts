@@ -14,8 +14,8 @@ import { UsersService } from '../application/users.service';
 import { AuthBasicGuard } from '../../../../infrastructure/guards/auth.basic.guard';
 import { ErrorProcessor } from '../../../../base/models/errorProcessor';
 import { QueryUserInputModel } from './models/input/query-user.input.model';
-import { UsersSqlQueryRepository } from '../infrastructure/users.sql.query-repositories';
-import { UsersTorQueryRepository } from '../infrastructure/users.tor.query-repositories';
+import { UsersSqlQueryRepository } from '../infrastructure/sql/users.sql.query-repositories';
+import { UsersTorQueryRepository } from '../infrastructure/tor/users.tor.query-repositories';
 
 @UseGuards(AuthBasicGuard)
 @Controller('sa/users')
@@ -23,7 +23,7 @@ export class UsersController {
   constructor(
     protected usersService: UsersService,
     protected usersSqlQueryRepository: UsersSqlQueryRepository,
-    protected usersQueryRepository: UsersTorQueryRepository,
+    protected usersTorQueryRepository: UsersTorQueryRepository,
   ) {}
 
   @Get()
@@ -32,7 +32,7 @@ export class UsersController {
     @Query()
     queryDto: QueryUserInputModel,
   ) {
-    return await this.usersSqlQueryRepository.findAll(queryDto);
+    return await this.usersTorQueryRepository.findAll(queryDto);
   }
 
   @Post()

@@ -25,9 +25,9 @@ import { AuthRefreshTokenGuard } from '../../../../infrastructure/guards/auth.re
 import { ErrorProcessor } from '../../../../base/models/errorProcessor';
 import { Request, Response } from 'express';
 import { AboutMeOutputModel } from './models/output/about-me-output-model';
-import { UsersSqlRepository } from '../../users/infrastructure/users.sql.repositories';
-import { UsersSqlQueryRepository } from '../../users/infrastructure/users.sql.query-repositories';
-import { UsersTorRepository } from '../../users/infrastructure/users.tor.repository';
+import { UsersSqlRepository } from '../../users/infrastructure/sql/users.sql.repositories';
+import { UsersSqlQueryRepository } from '../../users/infrastructure/sql/users.sql.query-repositories';
+import { UsersTorRepository } from '../../users/infrastructure/tor/users.tor.repository';
 import { v4 } from 'uuid';
 import { RegistrationEmailResendingCommand } from '../application/use-cases/registration-email-resending-use-case';
 import { RecoveryPasswordSendCommand } from '../application/use-cases/recovery-password-send-use-case';

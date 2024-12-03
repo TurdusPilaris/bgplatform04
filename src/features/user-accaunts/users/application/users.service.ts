@@ -6,11 +6,11 @@ import { InterlayerNotice } from '../../../../base/models/Interlayer';
 import { UserCreateSqlModel } from '../api/models/sql/create-user.sql.model';
 import { v4 } from 'uuid';
 import { add } from 'date-fns';
-import { UsersSqlRepository } from '../infrastructure/users.sql.repositories';
-import { UsersSqlQueryRepository } from '../infrastructure/users.sql.query-repositories';
-import { UsersTorRepository } from '../infrastructure/users.tor.repository';
+import { UsersSqlRepository } from '../infrastructure/sql/users.sql.repositories';
+import { UsersSqlQueryRepository } from '../infrastructure/sql/users.sql.query-repositories';
+import { UsersTorRepository } from '../infrastructure/tor/users.tor.repository';
 import { UserTor } from '../domain/entities/user.sql.entity';
-import { UsersTorQueryRepository } from '../infrastructure/users.tor.query-repositories';
+import { UsersTorQueryRepository } from '../infrastructure/tor/users.tor.query-repositories';
 
 @Injectable()
 export class UsersService {

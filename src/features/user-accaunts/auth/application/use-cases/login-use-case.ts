@@ -3,8 +3,8 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { BcryptService } from '../../../../../base/adapters/bcrypt-service';
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
 import { ErrorProcessor } from '../../../../../base/models/errorProcessor';
-import { UsersSqlRepository } from '../../../users/infrastructure/users.sql.repositories';
-import { UsersTorRepository } from '../../../users/infrastructure/users.tor.repository';
+import { UsersSqlRepository } from '../../../users/infrastructure/sql/users.sql.repositories';
+import { UsersTorRepository } from '../../../users/infrastructure/tor/users.tor.repository';
 
 export class LoginCommand {
   constructor(public loginInput: LoginInputModel) {}

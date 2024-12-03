@@ -1,13 +1,13 @@
 import { UserCreateModel } from '../../api/models/input/create-user.input.model';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UserOutputModel } from '../../api/models/output/user.output.model';
-import { UsersRepository } from '../../infrastructure/users.repository';
+import { UsersRepository } from '../../infrastructure/mongo/users.repository';
 import { BcryptService } from '../../../../../base/adapters/bcrypt-service';
 import { BusinessService } from '../../../../../base/domain/business-service';
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
-import { UsersQueryRepository } from '../../infrastructure/users.query-repository';
-import { UsersSqlRepository } from '../../infrastructure/users.sql.repositories';
-import { UsersSqlQueryRepository } from '../../infrastructure/users.sql.query-repositories';
+import { UsersQueryRepository } from '../../infrastructure/mongo/users.query-repository';
+import { UsersSqlRepository } from '../../infrastructure/sql/users.sql.repositories';
+import { UsersSqlQueryRepository } from '../../infrastructure/sql/users.sql.query-repositories';
 import { v4 } from 'uuid';
 import { UserCreateSqlModel } from '../../api/models/sql/create-user.sql.model';
 import { add } from 'date-fns';

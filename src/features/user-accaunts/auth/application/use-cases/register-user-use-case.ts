@@ -3,10 +3,10 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { BcryptService } from '../../../../../base/adapters/bcrypt-service';
 import { BusinessService } from '../../../../../base/domain/business-service';
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
-import { UsersSqlRepository } from '../../../users/infrastructure/users.sql.repositories';
+import { UsersSqlRepository } from '../../../users/infrastructure/sql/users.sql.repositories';
 import { add } from 'date-fns';
 import { v4 } from 'uuid';
-import { UsersTorRepository } from '../../../users/infrastructure/users.tor.repository';
+import { UsersTorRepository } from '../../../users/infrastructure/tor/users.tor.repository';
 import { UserTor } from '../../../users/domain/entities/user.sql.entity';
 
 export class RegisterUserCommand {

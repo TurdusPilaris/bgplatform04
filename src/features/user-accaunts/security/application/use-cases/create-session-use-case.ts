@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
 import { Sessions } from '../../domain/session.sql';
-import { UsersTorRepository } from '../../../users/infrastructure/users.tor.repository';
+import { UsersTorRepository } from '../../../users/infrastructure/tor/users.tor.repository';
 import { SecurityTorRepository } from '../../infrastucture/security.tor.repository';
 
 export class CreateSessionCommand {

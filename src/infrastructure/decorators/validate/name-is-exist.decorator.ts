@@ -6,7 +6,7 @@ import {
   ValidatorConstraintInterface,
 } from 'class-validator';
 import { Injectable } from '@nestjs/common';
-import { UsersTorRepository } from '../../../features/user-accaunts/users/infrastructure/users.tor.repository';
+import { UsersTorRepository } from '../../../features/user-accaunts/users/infrastructure/tor/users.tor.repository';
 
 @ValidatorConstraint({ name: 'NameIsExist', async: true })
 @Injectable()

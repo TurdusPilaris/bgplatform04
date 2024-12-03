@@ -1,7 +1,7 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Sessions } from '../../../security/domain/session.sql';
 
-@Entity()
+@Entity({ name: 'user_tor' })
 export class UserTor {
   @PrimaryGeneratedColumn('uuid')
   id: string;
