@@ -32,6 +32,9 @@ import { v4 } from 'uuid';
 import { RegistrationEmailResendingCommand } from '../application/use-cases/registration-email-resending-use-case';
 import { RecoveryPasswordSendCommand } from '../application/use-cases/recovery-password-send-use-case';
 import { LogoutCommand } from '../application/use-cases/logout-use-case';
+import { NewPasswordRecoveryInputModel } from './models/input/new.password.recovery.input.model';
+import { NewPasswordCommand } from '../application/use-cases/new-password-use-case';
+import { UsersTorQueryRepository } from '../../users/infrastructure/tor/users.tor.query-repositories';
 
 @Controller('auth')
 export class AuthController {
@@ -42,12 +45,13 @@ export class AuthController {
     protected usersSqlRepository: UsersSqlRepository,
     protected usersTorRepository: UsersTorRepository,
     protected usersSqlQueryRepository: UsersSqlQueryRepository,
+    protected usersTorQueryRepository: UsersTorQueryRepository,
   ) {}
 
   @UseGuards(AuthBearerGuard)
   @Get('me')
   async aboutMe(@Req() req: Request): Promise<AboutMeOutputModel> {
-    const user = await this.usersSqlQueryRepository.getAboutMe(req.userId);
+    const user = await this.usersTorQueryRepository.getAboutMe(req.userId);
 
     if (!user) {
       throw new NotFoundException();
@@ -56,7 +60,7 @@ export class AuthController {
     return user;
   }
 
-  // @UseGuards(ThrottlerGuard)
+  @UseGuards(ThrottlerGuard)
   @HttpCode(204)
   @Post('registration')
   async registration(@Body() createInputUser: UserCreateModel) {
@@ -68,7 +72,7 @@ export class AuthController {
     }
   }
 
-  // @UseGuards(ThrottlerGuard)
+  @UseGuards(ThrottlerGuard)
   @HttpCode(200)
   @Post('login')
   async login(
@@ -119,19 +123,31 @@ export class AuthController {
     res.send(accessToken);
   }
 
-  // @UseGuards(ThrottlerGuard)
+  @UseGuards(ThrottlerGuard)
   @HttpCode(204)
   @Post('registration-confirmation')
   async registrationConfirmation(@Body() inputCode: CodeConfirmationModel) {
     const result = await this.commandBus.execute(
-      new RegistrationConfirmationCommand(inputCode),
+      new RegistrationConfirmationCommand(inputCode.code),
     );
     if (result.hasError()) {
       new ErrorProcessor(result).handleError();
     }
   }
 
-  // @UseGuards(ThrottlerGuard)
+  @UseGuards(ThrottlerGuard)
+  @HttpCode(204)
+  @Post('new-password')
+  async newPassword(@Body() inputModel: NewPasswordRecoveryInputModel) {
+    const result = await this.commandBus.execute(
+      new NewPasswordCommand(inputModel),
+    );
+    if (result.hasError()) {
+      new ErrorProcessor(result).handleError();
+    }
+  }
+
+  @UseGuards(ThrottlerGuard)
   @HttpCode(204)
   @Post('registration-email-resending')
   async registrationEmailResending(@Body() inputEmail: EmailInputModel) {

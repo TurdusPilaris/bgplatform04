@@ -7,8 +7,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { DevicesController } from './security/api/devices.controller';
 import { AuthController } from './auth/api/auth.controller';
 import { SecurityService } from './security/application/security.service';
-import { SecurityRepository } from './security/infrastucture/security.repository';
-import { SecurityQueryRepository } from './security/infrastucture/security.query.repository';
+import { SecurityRepository } from './security/infrastucture/mongo/security.repository';
+import { SecurityQueryRepository } from './security/infrastucture/mongo/security.query.repository';
 import { AuthService } from './auth/application/auth.service';
 import { CreateSessionUseCase } from './security/application/use-cases/create-session-use-case';
 import { UpdateSessionUseCase } from './security/application/use-cases/update-session-use-case';
@@ -26,21 +26,23 @@ import { EmailAdapter } from '../../base/adapters/email-adapter';
 import { EmailRouter } from '../../base/email/email-router';
 import { CqrsModule } from '@nestjs/cqrs';
 import { LoginUseCase } from './auth/application/use-cases/login-use-case';
-import { SecuritySqlRepository } from './security/infrastucture/security.sql.repository';
+import { SecuritySqlRepository } from './security/infrastucture/sql/security.sql.repository';
 import { UsersSqlQueryRepository } from './users/infrastructure/sql/users.sql.query-repositories';
 import { UsersSqlRepository } from './users/infrastructure/sql/users.sql.repositories';
-import { SecuritySqlQueryRepository } from './security/infrastucture/security.sql.query-repository';
+import { SecuritySqlQueryRepository } from './security/infrastucture/sql/security.sql.query-repository';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserTor } from './users/domain/entities/user.sql.entity';
 import { Sessions } from './security/domain/session.sql';
 import { UsersTorRepository } from './users/infrastructure/tor/users.tor.repository';
 import { UsersTorQueryRepository } from './users/infrastructure/tor/users.tor.query-repositories';
-import { SecurityTorRepository } from './security/infrastucture/security.tor.repository';
+import { SecurityTorRepository } from './security/infrastucture/tor/security.tor.repository';
 import { RecoveryPasswordSendUseCase } from './auth/application/use-cases/recovery-password-send-use-case';
 import { RegistrationEmailResendingUseCase } from './auth/application/use-cases/registration-email-resending-use-case';
 import { DeleteSessionUseCase } from './security/application/use-cases/delete-session-use-case';
 import { DeleteSessionByDeviceIdUseCase } from './security/application/use-cases/delete-session-by-device-id-use-case';
 import { LogoutUseCase } from './auth/application/use-cases/logout-use-case';
+import { NewPasswordUseCase } from './auth/application/use-cases/new-password-use-case';
+import { SecurityTorQueryRepository } from './security/infrastucture/tor/security.tor.query-repository';
 
 const useCasesForSecurity = [
   CreateSessionUseCase,
@@ -55,6 +57,7 @@ const useCasesForAuth = [
   LoginUseCase,
   RecoveryPasswordSendUseCase,
   RegistrationEmailResendingUseCase,
+  NewPasswordUseCase,
 ];
 @Module({
   imports: [
@@ -81,6 +84,7 @@ const useCasesForAuth = [
     SecurityQueryRepository,
     SecuritySqlRepository,
     SecuritySqlQueryRepository,
+    SecurityTorQueryRepository,
     SecurityTorRepository,
     AuthService,
     BcryptService,
@@ -89,6 +93,7 @@ const useCasesForAuth = [
     EmailAdapter,
     EmailRouter,
     UsersTorRepository,
+    // { useClass, name: 'IUsersRepository' },
   ],
   exports: [
     UsersService,

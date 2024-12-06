@@ -4,7 +4,7 @@ import {
   DeviceAuthSession,
   DeviceAuthSessionDocument,
   DeviceAuthSessionModelType,
-} from '../domain/deviceAuthSession.entity';
+} from '../../domain/deviceAuthSession.entity';
 import { Types } from 'mongoose';
 
 @Injectable()

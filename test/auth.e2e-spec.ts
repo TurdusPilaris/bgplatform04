@@ -13,6 +13,8 @@ import { UsersService } from '../src/features/user-accaunts/users/application/us
 import { AuthTestManager } from './utils/auth/auth-test-manager';
 import { userTestSeeder } from './utils/users/users.test.seedr';
 import { authTestSeeder } from './utils/auth/auth.test.seedr';
+import { UsersTorRepository } from '../src/features/user-accaunts/users/infrastructure/tor/users.tor.repository';
+import { v4 } from 'uuid';
 
 const CORRECT_ADMIN_AUTH_BASE64 = 'Basic YWRtaW46cXdlcnR5';
 
@@ -21,6 +23,7 @@ describe('Auth (e2e)', () => {
   let authTestManager: AuthTestManager;
   let usersTestManager: UsersTestManager;
   let testingController: TestingController;
+  let userRepository: UsersTorRepository;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -42,6 +45,7 @@ describe('Auth (e2e)', () => {
     // Init userManager
     authTestManager = new AuthTestManager(app);
     usersTestManager = new UsersTestManager(app);
+    userRepository = moduleFixture.get(UsersTorRepository);
   });
 
   beforeEach(async () => {
@@ -129,5 +133,85 @@ describe('Auth (e2e)', () => {
 
     //send
     await authTestManager.passwordRecoveryBad(createModel);
+  });
+
+  it('/ auth confirm  new password recovery tests (POST) successful (204)', async () => {
+    //create new user DTO
+    const createModel = userTestSeeder.createUserDTO();
+
+    //create real user
+    const result = await usersTestManager.createUser(
+      CORRECT_ADMIN_AUTH_BASE64,
+      createModel,
+    );
+    const user = await userRepository.findById(result.body.id);
+
+    const newPasswordRecoveryInputModel =
+      authTestSeeder.createNewPasswordRecoveryInputModel(user.confirmationCode);
+
+    //send
+    await authTestManager.newPassword(newPasswordRecoveryInputModel);
+  });
+
+  it('/ auth confirm  new password recovery tests (POST) bad request (400)', async () => {
+    const newPasswordRecoveryInputModel =
+      authTestSeeder.createNewPasswordRecoveryInputModel(v4());
+
+    //send
+    await authTestManager.newPasswordBad(newPasswordRecoveryInputModel);
+  });
+
+  it('/ auth registration confirmation tests (POST) successful (204)', async () => {
+    //create new user DTO
+    const createModel = userTestSeeder.createUserDTO();
+
+    //create real user
+    const result = await usersTestManager.createUser(
+      CORRECT_ADMIN_AUTH_BASE64,
+      createModel,
+    );
+    const user = await userRepository.findById(result.body.id);
+
+    const newPasswordRecoveryInputModel =
+      authTestSeeder.createCodeConfirmationModel(user.confirmationCode);
+
+    //send
+    await authTestManager.registrationConfirmation(
+      newPasswordRecoveryInputModel,
+    );
+  });
+
+  it('/ auth registration confirmation tests (POST) bad request confirmation code is incorrect(400)', async () => {
+    //create new user DTO
+    const newPasswordRecoveryInputModel =
+      authTestSeeder.createCodeConfirmationModel(v4());
+
+    //send
+    await authTestManager.registrationConfirmationBad(
+      newPasswordRecoveryInputModel,
+    );
+  });
+
+  it('/ auth registration confirmation tests (POST) bad request confirmation code is already been applied (400)', async () => {
+    //create new user DTO
+    const createModel = userTestSeeder.createUserDTO();
+
+    //create real user
+    const result = await usersTestManager.createUser(
+      CORRECT_ADMIN_AUTH_BASE64,
+      createModel,
+    );
+    const user = await userRepository.findById(result.body.id);
+
+    const newPasswordRecoveryInputModel =
+      authTestSeeder.createCodeConfirmationModel(user.confirmationCode);
+
+    //send ok
+    await authTestManager.registrationConfirmation(
+      newPasswordRecoveryInputModel,
+    );
+    await authTestManager.registrationConfirmationBad(
+      newPasswordRecoveryInputModel,
+    );
   });
 });

@@ -1,5 +1,5 @@
 import { UserCreateModel } from '../api/models/input/create-user.input.model';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { BcryptService } from '../../../../base/adapters/bcrypt-service';
 import { BusinessService } from '../../../../base/domain/business-service';
 import { InterlayerNotice } from '../../../../base/models/Interlayer';
@@ -8,7 +8,10 @@ import { v4 } from 'uuid';
 import { add } from 'date-fns';
 import { UsersSqlRepository } from '../infrastructure/sql/users.sql.repositories';
 import { UsersSqlQueryRepository } from '../infrastructure/sql/users.sql.query-repositories';
-import { UsersTorRepository } from '../infrastructure/tor/users.tor.repository';
+import {
+  IUsersRepository,
+  UsersTorRepository,
+} from '../infrastructure/tor/users.tor.repository';
 import { UserTor } from '../domain/entities/user.sql.entity';
 import { UsersTorQueryRepository } from '../infrastructure/tor/users.tor.query-repositories';
 
@@ -20,28 +23,29 @@ export class UsersService {
     protected businessService: BusinessService,
     protected usersQueryRepository: UsersTorQueryRepository,
     protected usersTorRepository: UsersTorRepository,
+    // @Inject('IUsersRepository') protected usersTorRepository: IUsersRepository,
   ) {}
 
   async create(createInputUser: UserCreateModel) {
     // : Promise<InterlayerNotice<UserOutputModel | null>>
     //check if there is a user with this email
-    // const foundedUserEmail = await this.usersSqlRepository.findByLoginOrEmail(
-    //   createInputUser.email,
-    // );
-    // if (foundedUserEmail) {
-    //   const result = new InterlayerNotice(null);
-    //   result.addError('email is not unique', 'email', 400);
-    //   return result;
-    // }
-    //
-    // const foundedUserLogin = await this.usersSqlRepository.findByLoginOrEmail(
-    //   createInputUser.login,
-    // );
-    // if (foundedUserLogin) {
-    //   const result = new InterlayerNotice(null);
-    //   result.addError('Login is not unique', 'login', 400);
-    //   return result;
-    // }
+    const foundedUserEmail = await this.usersTorRepository.findByLoginOrEmail(
+      createInputUser.email,
+    );
+    if (foundedUserEmail) {
+      const result = new InterlayerNotice(null);
+      result.addError('email is not unique', 'email', 400);
+      return result;
+    }
+
+    const foundedUserLogin = await this.usersTorRepository.findByLoginOrEmail(
+      createInputUser.login,
+    );
+    if (foundedUserLogin) {
+      const result = new InterlayerNotice(null);
+      result.addError('Login is not unique', 'login', 400);
+      return result;
+    }
 
     //create hash
     const passwordHash = await this.bcryptService.generationHash(

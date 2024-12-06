@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { SecurityRepository } from '../../infrastucture/security.repository';
-import { SecuritySqlRepository } from '../../infrastucture/security.sql.repository';
-import { SecurityTorRepository } from '../../infrastucture/security.tor.repository';
+import { SecurityRepository } from '../../infrastucture/mongo/security.repository';
+import { SecuritySqlRepository } from '../../infrastucture/sql/security.sql.repository';
+import { SecurityTorRepository } from '../../infrastucture/tor/security.tor.repository';
 
 export class UpdateSessionCommand {
   constructor(

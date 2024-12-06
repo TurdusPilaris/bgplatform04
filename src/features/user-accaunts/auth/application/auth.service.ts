@@ -11,8 +11,8 @@ import { InterlayerNotice } from '../../../../base/models/Interlayer';
 import { PayloadTokenType } from '../../../../base/type/types';
 
 import { UsersSqlRepository } from '../../users/infrastructure/sql/users.sql.repositories';
-import { SecuritySqlRepository } from '../../security/infrastucture/security.sql.repository';
-import { SecurityTorRepository } from '../../security/infrastucture/security.tor.repository';
+import { SecuritySqlRepository } from '../../security/infrastucture/sql/security.sql.repository';
+import { SecurityTorRepository } from '../../security/infrastucture/tor/security.tor.repository';
 import { UsersTorRepository } from '../../users/infrastructure/tor/users.tor.repository';
 
 @Injectable()

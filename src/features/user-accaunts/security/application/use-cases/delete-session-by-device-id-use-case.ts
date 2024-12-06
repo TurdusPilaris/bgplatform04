@@ -1,5 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { SecurityTorRepository } from '../../infrastucture/security.tor.repository';
+import { SecurityTorRepository } from '../../infrastucture/tor/security.tor.repository';
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
 
 export class DeleteSessionByDeviceIdCommand {

@@ -7,31 +7,25 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { SecurityService } from '../application/security.service';
 import { AuthRefreshTokenGuard } from '../../../../infrastructure/guards/auth.refresh-token-guard';
 import { ErrorProcessor } from '../../../../base/models/errorProcessor';
 import { Request } from 'express';
-import { SecuritySqlRepository } from '../infrastucture/security.sql.repository';
-import { SecuritySqlQueryRepository } from '../infrastucture/security.sql.query-repository';
-import { SecurityTorRepository } from '../infrastucture/security.tor.repository';
 import { CommandBus } from '@nestjs/cqrs';
 import { DeleteSessionCommand } from '../application/use-cases/delete-session-use-case';
 import { DeleteSessionByDeviceIdCommand } from '../application/use-cases/delete-session-by-device-id-use-case';
+import { SecurityTorQueryRepository } from '../infrastucture/tor/security.tor.query-repository';
 
 @UseGuards(AuthRefreshTokenGuard)
 @Controller('security')
 export class DevicesController {
   constructor(
     private commandBus: CommandBus,
-    protected securitySqlRepository: SecuritySqlRepository,
-    protected securityTorRepository: SecurityTorRepository,
-    protected securitySqlQueryRepository: SecuritySqlQueryRepository,
-    protected securityService: SecurityService,
+    protected securityTorQueryRepository: SecurityTorQueryRepository,
   ) {}
 
   @Get('devices')
   async getDevices(@Req() req: Request) {
-    return await this.securitySqlQueryRepository.getAllSessionsForUser(
+    return await this.securityTorQueryRepository.getAllSessionsForUser(
       req.userId,
     );
   }

@@ -3,9 +3,9 @@ import {
   DeviceAuthSession,
   DeviceAuthSessionDocument,
   DeviceAuthSessionModelType,
-} from '../domain/deviceAuthSession.entity';
+} from '../../domain/deviceAuthSession.entity';
 import { InjectModel } from '@nestjs/mongoose';
-import { DeviceOutputModel } from '../api/models/output/device.output.model';
+import { DeviceOutputModel } from '../../api/models/output/device.output.model';
 
 @Injectable()
 export class SecurityQueryRepository {

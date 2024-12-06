@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { SecurityTorRepository } from '../infrastucture/security.tor.repository';
+import { SecurityTorRepository } from '../infrastucture/tor/security.tor.repository';
 
 @Injectable()
 export class SecurityService {

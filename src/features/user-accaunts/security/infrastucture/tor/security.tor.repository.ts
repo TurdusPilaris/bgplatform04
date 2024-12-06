@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Not, Repository } from 'typeorm';
-import { Sessions } from '../domain/session.sql';
+import { Sessions } from '../../domain/session.sql';
 
 @Injectable()
 export class SecurityTorRepository {

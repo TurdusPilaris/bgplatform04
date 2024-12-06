@@ -4,6 +4,6 @@ export class LoginInputModel {
   @IsString()
   @Length(1, 50, { message: 'loginOrEmail is not correct' })
   loginOrEmail: string;
-  @Length(1, 50, { message: 'password is not correct' })
+  @Length(6, 20, { message: 'password is not correct' })
   password: string;
 }

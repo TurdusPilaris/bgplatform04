@@ -3,8 +3,9 @@ import { UserTor } from '../../domain/entities/user.sql.entity';
 import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 
+export interface IUsersRepository {}
 @Injectable()
-export class UsersTorRepository {
+export class UsersTorRepository implements IUsersRepository {
   constructor(
     @InjectRepository(UserTor)
     private readonly usersRepository: Repository<UserTor>,
@@ -23,6 +24,10 @@ export class UsersTorRepository {
     return this.usersRepository.findOneBy({ id: id });
   }
 
+  async findByCodeConfirmation(code: string): Promise<UserTor | null> {
+    return this.usersRepository.findOneBy({ confirmationCode: code });
+  }
+
   async findByLoginOrEmail(loginOrEmail: string): Promise<UserTor | null> {
     return this.usersRepository.findOne({
       where: [
@@ -30,6 +35,25 @@ export class UsersTorRepository {
         { email: loginOrEmail }, // Поиск по email
       ],
     });
+  }
+
+  async updateConfirmation(id: string) {
+    await this.usersRepository.update(
+      { id: id },
+      {
+        isConfirmed: true,
+      },
+    );
+  }
+
+  async updateConfirmationAndPassword(id: string, newPasswordHash: string) {
+    await this.usersRepository.update(
+      { id: id },
+      {
+        isConfirmed: true,
+        passwordHash: newPasswordHash,
+      },
+    );
   }
 
   async updateConfirmationCode(
@@ -40,6 +64,7 @@ export class UsersTorRepository {
     await this.usersRepository.update(
       { id: id },
       {
+        isConfirmed: false,
         confirmationCode: confirmationCode,
         expirationDate: expirationDate,
       },

@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { UserOutputModel } from '../../api/models/output/user.output.model';
@@ -32,18 +32,19 @@ export class UsersTorQueryRepository {
     const offset = (queryDto.pageNumber - 1) * queryDto.pageSize;
     const searchLoginTerm = queryDto.searchLoginTerm
       ? `%${queryDto.searchLoginTerm}%`
-      : '';
+      : '%%';
     const searchEmailTerm = queryDto.searchEmailTerm
       ? `%${queryDto.searchEmailTerm}%`
-      : '';
+      : '%%';
     const sortDirection = (
       queryDto.sortDirection?.toUpperCase() === 'DESC' ? 'DESC' : 'ASC'
     ) as 'ASC' | 'DESC'; // Приведение к литеральному типу
 
-    const sortBy = queryDto.sortBy === 'login' ? `"userName"` : queryDto.sortBy;
+    const sortBy =
+      queryDto.sortBy === 'login' ? `"userName"` : `"${queryDto.sortBy}"`;
 
-    const res = await this.dataSource
-      .getRepository('user_tor')
+    const builder = this.dataSource
+      .getRepository(UserTor)
       .createQueryBuilder('u')
       .select('u.id')
       .addSelect('u.email')
@@ -58,11 +59,11 @@ export class UsersTorQueryRepository {
       )
       .orderBy(sortBy, sortDirection)
       .limit(limit)
-      .offset(offset)
-      .getMany();
+      .offset(offset);
+    const res = await builder.getMany();
 
-    //console.log('sql', builder.getSql());
-    console.log('result----', res);
+    // console.log('sql', builder.getSql());
+    // console.log('result----', res);
 
     const countUsers = await this.getCountUsersByFilter(
       searchLoginTerm,
@@ -72,8 +73,8 @@ export class UsersTorQueryRepository {
     const items: UserOutputModel[] = res.map((userTor) => {
       return {
         id: userTor.id,
-        email: userTor.email,
         login: userTor.userName,
+        email: userTor.email,
         createdAt: userTor.createdAt.toISOString(),
       };
     });
@@ -106,7 +107,7 @@ export class UsersTorQueryRepository {
       )
       .getRawOne();
 
-    return result.u_usersCount;
+    return +result.u_usersCount;
   }
 
   paginationUserOutputModelMapper = (
@@ -133,14 +134,14 @@ export class UsersTorQueryRepository {
   }
 
   async getAboutMe(userId: string): Promise<AboutMeOutputModel | null> {
-    const user = await this.findById(userId);
+    const user = await this.usersRepository.findOneBy({ id: userId });
 
     if (!user) return null;
     return this.aboutMeOutputModelMapper(user);
   }
-  aboutMeOutputModelMapper = (user: UserOutputModel): AboutMeOutputModel => {
+  aboutMeOutputModelMapper = (user: UserTor): AboutMeOutputModel => {
     return {
-      login: user.login,
+      login: user.userName,
       email: user.email,
       userId: user.id,
     };

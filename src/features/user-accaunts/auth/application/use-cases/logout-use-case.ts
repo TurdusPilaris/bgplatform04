@@ -1,5 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { SecurityTorRepository } from '../../../security/infrastucture/security.tor.repository';
+import { SecurityTorRepository } from '../../../security/infrastucture/tor/security.tor.repository';
 
 export class LogoutCommand {
   constructor(
