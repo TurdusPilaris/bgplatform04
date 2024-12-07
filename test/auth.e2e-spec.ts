@@ -214,4 +214,26 @@ describe('Auth (e2e)', () => {
       newPasswordRecoveryInputModel,
     );
   });
+  it('/ auth registration confirmation tests (POST) bad request confirmation code is already been applied (400)', async () => {
+    //create new user DTO
+    const createModel = userTestSeeder.createUserDTO();
+
+    //create real user
+    const result = await usersTestManager.createUser(
+      CORRECT_ADMIN_AUTH_BASE64,
+      createModel,
+    );
+    const user = await userRepository.findById(result.body.id);
+
+    const newPasswordRecoveryInputModel =
+      authTestSeeder.createCodeConfirmationModel(user.confirmationCode);
+
+    //send ok
+    await authTestManager.registrationConfirmation(
+      newPasswordRecoveryInputModel,
+    );
+    await authTestManager.registrationConfirmationBad(
+      newPasswordRecoveryInputModel,
+    );
+  });
 });
