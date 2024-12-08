@@ -1,5 +1,5 @@
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserTor } from '../../domain/entities/user.sql.entity';
+import { UserSQL } from '../../domain/entities/user.sql.entity';
 import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 
@@ -7,11 +7,11 @@ export interface IUsersRepository {}
 @Injectable()
 export class UsersTorRepository implements IUsersRepository {
   constructor(
-    @InjectRepository(UserTor)
-    private readonly usersRepository: Repository<UserTor>,
+    @InjectRepository(UserSQL)
+    private readonly usersRepository: Repository<UserSQL>,
   ) {}
 
-  async createUser(user: UserTor): Promise<string> {
+  async createUser(user: UserSQL): Promise<string> {
     const createdUser = await this.usersRepository.save(user);
     return createdUser.id;
   }
@@ -20,15 +20,15 @@ export class UsersTorRepository implements IUsersRepository {
     await this.usersRepository.delete(id);
   }
 
-  async findById(id: string): Promise<UserTor | null> {
+  async findById(id: string): Promise<UserSQL | null> {
     return this.usersRepository.findOneBy({ id: id });
   }
 
-  async findByCodeConfirmation(code: string): Promise<UserTor | null> {
+  async findByCodeConfirmation(code: string): Promise<UserSQL | null> {
     return this.usersRepository.findOneBy({ confirmationCode: code });
   }
 
-  async findByLoginOrEmail(loginOrEmail: string): Promise<UserTor | null> {
+  async findByLoginOrEmail(loginOrEmail: string): Promise<UserSQL | null> {
     return this.usersRepository.findOne({
       where: [
         { userName: loginOrEmail }, // Поиск по userName

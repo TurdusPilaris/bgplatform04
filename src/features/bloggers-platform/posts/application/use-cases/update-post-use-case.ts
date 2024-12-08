@@ -1,8 +1,8 @@
 import { PostCreateInputModel } from '../../api/models/input/create-post.input.model';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
-import { BlogsSqlRepository } from '../../../blogs/infrastructure/blogs.sql.repository';
-import { PostsSqlRepository } from '../../infrastructure/posts.sql.repository';
+import { BlogsSqlRepository } from '../../../blogs/infrastructure/sql/blogs.sql.repository';
+import { PostsSqlRepository } from '../../infrastructure/sql/posts.sql.repository';
 
 export class UpdatePostCommand {
   constructor(

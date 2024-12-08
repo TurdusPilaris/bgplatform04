@@ -5,14 +5,14 @@ import { UserOutputModel } from '../../api/models/output/user.output.model';
 import { QueryUserInputModel } from '../../api/models/input/query-user.input.model';
 import { PaginationOutputModel } from '../../../../../base/models/output/pagination.output.model';
 import { AboutMeOutputModel } from '../../../auth/api/models/output/about-me-output-model';
-import { UserTor } from '../../domain/entities/user.sql.entity';
+import { UserSQL } from '../../domain/entities/user.sql.entity';
 
 @Injectable()
 export class UsersTorQueryRepository {
   constructor(
     @InjectDataSource() protected dataSource: DataSource,
-    @InjectRepository(UserTor)
-    private readonly usersRepository: Repository<UserTor>,
+    @InjectRepository(UserSQL)
+    private readonly usersRepository: Repository<UserSQL>,
   ) {}
   // async onModuleInit() {
   //   console.log(await this.findAll({} as QueryUserInputModel));
@@ -44,7 +44,7 @@ export class UsersTorQueryRepository {
       queryDto.sortBy === 'login' ? `"userName"` : `"${queryDto.sortBy}"`;
 
     const builder = this.dataSource
-      .getRepository(UserTor)
+      .getRepository(UserSQL)
       .createQueryBuilder('u')
       .select('u.id')
       .addSelect('u.email')
@@ -139,7 +139,7 @@ export class UsersTorQueryRepository {
     if (!user) return null;
     return this.aboutMeOutputModelMapper(user);
   }
-  aboutMeOutputModelMapper = (user: UserTor): AboutMeOutputModel => {
+  aboutMeOutputModelMapper = (user: UserSQL): AboutMeOutputModel => {
     return {
       login: user.userName,
       email: user.email,
@@ -147,7 +147,7 @@ export class UsersTorQueryRepository {
     };
   };
 
-  userOutputModelMapper = (user: UserTor): UserOutputModel => {
+  userOutputModelMapper = (user: UserSQL): UserOutputModel => {
     return {
       id: user.id,
       login: user.userName,

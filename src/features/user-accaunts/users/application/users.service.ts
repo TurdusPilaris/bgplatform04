@@ -12,7 +12,7 @@ import {
   IUsersRepository,
   UsersTorRepository,
 } from '../infrastructure/tor/users.tor.repository';
-import { UserTor } from '../domain/entities/user.sql.entity';
+import { UserSQL } from '../domain/entities/user.sql.entity';
 import { UsersTorQueryRepository } from '../infrastructure/tor/users.tor.query-repositories';
 
 @Injectable()
@@ -67,7 +67,7 @@ export class UsersService {
     //   isConfirmed: false,
     // };
 
-    const userCreateSql = new UserTor();
+    const userCreateSql = new UserSQL();
     userCreateSql.userName = createInputUser.login;
     userCreateSql.email = createInputUser.email;
     userCreateSql.passwordHash = passwordHash;

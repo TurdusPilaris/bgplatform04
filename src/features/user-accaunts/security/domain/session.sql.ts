@@ -1,16 +1,16 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { UserTor } from '../../users/domain/entities/user.sql.entity';
+import { UserSQL } from '../../users/domain/entities/user.sql.entity';
 
-@Entity()
-export class Sessions {
+@Entity({ name: 'sessions' })
+export class SessionSQL {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
   userId: string;
 
-  @ManyToOne(() => UserTor, (u) => u.sessions)
-  user: UserTor;
+  @ManyToOne(() => UserSQL, (u) => u.sessions)
+  user: UserSQL;
 
   @Column()
   deviceId: string;

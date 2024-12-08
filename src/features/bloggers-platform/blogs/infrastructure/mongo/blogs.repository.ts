@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { BlogCreateInputModel } from '../api/models/input/create-blog.input.model';
+import { BlogCreateInputModel } from '../../api/models/input/create-blog.input.model';
 import {
   Blog,
   BlogDocument,
   BlogModelType,
-} from '../domain/entiities/blog.entity';
+} from '../../domain/entiities/blog.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
 

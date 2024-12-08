@@ -26,8 +26,8 @@ import { AuthBasicGuard } from '../../../../infrastructure/guards/auth.basic.gua
 import { GetOptionalUserGard } from '../../../../infrastructure/guards/get-optional-user-gard.service';
 import { ErrorProcessor } from '../../../../base/models/errorProcessor';
 import { Request } from 'express';
-import { BlogsSqlQueryRepository } from '../infrastructure/blogs.sql.query-repository';
-import { PostsSqlQueryRepository } from '../../posts/infrastructure/posts.sql.query-repository';
+import { BlogsSqlQueryRepository } from '../infrastructure/sql/blogs.sql.query-repository';
+import { PostsSqlQueryRepository } from '../../posts/infrastructure/sql/posts.sql.query-repository';
 import { DeletePostCommand } from '../../posts/application/use-cases/delete-post-use-case';
 import { PostCreateInputModel } from '../../posts/api/models/input/create-post.input.model';
 import { UpdatePostCommand } from '../../posts/application/use-cases/update-post-use-case';

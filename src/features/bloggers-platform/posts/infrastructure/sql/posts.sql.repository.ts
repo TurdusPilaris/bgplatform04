@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { PostDocument } from '../domain/entiities/post.entity';
-import { PostCreateInputModel } from '../api/models/input/create-post.input.model';
+import { PostDocument } from '../../domain/entiities/post.entity';
+import { PostCreateInputModel } from '../../api/models/input/create-post.input.model';
 import { DataSource } from 'typeorm';
-import { PostSQL } from '../api/models/sql/post.sql.model';
+import { PostSQL } from '../../api/models/sql/post.sql.model';
 
 @Injectable()
 export class PostsSqlRepository {
@@ -38,9 +38,6 @@ export class PostsSqlRepository {
       updateModel.shortDescription,
       updateModel.content,
     ]);
-  }
-  async save(post: PostDocument) {
-    return post.save();
   }
 
   async findById(id: string): Promise<PostSQL | null> {

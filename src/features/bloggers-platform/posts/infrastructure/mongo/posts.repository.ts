@@ -3,8 +3,8 @@ import {
   PostClass,
   PostDocument,
   PostModelType,
-} from '../domain/entiities/post.entity';
-import { PostCreateInputModel } from '../api/models/input/create-post.input.model';
+} from '../../domain/entiities/post.entity';
+import { PostCreateInputModel } from '../../api/models/input/create-post.input.model';
 import { InjectModel } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
 

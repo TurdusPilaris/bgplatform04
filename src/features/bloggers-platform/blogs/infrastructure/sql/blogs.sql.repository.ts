@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { BlogCreateInputModel } from '../api/models/input/create-blog.input.model';
+import { BlogCreateInputModel } from '../../api/models/input/create-blog.input.model';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { BlogSQL } from '../api/models/sql/blog.model.sql';
+import { BlogSQL } from '../../api/models/sql/blog.model.sql';
 
 @Injectable()
 export class BlogsSqlRepository {

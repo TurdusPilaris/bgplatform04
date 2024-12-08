@@ -1,7 +1,7 @@
 import { BlogCreateInputModel } from '../../api/models/input/create-blog.input.model';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
-import { BlogsSqlRepository } from '../../infrastructure/blogs.sql.repository';
+import { BlogsSqlRepository } from '../../infrastructure/sql/blogs.sql.repository';
 
 export class UpdateBlogCommand {
   constructor(

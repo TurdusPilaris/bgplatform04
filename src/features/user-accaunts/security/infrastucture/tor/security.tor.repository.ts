@@ -1,18 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Not, Repository } from 'typeorm';
-import { Sessions } from '../../domain/session.sql';
+import { SessionSQL } from '../../domain/session.sql';
 
 @Injectable()
 export class SecurityTorRepository {
   constructor(
     @InjectDataSource() protected dataSource: DataSource,
-    @InjectRepository(Sessions)
-    private readonly sessionsRepository: Repository<Sessions>,
+    @InjectRepository(SessionSQL)
+    private readonly sessionsRepository: Repository<SessionSQL>,
   ) {}
 
   // async createSession(payload: any, deviceName: string, ip: string) {
-  async createSession(session: Sessions) {
+  async createSession(session: SessionSQL) {
     const createdSession = await this.sessionsRepository.save(session);
     return createdSession.id;
   }

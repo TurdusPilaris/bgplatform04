@@ -4,19 +4,19 @@ import {
   PostClass,
   PostDocument,
   PostModelType,
-} from '../domain/entiities/post.entity';
-import { QueryPostInputModel } from '../api/models/input/query-post.model';
+} from '../../domain/entiities/post.entity';
+import { QueryPostInputModel } from '../../api/models/input/query-post.model';
 import {
   LikesInfoOut,
   PostOutputModel,
-} from '../api/models/output/post.output.model';
+} from '../../api/models/output/post.output.model';
 
 import {
   Like,
   LikeModelType,
-} from '../../comments/domain/entities/like.entity';
-import { likeStatus } from '../../../../base/models/likesStatus';
-import { PaginationOutputModel } from '../../../../base/models/output/pagination.output.model';
+} from '../../../comments/domain/entities/like.entity';
+import { likeStatus } from '../../../../../base/models/likesStatus';
+import { PaginationOutputModel } from '../../../../../base/models/output/pagination.output.model';
 
 @Injectable()
 export class PostsQueryRepository {

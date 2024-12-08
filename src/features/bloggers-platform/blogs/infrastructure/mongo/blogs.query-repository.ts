@@ -4,10 +4,10 @@ import {
   Blog,
   BlogDocument,
   BlogModelType,
-} from '../domain/entiities/blog.entity';
-import { BlogOutputModel } from '../api/models/output/blog.output.model';
-import { QueryBlogInputModel } from '../api/models/input/query-blog.model';
-import { PaginationOutputModel } from '../../../../base/models/output/pagination.output.model';
+} from '../../domain/entiities/blog.entity';
+import { BlogOutputModel } from '../../api/models/output/blog.output.model';
+import { QueryBlogInputModel } from '../../api/models/input/query-blog.model';
+import { PaginationOutputModel } from '../../../../../base/models/output/pagination.output.model';
 
 @Injectable()
 export class BlogsQueryRepository {

@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
 import { likeStatus } from '../../../../../base/models/likesStatus';
-import { PostsSqlRepository } from '../../../posts/infrastructure/posts.sql.repository';
+import { PostsSqlRepository } from '../../../posts/infrastructure/sql/posts.sql.repository';
 import { LikesSqlRepository } from '../../../likes/infrastructure/likes.sql.repository';
 
 export class CreateLikeForPostCommand {

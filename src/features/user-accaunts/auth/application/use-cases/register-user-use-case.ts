@@ -7,7 +7,7 @@ import { UsersSqlRepository } from '../../../users/infrastructure/sql/users.sql.
 import { add } from 'date-fns';
 import { v4 } from 'uuid';
 import { UsersTorRepository } from '../../../users/infrastructure/tor/users.tor.repository';
-import { UserTor } from '../../../users/domain/entities/user.sql.entity';
+import { UserSQL } from '../../../users/domain/entities/user.sql.entity';
 
 export class RegisterUserCommand {
   constructor(public createInputUser: UserCreateModel) {}
@@ -61,7 +61,7 @@ export class RegisterUserUseCase
     //   isConfirmed: false,
     // };
 
-    const userCreateSql = new UserTor();
+    const userCreateSql = new UserSQL();
     userCreateSql.userName = createInputUser.login;
     userCreateSql.email = createInputUser.email;
     userCreateSql.passwordHash = passwordHash;

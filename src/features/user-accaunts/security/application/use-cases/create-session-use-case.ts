@@ -1,6 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
-import { Sessions } from '../../domain/session.sql';
+import { SessionSQL } from '../../domain/session.sql';
 import { UsersTorRepository } from '../../../users/infrastructure/tor/users.tor.repository';
 import { SecurityTorRepository } from '../../infrastucture/tor/security.tor.repository';
 
@@ -45,7 +45,7 @@ export class CreateSessionUseCase
     // );
 
     //tor
-    const newSession = new Sessions();
+    const newSession = new SessionSQL();
     newSession.userId = command.payload.userId;
     // newSession.user = await this.usersTorRepository.findById(
     //   command.payload.userId,

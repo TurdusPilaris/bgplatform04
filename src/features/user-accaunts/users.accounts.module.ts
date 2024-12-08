@@ -31,8 +31,8 @@ import { UsersSqlQueryRepository } from './users/infrastructure/sql/users.sql.qu
 import { UsersSqlRepository } from './users/infrastructure/sql/users.sql.repositories';
 import { SecuritySqlQueryRepository } from './security/infrastucture/sql/security.sql.query-repository';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserTor } from './users/domain/entities/user.sql.entity';
-import { Sessions } from './security/domain/session.sql';
+import { UserSQL } from './users/domain/entities/user.sql.entity';
+import { SessionSQL } from './security/domain/session.sql';
 import { UsersTorRepository } from './users/infrastructure/tor/users.tor.repository';
 import { UsersTorQueryRepository } from './users/infrastructure/tor/users.tor.query-repositories';
 import { SecurityTorRepository } from './security/infrastucture/tor/security.tor.repository';
@@ -43,6 +43,8 @@ import { DeleteSessionByDeviceIdUseCase } from './security/application/use-cases
 import { LogoutUseCase } from './auth/application/use-cases/logout-use-case';
 import { NewPasswordUseCase } from './auth/application/use-cases/new-password-use-case';
 import { SecurityTorQueryRepository } from './security/infrastucture/tor/security.tor.query-repository';
+import { PostSQL } from '../bloggers-platform/posts/domain/entiities/post.sql.entity';
+import { BlogSQL } from '../bloggers-platform/blogs/domain/entiities/blog.sql.entity';
 
 const useCasesForSecurity = [
   CreateSessionUseCase,
@@ -66,7 +68,7 @@ const useCasesForAuth = [
       { name: DeviceAuthSession.name, schema: DeviceAuthSessionSchema },
     ]),
     CqrsModule,
-    TypeOrmModule.forFeature([UserTor, Sessions]),
+    TypeOrmModule.forFeature([UserSQL, SessionSQL, PostSQL, BlogSQL]),
   ],
 
   controllers: [UsersController, DevicesController, AuthController],

@@ -29,7 +29,7 @@ import { GetOptionalUserGard } from '../../../../infrastructure/guards/get-optio
 import { AuthBearerGuard } from '../../../../infrastructure/guards/auth.bearer.guard';
 import { ErrorProcessor } from '../../../../base/models/errorProcessor';
 import { Request } from 'express';
-import { PostsSqlQueryRepository } from '../infrastructure/posts.sql.query-repository';
+import { PostsSqlQueryRepository } from '../infrastructure/sql/posts.sql.query-repository';
 import { CommentsSqlQueryRepository } from '../../comments/infrastructure/comments.sql.query-repository';
 
 @Controller('posts')

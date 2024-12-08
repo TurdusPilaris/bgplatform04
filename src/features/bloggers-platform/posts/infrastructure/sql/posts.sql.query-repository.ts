@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { QueryPostInputModel } from '../api/models/input/query-post.model';
+import { QueryPostInputModel } from '../../api/models/input/query-post.model';
 import {
   NewestLike,
   PostOutputModel,
-} from '../api/models/output/post.output.model';
-import { PaginationOutputModel } from '../../../../base/models/output/pagination.output.model';
+} from '../../api/models/output/post.output.model';
+import { PaginationOutputModel } from '../../../../../base/models/output/pagination.output.model';
 import { DataSource } from 'typeorm';
-import { PostSQL } from '../api/models/sql/post.sql.model';
+import { PostSQL } from '../../api/models/sql/post.sql.model';
 
 @Injectable()
 export class PostsSqlQueryRepository {

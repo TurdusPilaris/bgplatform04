@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import { Sessions } from '../../domain/session.sql';
+import { SessionSQL } from '../../domain/session.sql';
 
 @Injectable()
 export class SecurityTorQueryRepository {
   constructor(
     @InjectDataSource() protected dataSource: DataSource,
-    @InjectRepository(Sessions)
-    private readonly sessionsRepository: Repository<Sessions>,
+    @InjectRepository(SessionSQL)
+    private readonly sessionsRepository: Repository<SessionSQL>,
   ) {}
 
   async getAllSessionsForUser(userId: string) {
@@ -26,7 +26,7 @@ export class SecurityTorQueryRepository {
 
     if (res.length === 0) return null;
 
-    return res.map((e: Sessions) => {
+    return res.map((e: SessionSQL) => {
       return {
         ip: e.ip,
         title: e.deviceName,

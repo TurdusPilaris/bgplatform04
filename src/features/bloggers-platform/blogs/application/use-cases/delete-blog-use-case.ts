@@ -1,7 +1,7 @@
-import { BlogsRepository } from '../../infrastructure/blogs.repository';
+import { BlogsRepository } from '../../infrastructure/mongo/blogs.repository';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
-import { BlogsSqlRepository } from '../../infrastructure/blogs.sql.repository';
+import { BlogsSqlRepository } from '../../infrastructure/sql/blogs.sql.repository';
 
 export class DeleteBlogCommand {
   constructor(public blogId: string) {}

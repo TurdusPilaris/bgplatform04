@@ -2,7 +2,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CommentOutputModel } from '../../api/model/output/comment.output.model';
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
 import { CommentsSqlRepository } from '../../infrastructure/comments.sql.repository';
-import { PostsSqlRepository } from '../../../posts/infrastructure/posts.sql.repository';
+import { PostsSqlRepository } from '../../../posts/infrastructure/sql/posts.sql.repository';
 import { CommentsSqlQueryRepository } from '../../infrastructure/comments.sql.query-repository';
 
 export class CreateCommentCommand {

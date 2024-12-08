@@ -1,6 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
-import { PostsSqlRepository } from '../../infrastructure/posts.sql.repository';
+import { PostsSqlRepository } from '../../infrastructure/sql/posts.sql.repository';
 
 export class DeletePostCommand {
   constructor(public postId: string) {}
