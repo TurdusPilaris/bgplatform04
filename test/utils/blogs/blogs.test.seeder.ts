@@ -1,11 +1,14 @@
+import { BlogCreateInputModel } from '../../../src/features/bloggers-platform/blogs/api/models/input/create-blog.input.model';
+
 export const blogsTestSeeder = {
-  createBlogDTO() {
+  createBlogDTO(): BlogCreateInputModel {
     return {
       name: 'testBlog',
       description: 'This is really big description',
       websiteUrl: 'https://blablablablabla.com',
     };
   },
+
   createUserDTOInvalidPassword() {
     return {
       login: 'testInvPas',

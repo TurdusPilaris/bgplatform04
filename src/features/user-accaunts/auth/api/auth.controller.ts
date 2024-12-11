@@ -60,7 +60,7 @@ export class AuthController {
     return user;
   }
 
-  @UseGuards(ThrottlerGuard)
+  // @UseGuards(ThrottlerGuard)
   @HttpCode(204)
   @Post('registration')
   async registration(@Body() createInputUser: UserCreateModel) {
@@ -72,7 +72,7 @@ export class AuthController {
     }
   }
 
-  @UseGuards(ThrottlerGuard)
+  // @UseGuards(ThrottlerGuard)
   @HttpCode(200)
   @Post('login')
   async login(
@@ -123,7 +123,7 @@ export class AuthController {
     res.send(accessToken);
   }
 
-  @UseGuards(ThrottlerGuard)
+  // @UseGuards(ThrottlerGuard)
   @HttpCode(204)
   @Post('registration-confirmation')
   async registrationConfirmation(@Body() inputCode: CodeConfirmationModel) {
@@ -135,7 +135,7 @@ export class AuthController {
     }
   }
 
-  @UseGuards(ThrottlerGuard)
+  // @UseGuards(ThrottlerGuard)
   @HttpCode(204)
   @Post('new-password')
   async newPassword(@Body() inputModel: NewPasswordRecoveryInputModel) {
@@ -147,7 +147,7 @@ export class AuthController {
     }
   }
 
-  @UseGuards(ThrottlerGuard)
+  // @UseGuards(ThrottlerGuard)
   @HttpCode(204)
   @Post('registration-email-resending')
   async registrationEmailResending(@Body() inputEmail: EmailInputModel) {

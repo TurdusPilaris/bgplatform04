@@ -31,12 +31,14 @@ import { PostsSqlQueryRepository } from '../../posts/infrastructure/sql/posts.sq
 import { DeletePostCommand } from '../../posts/application/use-cases/delete-post-use-case';
 import { PostCreateInputModel } from '../../posts/api/models/input/create-post.input.model';
 import { UpdatePostCommand } from '../../posts/application/use-cases/update-post-use-case';
+import { BlogsTorQueryRepository } from '../infrastructure/tor/blogs.tor.query-repository';
 
 @Controller('sa/blogs')
 export class BlogsSaController {
   constructor(
     private commandBus: CommandBus,
     protected blogsSqlQueryRepository: BlogsSqlQueryRepository,
+    protected blogsTorQueryRepository: BlogsTorQueryRepository,
     protected postsSqlQueryRepository: PostsSqlQueryRepository,
   ) {}
 
@@ -52,7 +54,7 @@ export class BlogsSaController {
   @Get(':id')
   @UseGuards(AuthBasicGuard)
   async getBlog(@Param('id', new ParseUUIDPipe()) blogId: string) {
-    const foundedBlog = await this.blogsSqlQueryRepository.findById(blogId);
+    const foundedBlog = await this.blogsTorQueryRepository.findById(blogId);
     if (!foundedBlog) {
       throw new NotFoundException();
     }
@@ -88,7 +90,7 @@ export class BlogsSaController {
     const blogId = await this.commandBus.execute(
       new CreateBlogCommand(inputModel),
     );
-    return await this.blogsSqlQueryRepository.findById(blogId);
+    return await this.blogsTorQueryRepository.findById(blogId);
   }
 
   @HttpCode(201)

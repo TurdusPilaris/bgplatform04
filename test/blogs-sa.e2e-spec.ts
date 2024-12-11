@@ -59,7 +59,136 @@ describe('Blogs sa (e2e)', () => {
       createModel,
     );
 
-    console.log('req', createResponse.body);
-    // usersTestManger.expectCorrectModel(createModel, createResponse.body);
+    blogsSaTestManager.expectCorrectModel(createModel, createResponse.body);
+  });
+
+  it('/ create blog tests (POST) successful (201)', async () => {
+    const createModel = blogsTestSeeder.createBlogDTO();
+
+    const createResponse = await blogsSaTestManager.createBlog(
+      CORRECT_ADMIN_AUTH_BASE64,
+      createModel,
+    );
+
+    blogsSaTestManager.expectCorrectModel(createModel, createResponse.body);
+  });
+
+  it('/ create blog tests (POST) Unauthorize (401)', async () => {
+    const createModel = blogsTestSeeder.createBlogDTO();
+
+    const createResponse = await blogsSaTestManager.createBlogUnauthorized(
+      UNCORRECT_ADMIN_AUTH_BASE64,
+      createModel,
+    );
+  });
+
+  it('/ create blog tests (POST) bad request (400) too big name', async () => {
+    const createModel = blogsTestSeeder.createBlogDTO();
+    createModel.name = 'qqqqqqqqqqqqqqqqqqqqq';
+    const createResponse = await blogsSaTestManager.createBlogBadRequest(
+      CORRECT_ADMIN_AUTH_BASE64,
+      createModel,
+    );
+
+    blogsSaTestManager.expectCorrectBadRequest(createResponse.body, 'name');
+  });
+
+  it('/ create blog tests (POST) bad request (400) incorrect websiteUrl', async () => {
+    const createModel = blogsTestSeeder.createBlogDTO();
+    createModel.websiteUrl = 'ruiyuriyuiyutituyotiyutioyutiouyro';
+    const createResponse = await blogsSaTestManager.createBlogBadRequest(
+      CORRECT_ADMIN_AUTH_BASE64,
+      createModel,
+    );
+
+    blogsSaTestManager.expectCorrectBadRequest(
+      createResponse.body,
+      'websiteUrl',
+    );
+  });
+
+  it('/ update blog tests (PUT) successful (204)', async () => {
+    const createModel = blogsTestSeeder.createBlogDTO();
+
+    const createResponseCreate = await blogsSaTestManager.createBlog(
+      CORRECT_ADMIN_AUTH_BASE64,
+      createModel,
+    );
+
+    //теперь изменим входную модель
+    createModel.name = 'update model';
+    createModel.websiteUrl = 'https://dadadadad.com';
+    createModel.description = 'this is update description';
+
+    const createResponse = await blogsSaTestManager.updateBlog(
+      CORRECT_ADMIN_AUTH_BASE64,
+      createModel,
+      createResponseCreate.body.id,
+    );
+  });
+  it('/ update blog tests (PUT) Unauthorize (401)', async () => {
+    const createModel = blogsTestSeeder.createBlogDTO();
+
+    const createResponseCreate = await blogsSaTestManager.createBlog(
+      CORRECT_ADMIN_AUTH_BASE64,
+      createModel,
+    );
+
+    //теперь изменим входную модель
+    createModel.name = 'update model';
+    createModel.websiteUrl = 'https://dadadadad.com';
+    createModel.description = 'this is update description';
+
+    const createResponse = await blogsSaTestManager.updateBlogUnauthorized(
+      UNCORRECT_ADMIN_AUTH_BASE64,
+      createModel,
+      createResponseCreate.body.id,
+    );
+  });
+
+  it('/ update blog tests (PUT) NOT FOUND (404)', async () => {
+    const createModel = blogsTestSeeder.createBlogDTO();
+
+    const randomId = v4();
+    await blogsSaTestManager.updateBlogNotFound(
+      CORRECT_ADMIN_AUTH_BASE64,
+      createModel,
+      randomId,
+    );
+  });
+
+  it('/ delete blog tests (DELETE) successful (204)', async () => {
+    const createModel = blogsTestSeeder.createBlogDTO();
+
+    const createResponseCreate = await blogsSaTestManager.createBlog(
+      CORRECT_ADMIN_AUTH_BASE64,
+      createModel,
+    );
+
+    await blogsSaTestManager.deleteBlog(
+      CORRECT_ADMIN_AUTH_BASE64,
+      createResponseCreate.body.id,
+    );
+  });
+
+  it('/ delete blog tests (DELETE) Unauthorize (401)', async () => {
+    const createModel = blogsTestSeeder.createBlogDTO();
+
+    const createResponseCreate = await blogsSaTestManager.createBlog(
+      CORRECT_ADMIN_AUTH_BASE64,
+      createModel,
+    );
+
+    await blogsSaTestManager.deleteBlogUnauthorized(
+      UNCORRECT_ADMIN_AUTH_BASE64,
+      createResponseCreate.body.id,
+    );
+  });
+
+  it('/ delete blog tests (DELETE) not founD (404)', async () => {
+    await blogsSaTestManager.deleteBlogNotFound(
+      CORRECT_ADMIN_AUTH_BASE64,
+      v4(),
+    );
   });
 });

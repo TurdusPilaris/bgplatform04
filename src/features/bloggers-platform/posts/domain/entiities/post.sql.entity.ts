@@ -11,12 +11,6 @@ export class PostSQL {
   blog: BlogSQL;
 
   @Column()
-  blogId: string;
-
-  @Column()
-  blogName: string;
-
-  @Column()
   title: string;
 
   @Column()

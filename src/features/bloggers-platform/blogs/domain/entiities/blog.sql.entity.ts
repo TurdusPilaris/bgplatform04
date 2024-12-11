@@ -23,4 +23,19 @@ export class BlogSQL {
 
   @OneToMany(() => PostSQL, (p) => p.blog)
   posts: PostSQL[];
+  static create(
+    name: string,
+    description: string,
+    websiteUrl: string,
+    createdAt: Date = new Date(),
+    isMembership: boolean = false,
+  ): BlogSQL {
+    const blog = new BlogSQL();
+    blog.name = name;
+    blog.description = description;
+    blog.websiteUrl = websiteUrl;
+    blog.createdAt = createdAt;
+    blog.isMembership = isMembership;
+    return blog;
+  }
 }

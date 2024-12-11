@@ -40,6 +40,9 @@ import { LikesSqlRepository } from './likes/infrastructure/likes.sql.repository'
 import { UpdateLikeStatusUseCase } from './comments/application/use-cases/update-like-status-use-case';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PostSQL } from './posts/domain/entiities/post.sql.entity';
+import { BlogsTorQueryRepository } from './blogs/infrastructure/tor/blogs.tor.query-repository';
+import { BlogsTorRepository } from './blogs/infrastructure/tor/blogs.tor.repository';
+import { BlogSQL } from './blogs/domain/entiities/blog.sql.entity';
 
 const useCasesForPost = [
   CreatePostUseCase,
@@ -69,7 +72,7 @@ const useCasesForComment = [
     ]),
     UserAccountsModule,
     CqrsModule,
-    TypeOrmModule.forFeature([PostSQL, Blog]),
+    TypeOrmModule.forFeature([PostSQL, BlogSQL]),
   ],
   controllers: [
     BlogsSaController,
@@ -84,7 +87,9 @@ const useCasesForComment = [
     BlogsRepository,
     BlogsQueryRepository,
     BlogsSqlRepository,
+    BlogsTorRepository,
     BlogsSqlQueryRepository,
+    BlogsTorQueryRepository,
     PostsRepository,
     PostsSqlRepository,
     PostsQueryRepository,
