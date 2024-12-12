@@ -124,7 +124,8 @@ export class PostsTorQueryRepository {
       relations: ['blog'],
     });
 
-    console.log('items', items);
+    if (!items) return null;
+    // console.log('items', items);
     // return items;
     // const query = `
     // with countLikesAndDislike AS(

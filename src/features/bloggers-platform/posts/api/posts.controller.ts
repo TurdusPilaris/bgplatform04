@@ -31,12 +31,14 @@ import { ErrorProcessor } from '../../../../base/models/errorProcessor';
 import { Request } from 'express';
 import { PostsSqlQueryRepository } from '../infrastructure/sql/posts.sql.query-repository';
 import { CommentsSqlQueryRepository } from '../../comments/infrastructure/comments.sql.query-repository';
+import { PostsTorQueryRepository } from '../infrastructure/tor/posts.tor.query-repository';
 
 @Controller('posts')
 export class PostsController {
   constructor(
     private commandBus: CommandBus,
     protected postsSqlQueryRepository: PostsSqlQueryRepository,
+    protected postsTorQueryRepository: PostsTorQueryRepository,
     protected commentsSqlQueryRepository: CommentsSqlQueryRepository,
   ) {}
 
@@ -56,7 +58,7 @@ export class PostsController {
     @Param('id', new ParseUUIDPipe()) postId: string,
     @Req() req: Request,
   ) {
-    const foundedPost = await this.postsSqlQueryRepository.findById(
+    const foundedPost = await this.postsTorQueryRepository.findById(
       postId,
       req.userId,
     );
