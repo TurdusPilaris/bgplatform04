@@ -22,12 +22,18 @@ export class PostSQL {
   @Column()
   createdAt: Date;
 
-  @Column()
-  dislikesCount: number;
-
-  @Column()
-  likesCount: number;
-
-  @Column()
-  myStatus: likeStatus;
+  static create(
+    blogId: string,
+    title: string,
+    content: string,
+    shortDescription: string,
+    createdAt: Date = new Date(),
+  ): PostSQL {
+    const post = new PostSQL();
+    post.blog = { id: blogId } as BlogSQL;
+    (post.title = title), (post.content = content);
+    post.shortDescription = shortDescription;
+    post.createdAt = createdAt;
+    return post;
+  }
 }

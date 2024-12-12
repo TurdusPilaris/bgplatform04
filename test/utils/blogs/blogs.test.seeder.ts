@@ -1,4 +1,5 @@
 import { BlogCreateInputModel } from '../../../src/features/bloggers-platform/blogs/api/models/input/create-blog.input.model';
+import { CreatePostWithoutBlogIdInputModel } from '../../../src/features/bloggers-platform/posts/api/models/input/create-post-withoutBlogId.input.model';
 
 export const blogsTestSeeder = {
   createBlogDTO(): BlogCreateInputModel {
@@ -33,5 +34,13 @@ export const blogsTestSeeder = {
       });
     }
     return users;
+  },
+
+  createPostWithoutBlogIdDTO(): CreatePostWithoutBlogIdInputModel {
+    return {
+      title: 'this is new test post',
+      shortDescription: 'This is really big description',
+      content: 'this is test content',
+    };
   },
 };

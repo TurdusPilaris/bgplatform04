@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import { AppModule } from '../src/app.module';
 import { applyAppSettings } from '../src/settings/apply-app-setting';
-import { UsersTestManager } from './utils/users/users-test-manager';
 
 import { UserServiceMock } from './mock/user.service.mock';
 import { BusinessService } from '../src/base/domain/business-service';
@@ -76,7 +75,7 @@ describe('Blogs sa (e2e)', () => {
   it('/ create blog tests (POST) Unauthorize (401)', async () => {
     const createModel = blogsTestSeeder.createBlogDTO();
 
-    const createResponse = await blogsSaTestManager.createBlogUnauthorized(
+    await blogsSaTestManager.createBlogUnauthorized(
       UNCORRECT_ADMIN_AUTH_BASE64,
       createModel,
     );
@@ -189,6 +188,44 @@ describe('Blogs sa (e2e)', () => {
     await blogsSaTestManager.deleteBlogNotFound(
       CORRECT_ADMIN_AUTH_BASE64,
       v4(),
+    );
+  });
+
+  it('/ create post by blog id tests (POST) sucessfull (201)', async () => {
+    const createModel = blogsTestSeeder.createBlogDTO();
+
+    const createResponseCreate = await blogsSaTestManager.createBlog(
+      CORRECT_ADMIN_AUTH_BASE64,
+      createModel,
+    );
+
+    //getting real blog id
+    const blogId = createResponseCreate.body.id;
+
+    const postDTO = blogsTestSeeder.createPostWithoutBlogIdDTO();
+
+    const createResponse = await blogsSaTestManager.createPostByBlogId(
+      CORRECT_ADMIN_AUTH_BASE64,
+      postDTO,
+      blogId,
+    );
+    blogsSaTestManager.expectCorrectModelForPost(
+      postDTO,
+      blogId,
+      createResponse.body,
+    );
+  });
+
+  it('/ create post by blog id tests (POST) not found (404)', async () => {
+    //getting real blog id
+    const blogId = v4();
+
+    const postDTO = blogsTestSeeder.createPostWithoutBlogIdDTO();
+
+    const createResponse = await blogsSaTestManager.createPostByBlogIdNotFound(
+      CORRECT_ADMIN_AUTH_BASE64,
+      postDTO,
+      blogId,
     );
   });
 });

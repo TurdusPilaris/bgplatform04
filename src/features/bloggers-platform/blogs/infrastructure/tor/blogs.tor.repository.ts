@@ -23,13 +23,13 @@ export class BlogsTorRepository {
     return foundBlog;
   }
 
-  async delete(blogId: string) {
-    await this.blogsRepository.delete(blogId);
+  async delete(id: string) {
+    await this.blogsRepository.delete(id);
   }
 
-  async updateBlog(inputModel: BlogCreateInputModel, blogId: string) {
+  async updateBlog(inputModel: BlogCreateInputModel, id: string) {
     await this.blogsRepository.update(
-      { id: blogId },
+      { id: id },
       {
         name: inputModel.name,
         description: inputModel.description,

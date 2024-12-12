@@ -124,15 +124,6 @@ export class UsersTorQueryRepository {
     };
   };
 
-  async delete(id: string) {
-    const query = `
-    DELETE FROM public."Users"
-        WHERE id = $1;
-    `;
-
-    await this.dataSource.query(query, [id]);
-  }
-
   async getAboutMe(userId: string): Promise<AboutMeOutputModel | null> {
     const user = await this.usersRepository.findOneBy({ id: userId });
 

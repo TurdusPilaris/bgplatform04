@@ -1,6 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { BlogCreateInputModel } from '../../../src/features/bloggers-platform/blogs/api/models/input/create-blog.input.model';
+import { CreatePostWithoutBlogIdInputModel } from '../../../src/features/bloggers-platform/posts/api/models/input/create-post-withoutBlogId.input.model';
 
 export class BlogsSaTestManager {
   readonly path: string = '/sa/blogs';
@@ -97,6 +98,30 @@ export class BlogsSaTestManager {
       .set({ authorization: UNCORRECT_ADMIN_AUTH_BASE64 })
       .expect(401);
   }
+
+  async createPostByBlogId(
+    CORRECT_ADMIN_AUTH_BASE64: string,
+    createModel: CreatePostWithoutBlogIdInputModel,
+    blogId: string,
+  ) {
+    return request(this.app.getHttpServer())
+      .post(`${this.path + '/' + blogId + '/posts'}`)
+      .set({ authorization: CORRECT_ADMIN_AUTH_BASE64 })
+      .send(createModel)
+      .expect(201);
+  }
+
+  async createPostByBlogIdNotFound(
+    CORRECT_ADMIN_AUTH_BASE64: string,
+    createModel: CreatePostWithoutBlogIdInputModel,
+    blogId: string,
+  ) {
+    return request(this.app.getHttpServer())
+      .post(`${this.path + '/' + blogId + '/posts'}`)
+      .set({ authorization: CORRECT_ADMIN_AUTH_BASE64 })
+      .send(createModel)
+      .expect(404);
+  }
   expectCorrectModel(
     createModel: { websiteUrl: string; name: string; description: string },
     responseModel: any,
@@ -116,5 +141,16 @@ export class BlogsSaTestManager {
     );
     expect(error).toBeDefined();
     expect(error).toHaveProperty('message');
+  }
+
+  expectCorrectModelForPost(
+    createModel: CreatePostWithoutBlogIdInputModel,
+    blogId: string,
+    responseModel: any,
+  ) {
+    expect(createModel.content).toBe(responseModel.content);
+    expect(createModel.shortDescription).toBe(responseModel.shortDescription);
+    expect(createModel.title).toBe(responseModel.title);
+    expect(blogId).toBe(responseModel.blogId);
   }
 }

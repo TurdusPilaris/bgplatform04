@@ -43,6 +43,8 @@ import { PostSQL } from './posts/domain/entiities/post.sql.entity';
 import { BlogsTorQueryRepository } from './blogs/infrastructure/tor/blogs.tor.query-repository';
 import { BlogsTorRepository } from './blogs/infrastructure/tor/blogs.tor.repository';
 import { BlogSQL } from './blogs/domain/entiities/blog.sql.entity';
+import { PostsTorRepository } from './posts/infrastructure/tor/posts.tor.repository';
+import { PostsTorQueryRepository } from './posts/infrastructure/tor/posts.tor.query-repository';
 
 const useCasesForPost = [
   CreatePostUseCase,
@@ -92,14 +94,16 @@ const useCasesForComment = [
     BlogsTorQueryRepository,
     PostsRepository,
     PostsSqlRepository,
+    PostsTorRepository,
     PostsQueryRepository,
     PostsSqlQueryRepository,
+    PostsTorQueryRepository,
     CommentsRepository,
     CommentsQueryRepository,
     CommentsSqlRepository,
     CommentsSqlQueryRepository,
     LikesSqlRepository,
   ],
-  exports: [BlogsSqlRepository],
+  exports: [BlogsSqlRepository, BlogsTorRepository],
 })
 export class BloggersPlatformModule {}
