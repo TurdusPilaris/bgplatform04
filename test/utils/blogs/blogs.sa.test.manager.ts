@@ -5,7 +5,7 @@ import { CreatePostWithoutBlogIdInputModel } from '../../../src/features/blogger
 
 export class BlogsSaTestManager {
   readonly pathSa: string = '/sa/blogs';
-  readonly path: string = '/sa/blogs';
+  readonly path: string = '/blogs';
   constructor(protected readonly app: INestApplication) {}
 
   async createBlogBadRequest(
@@ -157,7 +157,7 @@ export class BlogsSaTestManager {
 
   async getBlogsNotSa(queryString: string) {
     return request(this.app.getHttpServer())
-      .get(this.pathSa + queryString)
+      .get(this.path + queryString)
       .expect(200);
   }
 
