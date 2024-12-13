@@ -49,7 +49,7 @@ export class PostsController {
     queryDto: QueryPostInputModel,
     @Req() req: Request,
   ) {
-    return await this.postsSqlQueryRepository.findAll(queryDto, req.userId);
+    return await this.postsTorQueryRepository.findAll(queryDto, req.userId);
   }
 
   @UseGuards(GetOptionalUserGard)
@@ -77,7 +77,7 @@ export class PostsController {
     @Param('id', new ParseUUIDPipe()) postId: string,
     @Req() req: Request,
   ) {
-    const post = await this.postsSqlQueryRepository.findById(
+    const post = await this.postsTorQueryRepository.findById(
       postId,
       req.userId,
     );

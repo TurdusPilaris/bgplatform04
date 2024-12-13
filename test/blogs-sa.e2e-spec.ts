@@ -11,7 +11,8 @@ import { TestingController } from '../src/features/testing/testing-controller';
 import { UsersService } from '../src/features/user-accaunts/users/application/users.service';
 import { v4 } from 'uuid';
 import { blogsTestSeeder } from './utils/blogs/blogs.test.seeder';
-import { BlogsSaTestManager } from './utils/blogs/blogs-sa-test-manager';
+import { BlogsSaTestManager } from './utils/blogs/blogs.sa.test.manager';
+import { CommonTestManager } from './utils/common/common.test.manager';
 
 const CORRECT_ADMIN_AUTH_BASE64 = 'Basic YWRtaW46cXdlcnR5';
 const UNCORRECT_ADMIN_AUTH_BASE64 = 'Basic YWRtaW46cXdlc666';
@@ -19,6 +20,7 @@ const UNCORRECT_ADMIN_AUTH_BASE64 = 'Basic YWRtaW46cXdlc666';
 describe('Blogs sa (e2e)', () => {
   let app: INestApplication;
   let blogsSaTestManager: BlogsSaTestManager;
+  let commonTestManager: CommonTestManager;
   let testingController: TestingController;
 
   beforeAll(async () => {
@@ -40,6 +42,7 @@ describe('Blogs sa (e2e)', () => {
 
     // Init userManager
     blogsSaTestManager = new BlogsSaTestManager(app);
+    commonTestManager = new CommonTestManager();
   });
 
   beforeEach(async () => {
@@ -222,10 +225,180 @@ describe('Blogs sa (e2e)', () => {
 
     const postDTO = blogsTestSeeder.createPostWithoutBlogIdDTO();
 
-    const createResponse = await blogsSaTestManager.createPostByBlogIdNotFound(
+    await blogsSaTestManager.createPostByBlogIdNotFound(
       CORRECT_ADMIN_AUTH_BASE64,
       postDTO,
       blogId,
+    );
+  });
+  it('/ create post by blog id tests (POST) Unauthorize (401)', async () => {
+    //getting real blog id
+    const blogId = v4();
+
+    const postDTO = blogsTestSeeder.createPostWithoutBlogIdDTO();
+
+    await blogsSaTestManager.createPostByBlogIdUnauthorized(
+      UNCORRECT_ADMIN_AUTH_BASE64,
+      postDTO,
+      blogId,
+    );
+  });
+
+  it('/ create post by blog id tests (POST) bad request title (400)', async () => {
+    const createModel = blogsTestSeeder.createBlogDTO();
+
+    const createResponseCreate = await blogsSaTestManager.createBlog(
+      CORRECT_ADMIN_AUTH_BASE64,
+      createModel,
+    );
+
+    //getting real blog id
+    const blogId = createResponseCreate.body.id;
+
+    const postDTO = blogsTestSeeder.createPostWithoutBlogIdDTO();
+
+    //change title > 30
+    postDTO.title = 'a'.repeat(31);
+    const createResponse =
+      await blogsSaTestManager.createPostByBlogIdBadRequest(
+        CORRECT_ADMIN_AUTH_BASE64,
+        postDTO,
+        blogId,
+      );
+
+    blogsSaTestManager.expectCorrectBadRequest(createResponse.body, 'title');
+  });
+
+  it('/ create post by blog id tests (POST) bad request shortDescription (400)', async () => {
+    const createModel = blogsTestSeeder.createBlogDTO();
+
+    const createResponseCreate = await blogsSaTestManager.createBlog(
+      CORRECT_ADMIN_AUTH_BASE64,
+      createModel,
+    );
+
+    //getting real blog id
+    const blogId = createResponseCreate.body.id;
+
+    const postDTO = blogsTestSeeder.createPostWithoutBlogIdDTO();
+
+    //change shortDescription > 100
+    postDTO.shortDescription = 'a'.repeat(101);
+    const createResponse =
+      await blogsSaTestManager.createPostByBlogIdBadRequest(
+        CORRECT_ADMIN_AUTH_BASE64,
+        postDTO,
+        blogId,
+      );
+
+    blogsSaTestManager.expectCorrectBadRequest(
+      createResponse.body,
+      'shortDescription',
+    );
+  });
+
+  it('/ create post by blog id tests (POST) bad request shortDescription (400)', async () => {
+    const createModel = blogsTestSeeder.createBlogDTO();
+
+    const createResponseCreate = await blogsSaTestManager.createBlog(
+      CORRECT_ADMIN_AUTH_BASE64,
+      createModel,
+    );
+
+    //getting real blog id
+    const blogId = createResponseCreate.body.id;
+
+    const postDTO = blogsTestSeeder.createPostWithoutBlogIdDTO();
+
+    //change content > 1000
+    postDTO.content = 'a'.repeat(1001);
+    const createResponse =
+      await blogsSaTestManager.createPostByBlogIdBadRequest(
+        CORRECT_ADMIN_AUTH_BASE64,
+        postDTO,
+        blogId,
+      );
+
+    blogsSaTestManager.expectCorrectBadRequest(createResponse.body, 'content');
+  });
+
+  it('/ get blogs tests (GET) successful (200)', async () => {
+    const createModel = blogsTestSeeder.createBlogDTO();
+
+    const createResponseCreate = await blogsSaTestManager.createBlog(
+      CORRECT_ADMIN_AUTH_BASE64,
+      createModel,
+    );
+
+    const createResponse = await blogsSaTestManager.getBlogs(
+      CORRECT_ADMIN_AUTH_BASE64,
+      '',
+    );
+
+    commonTestManager.expectPaginator(createResponse.body, 1);
+  });
+  it('/ get blogs tests (GET) successful (200) pagination of big count', async () => {
+    const countUsers = 19;
+    const pageSize = 3;
+    const pageNumber = 4;
+    const arrayCreateModel = blogsTestSeeder.createArrayBlogDTO(countUsers);
+
+    for (let i = 0; i < arrayCreateModel.length; i++) {
+      await blogsSaTestManager.createBlog(
+        CORRECT_ADMIN_AUTH_BASE64,
+        arrayCreateModel[i],
+      );
+    }
+    const queryString = `?pageSize=${pageSize}&pageNumber=${pageNumber}`;
+    const createResponse = await blogsSaTestManager.getBlogs(
+      CORRECT_ADMIN_AUTH_BASE64,
+      queryString,
+    );
+
+    commonTestManager.expectPaginator(
+      createResponse.body,
+      19,
+      pageSize,
+      pageNumber,
+    );
+  });
+
+  it('/ get blogs tests (GET) unauthorize (401)', async () => {
+    await blogsSaTestManager.getBlogsUnauthorize(
+      UNCORRECT_ADMIN_AUTH_BASE64,
+      '',
+    );
+  });
+
+  it('/ get blogs not sa tests (GET) successful (200)', async () => {
+    const createModel = blogsTestSeeder.createBlogDTO();
+
+    await blogsSaTestManager.createBlog(CORRECT_ADMIN_AUTH_BASE64, createModel);
+
+    const createResponse = await blogsSaTestManager.getBlogsNotSa('');
+
+    commonTestManager.expectPaginator(createResponse.body, 1);
+  });
+  it('/ get blogs not sa tests (GET) successful (200)', async () => {
+    const countUsers = 19;
+    const pageSize = 3;
+    const pageNumber = 4;
+    const arrayCreateModel = blogsTestSeeder.createArrayBlogDTO(countUsers);
+
+    for (let i = 0; i < arrayCreateModel.length; i++) {
+      await blogsSaTestManager.createBlog(
+        CORRECT_ADMIN_AUTH_BASE64,
+        arrayCreateModel[i],
+      );
+    }
+    const queryString = `?pageSize=${pageSize}&pageNumber=${pageNumber}`;
+    const createResponse = await blogsSaTestManager.getBlogsNotSa(queryString);
+
+    commonTestManager.expectPaginator(
+      createResponse.body,
+      19,
+      pageSize,
+      pageNumber,
     );
   });
 });

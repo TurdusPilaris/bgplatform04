@@ -25,9 +25,9 @@ export class UsersTorQueryRepository {
     return this.userOutputModelMapper(foundUser);
   }
 
-  async findAll(queryDto: QueryUserInputModel) {
-    // : Promise<PaginationOutputModel<UserOutputModel[]>> {
-
+  async findAll(
+    queryDto: QueryUserInputModel,
+  ): Promise<PaginationOutputModel<UserOutputModel[]>> {
     const limit = queryDto.pageSize;
     const offset = (queryDto.pageNumber - 1) * queryDto.pageSize;
     const searchLoginTerm = queryDto.searchLoginTerm
@@ -70,14 +70,7 @@ export class UsersTorQueryRepository {
       searchEmailTerm,
     );
 
-    const items: UserOutputModel[] = res.map((userTor) => {
-      return {
-        id: userTor.id,
-        login: userTor.userName,
-        email: userTor.email,
-        createdAt: userTor.createdAt.toISOString(),
-      };
-    });
+    const items: UserOutputModel[] = res.map(this.userOutputModelMapper);
 
     // const items: UserOutputModel[] = res.map((userTor) => {
     //   return {

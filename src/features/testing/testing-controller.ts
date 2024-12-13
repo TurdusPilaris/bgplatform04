@@ -9,8 +9,8 @@ export class TestingController {
   @HttpCode(204)
   async allDelete() {
     //truncate blogs
-    // const queryForBlogs = `TRUNCATE TABLE public."Blogs" CASCADE`;
-    // await this.dataSource.query(queryForBlogs);
+    const queryForBlogs = `TRUNCATE TABLE public."blogs" CASCADE`;
+    await this.dataSource.query(queryForBlogs);
     // //truncate likes
     // const queryForLikesPosts = `TRUNCATE TABLE public."LikeForPost" CASCADE`;
     // await this.dataSource.query(queryForLikesPosts);
@@ -26,7 +26,7 @@ export class TestingController {
     // const queryForComments = `TRUNCATE TABLE public."Comments" CASCADE`;
     // await this.dataSource.query(queryForComments);
     // //truncate "Posts"
-    // const queryForPosts = `TRUNCATE TABLE public."Posts" CASCADE`;
-    // await this.dataSource.query(queryForPosts);
+    const queryForPosts = `TRUNCATE TABLE public."posts" CASCADE`;
+    await this.dataSource.query(queryForPosts);
   }
 }

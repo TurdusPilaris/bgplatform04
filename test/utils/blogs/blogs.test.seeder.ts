@@ -17,23 +17,17 @@ export const blogsTestSeeder = {
       password: '12',
     };
   },
-  createUserDTOForDelete() {
-    return {
-      login: 'userDelete',
-      email: 'userForDelete@email.com',
-      password: '1234567',
-    };
-  },
-  createArrayUserDTO(count: number) {
-    const users = [];
+
+  createArrayBlogDTO(count: number) {
+    const blogs = [];
     for (let i = 0; i < count; i++) {
-      users.push({
-        login: 'test' + i,
-        email: `test${i}@email.com`,
-        password: '1234567',
+      blogs.push({
+        name: 'test' + i,
+        description: 'this is test description' + i,
+        websiteUrl: `https://blablablablablatest${i}.com`,
       });
     }
-    return users;
+    return blogs;
   },
 
   createPostWithoutBlogIdDTO(): CreatePostWithoutBlogIdInputModel {

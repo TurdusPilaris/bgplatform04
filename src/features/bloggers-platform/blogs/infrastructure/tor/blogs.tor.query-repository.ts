@@ -1,10 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import {
-  Blog,
-  BlogDocument,
-  BlogModelType,
-} from '../../domain/entiities/blog.entity';
 import { BlogOutputModel } from '../../api/models/output/blog.output.model';
 import { QueryBlogInputModel } from '../../api/models/input/query-blog.model';
 import { PaginationOutputModel } from '../../../../../base/models/output/pagination.output.model';
@@ -25,64 +19,37 @@ export class BlogsTorQueryRepository {
     return this.blogOutputModelMapper(foundBlog);
   }
 
-  async findAll(
-    queryDto: QueryBlogInputModel,
-  ): Promise<PaginationOutputModel<BlogOutputModel[]>> {
-    const query = `
-    SELECT id, name, description, "websiteUrl", "createdAt", "isMembership"
-        FROM public."Blogs" 
-        WHERE "name" ILIKE $3 
-        ORDER BY "${queryDto.sortBy}" ${queryDto.sortDirection}
-        LIMIT $1 OFFSET $2
-    `;
+  async findAll(queryDto: QueryBlogInputModel) {
+    // : Promise<PaginationOutputModel<BlogOutputModel[]>>
+    //params
+    const limit = queryDto.pageSize;
+    const offset = (queryDto.pageNumber - 1) * queryDto.pageSize;
+    const searchNameTerm = queryDto.searchNameTerm
+      ? `%${queryDto.searchNameTerm}%`
+      : '%%';
+    const sortDirection = (
+      queryDto.sortDirection?.toUpperCase() === 'DESC' ? 'DESC' : 'ASC'
+    ) as 'ASC' | 'DESC'; // Приведение к литеральному типу
 
-    const res = await this.dataSource.query(query, [
-      queryDto.pageSize,
-      (queryDto.pageNumber - 1) * queryDto.pageSize,
-      `%${queryDto.searchNameTerm}%`,
-    ]);
+    const items = await this.blogsRepository
+      .createQueryBuilder('blogs')
+      .where('blogs.name ILIKE :name ', { name: searchNameTerm })
+      .orderBy(`"${queryDto.sortBy}"`, sortDirection)
+      .offset(offset)
+      .limit(limit)
+      .getMany();
 
-    const countBlogs = await this.getCountBlogsByFilter(
-      queryDto.searchNameTerm,
-    );
+    const countBlogs = await this.getCountBlogsByFilter(searchNameTerm);
 
+    const res = items.map(this.blogOutputModelMapper);
     return this.paginationBlogModelMapper(queryDto, countBlogs, res);
-
-    // const filterName = {
-    //   name: {
-    //     $regex: queryDto.searchNameTerm ?? '',
-    //     $options: 'i',
-    //   },
-    // };
-    // const items = await this.BlogModel.find(filterName, null, {
-    //   sort: { [queryDto.sortBy]: queryDto.sortDirection },
-    // })
-    //   .skip((queryDto.pageNumber - 1) * queryDto.pageSize)
-    //   .limit(queryDto.pageSize)
-    //   .exec();
-    //
-    // const itemsForPaginator: BlogOutputModel[] = items.map(
-    //   this.blogOutputModelMapper,
-    // );
-    // const countBlogs = await this.BlogModel.countDocuments(filterName);
-    //
-    // return this.paginationBlogModelMapper(
-    //   queryDto,
-    //   countBlogs,
-    //   itemsForPaginator,
-    // );
   }
 
   async getCountBlogsByFilter(searchNameTerm: string) {
-    const query = `
-    SELECT  count(*) as "countOfBlogs"
-	      FROM public."Blogs" u
-	      WHERE "name" ILIKE $1
-    `;
-
-    const res = await this.dataSource.query(query, [`%${searchNameTerm}%`]);
-
-    return +res[0].countOfBlogs;
+    return await this.blogsRepository
+      .createQueryBuilder('blogs')
+      .where('blogs.name ILIKE :name ', { name: searchNameTerm })
+      .getCount();
   }
   paginationBlogModelMapper = (
     query: QueryBlogInputModel,

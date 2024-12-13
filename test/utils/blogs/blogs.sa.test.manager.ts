@@ -4,6 +4,7 @@ import { BlogCreateInputModel } from '../../../src/features/bloggers-platform/bl
 import { CreatePostWithoutBlogIdInputModel } from '../../../src/features/bloggers-platform/posts/api/models/input/create-post-withoutBlogId.input.model';
 
 export class BlogsSaTestManager {
+  readonly pathSa: string = '/sa/blogs';
   readonly path: string = '/sa/blogs';
   constructor(protected readonly app: INestApplication) {}
 
@@ -12,7 +13,7 @@ export class BlogsSaTestManager {
     createModel: BlogCreateInputModel,
   ) {
     return request(this.app.getHttpServer())
-      .post(this.path)
+      .post(this.pathSa)
       .set({ authorization: CORRECT_ADMIN_AUTH_BASE64 })
       .send(createModel)
       .expect(400);
@@ -23,7 +24,7 @@ export class BlogsSaTestManager {
     createModel: BlogCreateInputModel,
   ) {
     return request(this.app.getHttpServer())
-      .post(this.path)
+      .post(this.pathSa)
       .set({ authorization: CORRECT_ADMIN_AUTH_BASE64 })
       .send(createModel)
       .expect(201);
@@ -34,7 +35,7 @@ export class BlogsSaTestManager {
     createModel: BlogCreateInputModel,
   ) {
     return request(this.app.getHttpServer())
-      .post(this.path)
+      .post(this.pathSa)
       .set({ authorization: UNCORRECT_ADMIN_AUTH_BASE64 })
       .send(createModel)
       .expect(401);
@@ -46,7 +47,7 @@ export class BlogsSaTestManager {
     blogId: string,
   ) {
     return request(this.app.getHttpServer())
-      .put(`${this.path + '/' + blogId}`)
+      .put(`${this.pathSa + '/' + blogId}`)
       .set({ authorization: CORRECT_ADMIN_AUTH_BASE64 })
       .send(createModel)
       .expect(204);
@@ -58,7 +59,7 @@ export class BlogsSaTestManager {
     blogId: string,
   ) {
     return request(this.app.getHttpServer())
-      .put(`${this.path + '/' + blogId}`)
+      .put(`${this.pathSa + '/' + blogId}`)
       .set({ authorization: CORRECT_ADMIN_AUTH_BASE64 })
       .send(createModel)
       .expect(404);
@@ -69,7 +70,7 @@ export class BlogsSaTestManager {
     blogId: string,
   ) {
     return request(this.app.getHttpServer())
-      .put(`${this.path + '/' + blogId}`)
+      .put(`${this.pathSa + '/' + blogId}`)
       .set({ authorization: UNCORRECT_ADMIN_AUTH_BASE64 })
       .send(createModel)
       .expect(401);
@@ -77,14 +78,14 @@ export class BlogsSaTestManager {
 
   async deleteBlog(CORRECT_ADMIN_AUTH_BASE64: string, blogId: string) {
     return request(this.app.getHttpServer())
-      .delete(`${this.path + '/' + blogId}`)
+      .delete(`${this.pathSa + '/' + blogId}`)
       .set({ authorization: CORRECT_ADMIN_AUTH_BASE64 })
       .expect(204);
   }
 
   async deleteBlogNotFound(CORRECT_ADMIN_AUTH_BASE64: string, blogId: string) {
     return request(this.app.getHttpServer())
-      .delete(`${this.path + '/' + blogId}`)
+      .delete(`${this.pathSa + '/' + blogId}`)
       .set({ authorization: CORRECT_ADMIN_AUTH_BASE64 })
       .expect(404);
   }
@@ -94,7 +95,7 @@ export class BlogsSaTestManager {
     blogId: string,
   ) {
     return request(this.app.getHttpServer())
-      .delete(`${this.path + '/' + blogId}`)
+      .delete(`${this.pathSa + '/' + blogId}`)
       .set({ authorization: UNCORRECT_ADMIN_AUTH_BASE64 })
       .expect(401);
   }
@@ -105,7 +106,7 @@ export class BlogsSaTestManager {
     blogId: string,
   ) {
     return request(this.app.getHttpServer())
-      .post(`${this.path + '/' + blogId + '/posts'}`)
+      .post(`${this.pathSa + '/' + blogId + '/posts'}`)
       .set({ authorization: CORRECT_ADMIN_AUTH_BASE64 })
       .send(createModel)
       .expect(201);
@@ -117,10 +118,57 @@ export class BlogsSaTestManager {
     blogId: string,
   ) {
     return request(this.app.getHttpServer())
-      .post(`${this.path + '/' + blogId + '/posts'}`)
+      .post(`${this.pathSa + '/' + blogId + '/posts'}`)
       .set({ authorization: CORRECT_ADMIN_AUTH_BASE64 })
       .send(createModel)
       .expect(404);
+  }
+
+  async createPostByBlogIdUnauthorized(
+    UNCORRECT_ADMIN_AUTH_BASE64: string,
+    createModel: CreatePostWithoutBlogIdInputModel,
+    blogId: string,
+  ) {
+    return request(this.app.getHttpServer())
+      .post(`${this.pathSa + '/' + blogId + '/posts'}`)
+      .set({ authorization: UNCORRECT_ADMIN_AUTH_BASE64 })
+      .send(createModel)
+      .expect(401);
+  }
+
+  async createPostByBlogIdBadRequest(
+    CORRECT_ADMIN_AUTH_BASE64: string,
+    createModel: CreatePostWithoutBlogIdInputModel,
+    blogId: string,
+  ) {
+    return request(this.app.getHttpServer())
+      .post(`${this.pathSa + '/' + blogId + '/posts'}`)
+      .set({ authorization: CORRECT_ADMIN_AUTH_BASE64 })
+      .send(createModel)
+      .expect(400);
+  }
+
+  async getBlogs(CORRECT_ADMIN_AUTH_BASE64: string, queryString: string) {
+    return request(this.app.getHttpServer())
+      .get(this.pathSa + queryString)
+      .set({ authorization: CORRECT_ADMIN_AUTH_BASE64 })
+      .expect(200);
+  }
+
+  async getBlogsNotSa(queryString: string) {
+    return request(this.app.getHttpServer())
+      .get(this.pathSa + queryString)
+      .expect(200);
+  }
+
+  async getBlogsUnauthorize(
+    UNCORRECT_ADMIN_AUTH_BASE64: string,
+    queryString: string,
+  ) {
+    return request(this.app.getHttpServer())
+      .get(this.pathSa + queryString)
+      .set({ authorization: UNCORRECT_ADMIN_AUTH_BASE64 })
+      .expect(401);
   }
   expectCorrectModel(
     createModel: { websiteUrl: string; name: string; description: string },

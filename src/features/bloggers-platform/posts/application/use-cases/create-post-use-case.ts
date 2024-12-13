@@ -16,6 +16,9 @@ export class CreatePostUseCase implements ICommandHandler<CreatePostCommand> {
     private postsSqlRepository: PostsSqlRepository,
     private postsSqlQueryRepository: PostsSqlQueryRepository,
     private blogsSqlRepository: BlogsSqlRepository,
+    private postsTorRepository: PostsSqlRepository,
+    private postsTorQueryRepository: PostsSqlQueryRepository,
+    private blogsTorRepository: BlogsSqlRepository,
   ) {}
 
   async execute(

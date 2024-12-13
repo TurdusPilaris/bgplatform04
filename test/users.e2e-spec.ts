@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import { AppModule } from '../src/app.module';
 import { applyAppSettings } from '../src/settings/apply-app-setting';
-import { UsersTestManager } from './utils/users/users-test-manager';
 
 import { UserServiceMock } from './mock/user.service.mock';
 import { userTestSeeder } from './utils/users/users.test.seedr';
@@ -12,6 +11,7 @@ import { BusinessServiceMock } from './mock/business.service.mock';
 import { TestingController } from '../src/features/testing/testing-controller';
 import { UsersService } from '../src/features/user-accaunts/users/application/users.service';
 import { v4 } from 'uuid';
+import { UsersTestManager } from './utils/users/users.test.manager';
 
 const CORRECT_ADMIN_AUTH_BASE64 = 'Basic YWRtaW46cXdlcnR5';
 const UNCORRECT_ADMIN_AUTH_BASE64 = 'Basic YWRtaW46cXdlc666';
@@ -125,6 +125,7 @@ describe('Users (e2e)', () => {
 
     const req = await usersTestManger.getAllUsers(CORRECT_ADMIN_AUTH_BASE64);
 
+    console.log('req.body', req.body);
     usersTestManger.expectPaginator(req.body, countUsers);
   });
 

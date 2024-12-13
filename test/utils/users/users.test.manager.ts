@@ -3,7 +3,8 @@ import request from 'supertest';
 import { UserCreateModel } from '../../../src/features/user-accaunts/users/api/models/input/create-user.input.model';
 
 export class UsersTestManager {
-  readonly path: string = '/sa/users';
+  readonly pathSa: string = '/sa/users';
+  readonly path: string = '/users';
   constructor(protected readonly app: INestApplication) {}
 
   // можно выносить некоторые проверки в отдельные методы для лучшей читаемости тестов
@@ -27,7 +28,7 @@ export class UsersTestManager {
     createModel: UserCreateModel,
   ) {
     return request(this.app.getHttpServer())
-      .post(this.path)
+      .post(this.pathSa)
       .set({ authorization: CORRECT_ADMIN_AUTH_BASE64 })
       .send(createModel)
       .expect(201);
@@ -38,14 +39,14 @@ export class UsersTestManager {
     createModel: UserCreateModel,
   ) {
     return request(this.app.getHttpServer())
-      .post(this.path)
+      .post(this.pathSa)
       .set({ authorization: CORRECT_ADMIN_AUTH_BASE64 })
       .send(createModel)
       .expect(400);
   }
   async updateUser(adminAccessToken: string, updateModel: any) {
     return request(this.app.getHttpServer())
-      .put(this.path)
+      .put(this.pathSa)
       .auth(adminAccessToken, {
         type: 'bearer',
       })
@@ -55,14 +56,14 @@ export class UsersTestManager {
 
   async deleteUser(CORRECT_ADMIN_AUTH_BASE64: string, userId: string) {
     return request(this.app.getHttpServer())
-      .delete(`${this.path + '/' + userId}`)
+      .delete(`${this.pathSa + '/' + userId}`)
       .set({ authorization: CORRECT_ADMIN_AUTH_BASE64 })
       .expect(204);
   }
 
   async deleteUserBadUserId(CORRECT_ADMIN_AUTH_BASE64: string, userId: string) {
     return request(this.app.getHttpServer())
-      .delete(`${this.path + '/' + userId}`)
+      .delete(`${this.pathSa + '/' + userId}`)
       .set({ authorization: CORRECT_ADMIN_AUTH_BASE64 })
       .expect(404);
   }
@@ -71,7 +72,7 @@ export class UsersTestManager {
     userId: string,
   ) {
     return request(this.app.getHttpServer())
-      .delete(`${this.path + '/' + userId}`)
+      .delete(`${this.pathSa + '/' + userId}`)
       .set({ authorization: UNCORRECT_ADMIN_AUTH_BASE64 })
       .expect(401);
   }
@@ -99,7 +100,7 @@ export class UsersTestManager {
     // arrayUsers.forEach((user) => {
     for (let i = 0; i < arrayUsers.length; i++) {
       await request(this.app.getHttpServer())
-        .post(this.path)
+        .post(this.pathSa)
         .set({ authorization: CORRECT_ADMIN_AUTH_BASE64 })
         .send(arrayUsers[i])
         .expect(201);
@@ -112,14 +113,14 @@ export class UsersTestManager {
     queryString: string = ``,
   ) {
     return request(this.app.getHttpServer())
-      .get(this.path + queryString)
+      .get(this.pathSa + queryString)
       .set({ authorization: CORRECT_ADMIN_AUTH_BASE64 })
       .expect(200);
   }
 
   async getAllUsersUnauthorized(UNCORRECT_ADMIN_AUTH_BASE64: string) {
     request(this.app.getHttpServer())
-      .get(this.path)
+      .get(this.pathSa)
       .set({ authorization: UNCORRECT_ADMIN_AUTH_BASE64 })
       .expect(200);
   }

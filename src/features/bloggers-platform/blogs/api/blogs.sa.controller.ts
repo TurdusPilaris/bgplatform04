@@ -32,6 +32,7 @@ import { DeletePostCommand } from '../../posts/application/use-cases/delete-post
 import { PostCreateInputModel } from '../../posts/api/models/input/create-post.input.model';
 import { UpdatePostCommand } from '../../posts/application/use-cases/update-post-use-case';
 import { BlogsTorQueryRepository } from '../infrastructure/tor/blogs.tor.query-repository';
+import { PostsTorQueryRepository } from '../../posts/infrastructure/tor/posts.tor.query-repository';
 
 @Controller('sa/blogs')
 export class BlogsSaController {
@@ -40,6 +41,7 @@ export class BlogsSaController {
     protected blogsSqlQueryRepository: BlogsSqlQueryRepository,
     protected blogsTorQueryRepository: BlogsTorQueryRepository,
     protected postsSqlQueryRepository: PostsSqlQueryRepository,
+    protected postsTorQueryRepository: PostsTorQueryRepository,
   ) {}
 
   @Get()
@@ -48,7 +50,7 @@ export class BlogsSaController {
     @Query()
     queryDto: QueryBlogInputModel,
   ) {
-    return await this.blogsSqlQueryRepository.findAll(queryDto);
+    return await this.blogsTorQueryRepository.findAll(queryDto);
   }
 
   @Get(':id')
@@ -70,11 +72,11 @@ export class BlogsSaController {
     @Param('id', new ParseUUIDPipe()) blogId: string,
     @Req() req: Request,
   ) {
-    const foundedBlog = await this.blogsSqlQueryRepository.findById(blogId);
+    const foundedBlog = await this.blogsTorQueryRepository.findById(blogId);
     if (!foundedBlog) {
       throw new NotFoundException();
     }
-    return await this.postsSqlQueryRepository.findAll(
+    return await this.postsTorQueryRepository.findAll(
       queryDto,
       req.userId,
       blogId,
@@ -144,7 +146,7 @@ export class BlogsSaController {
     @Param('id', new ParseUUIDPipe()) blogId: string,
     @Param('postId', new ParseUUIDPipe()) postId: string,
   ) {
-    const foundedBlog = await this.blogsSqlQueryRepository.findById(blogId);
+    const foundedBlog = await this.blogsTorQueryRepository.findById(blogId);
     if (!foundedBlog) {
       throw new NotFoundException();
     }
@@ -163,7 +165,7 @@ export class BlogsSaController {
     @Param('postId', new ParseUUIDPipe()) postId: string,
     @Body() inputModel: PostCreateInputModel,
   ) {
-    const foundedBlog = await this.blogsSqlQueryRepository.findById(blogId);
+    const foundedBlog = await this.blogsTorQueryRepository.findById(blogId);
     if (!foundedBlog) {
       throw new NotFoundException();
     }
