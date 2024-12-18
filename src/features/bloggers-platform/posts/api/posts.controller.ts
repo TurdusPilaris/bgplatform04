@@ -30,7 +30,7 @@ import { AuthBearerGuard } from '../../../../infrastructure/guards/auth.bearer.g
 import { ErrorProcessor } from '../../../../base/models/errorProcessor';
 import { Request } from 'express';
 import { PostsSqlQueryRepository } from '../infrastructure/sql/posts.sql.query-repository';
-import { CommentsSqlQueryRepository } from '../../comments/infrastructure/comments.sql.query-repository';
+import { CommentsSqlQueryRepository } from '../../comments/infrastructure/sql/comments.sql.query-repository';
 import { PostsTorQueryRepository } from '../infrastructure/tor/posts.tor.query-repository';
 
 @Controller('posts')

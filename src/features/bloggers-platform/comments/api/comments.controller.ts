@@ -19,7 +19,7 @@ import { GetOptionalUserGard } from '../../../../infrastructure/guards/get-optio
 import { AuthBearerGuard } from '../../../../infrastructure/guards/auth.bearer.guard';
 import { ErrorProcessor } from '../../../../base/models/errorProcessor';
 import { Request } from 'express';
-import { CommentsSqlQueryRepository } from '../infrastructure/comments.sql.query-repository';
+import { CommentsSqlQueryRepository } from '../infrastructure/sql/comments.sql.query-repository';
 import { UpdateLikeStatusForCommentCommand } from '../application/use-cases/update-like-status-use-case';
 
 @Controller('comments')

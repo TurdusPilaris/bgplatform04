@@ -2,15 +2,15 @@ import {
   Comment,
   CommentDocument,
   CommentModelType,
-} from '../domain/entities/comment.entity';
+} from '../../domain/entities/comment.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import {
   Like,
   LikeDocument,
   LikeModelType,
-} from '../domain/entities/like.entity';
-import { CreateCommentInputModel } from '../api/model/input/create-comment.input.model';
-import { likeStatus } from '../../../../base/models/likesStatus';
+} from '../../domain/entities/like.entity';
+import { CreateCommentInputModel } from '../../api/model/input/create-comment.input.model';
+import { likeStatus } from '../../../../../base/models/likesStatus';
 
 export class CommentsRepository {
   constructor(

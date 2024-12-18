@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { CommentOutputModel } from '../api/model/output/comment.output.model';
-import { CommentSQL } from '../api/model/sql/comment.model.sql';
-import { QueryCommentModel } from '../api/model/input/query-comment.model';
-import { QueryPostInputModel } from '../../posts/api/models/input/query-post.model';
-import { PaginationOutputModel } from '../../../../base/models/output/pagination.output.model';
+import { CommentOutputModel } from '../../api/model/output/comment.output.model';
+import { CommentSQL } from '../../api/model/sql/comment.model.sql';
+import { QueryCommentModel } from '../../api/model/input/query-comment.model';
+import { QueryPostInputModel } from '../../../posts/api/models/input/query-post.model';
+import { PaginationOutputModel } from '../../../../../base/models/output/pagination.output.model';
 
 @Injectable()
 export class CommentsSqlQueryRepository {

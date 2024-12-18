@@ -1,5 +1,6 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { SessionSQL } from '../../../security/domain/session.sql';
+import { CommentSQL } from '../../../../bloggers-platform/comments/domain/entities/comment.sql.entity';
 
 @Entity({ name: 'user_tor' })
 export class UserSQL {
@@ -29,4 +30,7 @@ export class UserSQL {
 
   @OneToMany(() => SessionSQL, (s) => s.user)
   sessions: SessionSQL[];
+
+  @OneToMany(() => CommentSQL, (c) => c.user)
+  comments: CommentSQL[];
 }

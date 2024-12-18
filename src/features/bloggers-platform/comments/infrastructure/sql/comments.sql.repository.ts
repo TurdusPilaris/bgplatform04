@@ -1,5 +1,5 @@
 import { DataSource } from 'typeorm';
-import { CommentSQL } from '../api/model/sql/comment.model.sql';
+import { CommentSQL } from '../../api/model/sql/comment.model.sql';
 
 export class CommentsSqlRepository {
   constructor(protected dataSource: DataSource) {}

@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CreateCommentInputModel } from '../../api/model/input/create-comment.input.model';
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
-import { CommentsSqlRepository } from '../../infrastructure/comments.sql.repository';
+import { CommentsSqlRepository } from '../../infrastructure/sql/comments.sql.repository';
 
 export class UpdateCommentCommand {
   constructor(

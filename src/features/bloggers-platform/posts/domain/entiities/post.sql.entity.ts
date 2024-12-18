@@ -1,6 +1,13 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { likeStatus } from '../../../../../base/models/likesStatus';
 import { BlogSQL } from '../../../blogs/domain/entiities/blog.sql.entity';
+import { CommentSQL } from '../../../comments/domain/entities/comment.sql.entity';
 
 @Entity({ name: 'posts' })
 export class PostSQL {
@@ -22,6 +29,8 @@ export class PostSQL {
   @Column()
   createdAt: Date;
 
+  @OneToMany(() => CommentSQL, (c) => c.post)
+  comments: CommentSQL[];
   static create(
     blogId: string,
     title: string,

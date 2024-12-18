@@ -3,13 +3,13 @@ import {
   Comment,
   CommentDocument,
   CommentModelType,
-} from '../domain/entities/comment.entity';
+} from '../../domain/entities/comment.entity';
 import { InjectModel } from '@nestjs/mongoose';
-import { QueryCommentModel } from '../api/model/input/query-comment.model';
-import { CommentOutputModel } from '../api/model/output/comment.output.model';
-import { Like, LikeModelType } from '../domain/entities/like.entity';
-import { likeStatus } from '../../../../base/models/likesStatus';
-import { PaginationOutputModel } from '../../../../base/models/output/pagination.output.model';
+import { QueryCommentModel } from '../../api/model/input/query-comment.model';
+import { CommentOutputModel } from '../../api/model/output/comment.output.model';
+import { Like, LikeModelType } from '../../domain/entities/like.entity';
+import { likeStatus } from '../../../../../base/models/likesStatus';
+import { PaginationOutputModel } from '../../../../../base/models/output/pagination.output.model';
 
 @Injectable()
 export class CommentsQueryRepository {
