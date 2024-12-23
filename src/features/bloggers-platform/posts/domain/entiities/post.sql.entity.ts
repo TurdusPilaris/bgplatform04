@@ -5,9 +5,10 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { likeStatus } from '../../../../../base/models/likesStatus';
+
 import { BlogSQL } from '../../../blogs/domain/entiities/blog.sql.entity';
 import { CommentSQL } from '../../../comments/domain/entities/comment.sql.entity';
+import { LikeForPostSQL } from '../../../likes/domain/entities/tor/likeForPost';
 
 @Entity({ name: 'posts' })
 export class PostSQL {
@@ -31,6 +32,9 @@ export class PostSQL {
 
   @OneToMany(() => CommentSQL, (c) => c.post)
   comments: CommentSQL[];
+
+  @OneToMany(() => LikeForPostSQL, (l) => l.post)
+  likes: LikeForPostSQL[];
   static create(
     blogId: string,
     title: string,

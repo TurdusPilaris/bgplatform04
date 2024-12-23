@@ -47,6 +47,8 @@ import { PostsTorRepository } from './posts/infrastructure/tor/posts.tor.reposit
 import { PostsTorQueryRepository } from './posts/infrastructure/tor/posts.tor.query-repository';
 import { CommentSQL } from './comments/domain/entities/comment.sql.entity';
 import { CommentsTorRepository } from './comments/infrastructure/tor/comments.tor.repository';
+import { LikesTorRepository } from './likes/infrastructure/likes.tor.repository';
+import { CommentsTorQueryRepository } from './comments/infrastructure/tor/comments.tor.query-repository';
 
 const useCasesForPost = [
   CreatePostUseCase,
@@ -105,7 +107,9 @@ const useCasesForComment = [
     CommentsSqlRepository,
     CommentsSqlQueryRepository,
     CommentsTorRepository,
+    CommentsTorQueryRepository,
     LikesSqlRepository,
+    LikesTorRepository,
   ],
   exports: [BlogsSqlRepository, BlogsTorRepository],
 })

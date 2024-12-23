@@ -1,6 +1,13 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { PostSQL } from '../../../posts/domain/entiities/post.sql.entity';
 import { UserSQL } from '../../../../user-accaunts/users/domain/entities/user.sql.entity';
+import { LikeForCommentSQL } from '../../../likes/domain/entities/tor/likeForComment';
 
 @Entity({ name: 'comments' })
 export class CommentSQL {
@@ -18,6 +25,10 @@ export class CommentSQL {
 
   @ManyToOne(() => UserSQL, (u) => u.comments)
   user: UserSQL;
+
+  @OneToMany(() => LikeForCommentSQL, (l) => l.comment)
+  likes: LikeForCommentSQL[];
+
   static create(
     content: string,
     postId: string,
