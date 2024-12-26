@@ -22,7 +22,7 @@ import { CommandBus } from '@nestjs/cqrs';
 import { CreatePostCommand } from '../application/use-cases/create-post-use-case';
 import { UpdatePostCommand } from '../application/use-cases/update-post-use-case';
 import { DeletePostCommand } from '../application/use-cases/delete-post-use-case';
-import { CreateLikeForPostCommand } from '../../comments/application/use-cases/create-like-use-case';
+import { CreateLikeForPostCommand } from '../application/use-cases/create-like-use-case';
 import { CreateCommentCommand } from '../../comments/application/use-cases/create-comment-use-case';
 import { AuthBasicGuard } from '../../../../infrastructure/guards/auth.basic.guard';
 import { GetOptionalUserGard } from '../../../../infrastructure/guards/get-optional-user-gard.service';
@@ -32,6 +32,7 @@ import { Request } from 'express';
 import { PostsSqlQueryRepository } from '../infrastructure/sql/posts.sql.query-repository';
 import { CommentsSqlQueryRepository } from '../../comments/infrastructure/sql/comments.sql.query-repository';
 import { PostsTorQueryRepository } from '../infrastructure/tor/posts.tor.query-repository';
+import { CommentsTorQueryRepository } from '../../comments/infrastructure/tor/comments.tor.query-repository';
 
 @Controller('posts')
 export class PostsController {
@@ -40,6 +41,7 @@ export class PostsController {
     protected postsSqlQueryRepository: PostsSqlQueryRepository,
     protected postsTorQueryRepository: PostsTorQueryRepository,
     protected commentsSqlQueryRepository: CommentsSqlQueryRepository,
+    protected commentsTorQueryRepository: CommentsTorQueryRepository,
   ) {}
 
   @UseGuards(GetOptionalUserGard)
@@ -49,7 +51,7 @@ export class PostsController {
     queryDto: QueryPostInputModel,
     @Req() req: Request,
   ) {
-    return await this.postsTorQueryRepository.findAll(queryDto, req.userId);
+    return await this.postsSqlQueryRepository.findAll(queryDto, req.userId);
   }
 
   @UseGuards(GetOptionalUserGard)
@@ -58,7 +60,7 @@ export class PostsController {
     @Param('id', new ParseUUIDPipe()) postId: string,
     @Req() req: Request,
   ) {
-    const foundedPost = await this.postsTorQueryRepository.findById(
+    const foundedPost = await this.postsSqlQueryRepository.findById(
       postId,
       req.userId,
     );
@@ -85,7 +87,7 @@ export class PostsController {
     if (!post) {
       throw new NotFoundException();
     }
-    return await this.commentsSqlQueryRepository.findAll(
+    return await this.commentsTorQueryRepository.findAll(
       queryDto,
       postId,
       req.userId,

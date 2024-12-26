@@ -15,7 +15,11 @@ export class CommentsTorRepository {
   }
 
   async findCommentById(id: string): Promise<CommentSQL | null> {
-    const foundComment = await this.commentsRepository.findOneBy({ id: id });
+    const foundComment = await this.commentsRepository.findOne({
+      where: { id },
+      relations: ['user'],
+    });
+
     if (!foundComment) return null;
     return foundComment;
   }

@@ -43,8 +43,6 @@ import { DeleteSessionByDeviceIdUseCase } from './security/application/use-cases
 import { LogoutUseCase } from './auth/application/use-cases/logout-use-case';
 import { NewPasswordUseCase } from './auth/application/use-cases/new-password-use-case';
 import { SecurityTorQueryRepository } from './security/infrastucture/tor/security.tor.query-repository';
-import { PostSQL } from '../bloggers-platform/posts/domain/entiities/post.sql.entity';
-import { BlogSQL } from '../bloggers-platform/blogs/domain/entiities/blog.sql.entity';
 
 const useCasesForSecurity = [
   CreateSessionUseCase,
@@ -68,7 +66,7 @@ const useCasesForAuth = [
       { name: DeviceAuthSession.name, schema: DeviceAuthSessionSchema },
     ]),
     CqrsModule,
-    TypeOrmModule.forFeature([UserSQL, SessionSQL, PostSQL, BlogSQL]),
+    TypeOrmModule.forFeature([UserSQL, SessionSQL]),
   ],
 
   controllers: [UsersController, DevicesController, AuthController],

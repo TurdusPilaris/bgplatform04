@@ -6,6 +6,7 @@ import { QueryCommentModel } from '../../api/model/input/query-comment.model';
 import { QueryPostInputModel } from '../../../posts/api/models/input/query-post.model';
 import { PaginationOutputModel } from '../../../../../base/models/output/pagination.output.model';
 import { InjectRepository } from '@nestjs/typeorm';
+import { groupBy } from 'rxjs';
 
 @Injectable()
 export class CommentsTorQueryRepository {
@@ -20,55 +21,72 @@ export class CommentsTorQueryRepository {
     postId: string,
     userId: string | null,
   ) {
-    const query = `
-      
-        with countLikesAndDislike AS(
-            SELECT count(*) as "count", "statusLike", "commentId"
-            FROM "LikeForComment"
-            GROUP BY "statusLike", "commentId"
-          ),
-        likeForCurrentUser AS(
-            SELECT "statusLike", "commentId"
-            FROM "LikeForComment"
-            WHERE "userId" = $4
+    //распарсим параметры для удобства
+    const limit = queryDto.pageSize;
+    const offset = (queryDto.pageNumber - 1) * queryDto.pageSize;
 
-        )
-        SELECT 
-            comm.id, 
-            comm.content,
-            comm."postId",
-            comm."commentatorId",
-            comm."createdAt",
-            users."userName" as "commentatorName",
-            COALESCE(countDislike."count", 0) as "dislikesCount",
-            COALESCE(countLike."count", 0) as "likesCount",
-            COALESCE(likeForCurrentUser."statusLike", 'None') as "myStatus"
-                FROM public."Comments" as comm
-                LEFT JOIN public."Users" as users
-                ON comm."commentatorId" = users.id
-                LEFT JOIN countLikesAndDislike as countDislike ON comm.id = countDislike."commentId" AND countDislike."statusLike" = 'Dislike'
-                LEFT JOIN countLikesAndDislike as countLike  ON comm.id = countLike."commentId" AND countLike."statusLike" = 'Like'
-                LEFT JOIN likeForCurrentUser ON  comm.id = likeForCurrentUser."commentId"
-                WHERE comm."postId" = $3
-                ORDER BY "${queryDto.sortBy}" ${queryDto.sortDirection}
-                LIMIT $1 OFFSET $2
-        `;
+    const sortDirection = (
+      queryDto.sortDirection?.toUpperCase() === 'DESC' ? 'DESC' : 'ASC'
+    ) as 'ASC' | 'DESC'; // Приведение к литеральному типу
 
-    const parametersForPosts: (number | string)[] = [
-      queryDto.pageSize,
-      (queryDto.pageNumber - 1) * queryDto.pageSize,
-      postId,
-      !userId ? '00000000-0000-0000-0000-000000000000' : userId,
-    ];
+    const sortBy = `"${queryDto.sortBy}"`;
+    //временная таблица для получения моего статуса
+    const subQueryMyStatus = await this.dataSource
+      .createQueryBuilder()
+      .select('like.statusLike', 'myStatus')
+      .addSelect('like.commentId', 'commentId')
+      .from('likeForComments', 'like')
+      .where('like.userId = :userId', { userId })
+      .groupBy('like.statusLike')
+      .addGroupBy('like.commentId');
 
-    const res: CommentSQL[] = await this.dataSource.query(
-      query,
-      parametersForPosts,
-    );
+    //временная таблица для получения количества лайков и дизлайков
+    const subQueryLikes = await this.dataSource
+      .createQueryBuilder()
+      // .subQuery()
+      .select('like.statusLike', 'statusLike')
+      .addSelect('like.commentId', 'commentId')
+      .addSelect('COUNT(*)', 'count')
+      .from('likeForComments', 'like')
+      .groupBy('like.statusLike')
+      .addGroupBy('like.commentId');
 
-    const countComments = await this.getCountCommentByFilter(postId);
+    const builder = this.commentsRepository
+      .createQueryBuilder('c')
+      .select([
+        'c.*',
+        `COALESCE("myLikes"."myStatus", 'None') AS "myStatus"`,
+        'CAST(COALESCE("countStatusLikes".count, 0) AS INTEGER) AS "likesCount"',
+        'CAST(COALESCE("countStatusDislikes".count, 0) AS INTEGER) AS "dislikesCount"',
+        'u."userName" AS "commentatorName"',
+      ])
+      .addCommonTableExpression(subQueryMyStatus, 'myLikes')
+      .addCommonTableExpression(subQueryLikes, 'countStatusLikes')
+      .addCommonTableExpression(subQueryLikes, 'countStatusDislikes')
+      .leftJoin('myLikes', 'myLikes', '"myLikes"."commentId" = c.id')
+      .leftJoin(
+        'countStatusLikes',
+        'countStatusLikes',
+        '"countStatusLikes"."commentId" = c.id AND "countStatusLikes"."statusLike" = :like',
+        { like: 'Like' },
+      )
+      .leftJoin(
+        'countStatusDislikes',
+        'countStatusDislikes',
+        '"countStatusDislikes"."commentId" = c.id AND "countStatusDislikes"."statusLike" = :dislike',
+        { dislike: 'Dislike' },
+      )
+      .leftJoin('user_tor', 'u', 'c.userId = u.id')
+      .where('c.postId =:postId', { postId })
+      .orderBy(sortBy, sortDirection)
+      .limit(limit)
+      .offset(offset);
+    const countComments = await builder.getCount();
+    const items = await builder.getRawMany();
 
-    const itemsForPaginator = res.map((comment) =>
+    console.log('items', items);
+
+    const itemsForPaginator = items.map((comment) =>
       this.commentOutputModelMapper(comment),
     );
     return this.paginationCommentModelMapper(
@@ -95,76 +113,68 @@ export class CommentsTorQueryRepository {
     id: string,
     userId: string | null,
   ): Promise<CommentOutputModel | null> {
-    const query = `
-      
-        with countLikesAndDislike AS(
-            SELECT count(*) as "count", "statusLike", "commentId"
-            FROM "LikeForComment"
-            WHERE "commentId" = $1
-            GROUP BY "statusLike", "commentId"
-          ),
-        likeForCurrentUser AS(
-            SELECT "statusLike", "commentId"
-            FROM "LikeForComment"
-            WHERE "commentId" = $1 AND "userId" = $2
+    if (!userId) userId = '00000000-0000-0000-0000-000000000000';
 
-        )
-        SELECT 
-            comm.id, 
-            comm.content,
-            comm."postId",
-            comm."commentatorId",
-            comm."createdAt",
-            users."userName" as "commentatorName",
-            COALESCE(countDislike."count", 0) as "dislikesCount",
-            COALESCE(countLike."count", 0) as "likesCount",
-            COALESCE(likeForCurrentUser."statusLike", 'None') as "myStatus"
-                FROM public."Comments" as comm
-                LEFT JOIN public."Users" as users
-                ON comm."commentatorId" = users.id
-                LEFT JOIN countLikesAndDislike as countDislike ON comm.id = countDislike."commentId" AND countDislike."statusLike" = 'Dislike'
-                LEFT JOIN countLikesAndDislike as countLike  ON comm.id = countLike."commentId" AND countLike."statusLike" = 'Like'
-                LEFT JOIN likeForCurrentUser ON  comm.id = likeForCurrentUser."commentId"
-                WHERE comm."id" = $1
+    //временная таблица для получения моего статуса
+    const subQueryMyStatus = await this.dataSource
+      .createQueryBuilder()
+      .select('like.statusLike', 'myStatus')
+      .addSelect('like.commentId', 'commentId')
+      .from('likeForComments', 'like')
+      .where('like.commentId = :id AND like.userId = :userId', { id, userId })
+      .groupBy('like.statusLike')
+      .addGroupBy('like.commentId');
 
-        `;
-    const res: CommentSQL[] = await this.dataSource.query(query, [
-      id,
-      !userId ? '00000000-0000-0000-0000-000000000000' : userId,
-    ]);
+    //временная таблица для получения количества лайков и дизлайков
+    const subQueryLikes = await this.dataSource
+      .createQueryBuilder()
+      // .subQuery()
+      .select('like.statusLike', 'statusLike')
+      .addSelect('like.commentId', 'commentId')
+      .addSelect('COUNT(*)', 'count')
+      .from('likeForComments', 'like')
+      .where('like.commentId = :id', { id })
+      .groupBy('like.statusLike')
+      .addGroupBy('like.commentId');
 
-    if (res.length === 0) return null;
+    const items = await this.commentsRepository
+      .createQueryBuilder('c')
+      .select([
+        'c.*',
+        `COALESCE("myLikes"."myStatus", 'None') AS "myStatus"`,
+        'CAST(COALESCE("countStatusLikes".count, 0) AS INTEGER) AS "likesCount"',
+        'CAST(COALESCE("countStatusDislikes".count, 0) AS INTEGER) AS "dislikesCount"',
+        'u."userName" AS "commentatorName"',
+      ])
+      .addCommonTableExpression(subQueryMyStatus, 'myLikes')
+      .addCommonTableExpression(subQueryLikes, 'countStatusLikes')
+      .addCommonTableExpression(subQueryLikes, 'countStatusDislikes')
+      .leftJoin('myLikes', 'myLikes', '"myLikes"."commentId" = c.id')
+      .leftJoin(
+        'countStatusLikes',
+        'countStatusLikes',
+        '"countStatusLikes"."commentId" = c.id AND "countStatusLikes"."statusLike" = :like',
+        { like: 'Like' },
+      )
+      .leftJoin(
+        'countStatusDislikes',
+        'countStatusDislikes',
+        '"countStatusDislikes"."commentId" = c.id AND "countStatusDislikes"."statusLike" = :dislike',
+        { dislike: 'Dislike' },
+      )
+      .leftJoin('user_tor', 'u', 'c.userId = u.id')
+      .where('c.id =:id', { id })
+      .getRawOne();
 
-    return res.map((e) => {
-      return new CommentOutputModel(
-        e.id,
-        e.commentatorId,
-        e.commentatorName,
-        e.content,
-        e.createdAt,
-        e.likesCount,
-        e.dislikesCount,
-        e.myStatus,
-      );
-    })[0];
+    if (!items) return null;
+
+    return this.commentOutputModelMapper(items);
   }
 
-  async getCountCommentByFilter(postId: string) {
-    const query = `
-    SELECT count(*) as "countOfComements"
-	      FROM public."Comments"
-	      WHERE "postId" = $1
-    `;
-
-    const res = await this.dataSource.query(query, [postId]);
-
-    return +res[0].countOfComements;
-  }
-
-  commentOutputModelMapper = (comment: CommentSQL): CommentOutputModel => {
+  commentOutputModelMapper = (comment: any): CommentOutputModel => {
     return new CommentOutputModel(
       comment.id,
-      comment.commentatorId,
+      comment.userId,
       comment.commentatorName,
       comment.content,
       comment.createdAt,

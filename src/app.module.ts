@@ -61,12 +61,7 @@ const adapters = [EmailAdapter, EmailRouter, JwtService, BcryptService];
         const databaseSettings = configService.get('databaseSettings', {
           infer: true,
         });
-        console.log(
-          environmentSettings.isTesting
-            ? databaseSettings.POSTGRES_DB_NAME_TEST
-            : databaseSettings.POSTGRES_DB_NAME,
-          'db name',
-        );
+
         return {
           type: 'postgres',
           host: '127.0.0.1',
@@ -77,7 +72,7 @@ const adapters = [EmailAdapter, EmailRouter, JwtService, BcryptService];
             ? databaseSettings.POSTGRES_DB_NAME_TEST
             : databaseSettings.POSTGRES_DB_NAME,
           autoLoadEntities: true,
-          synchronize: true,
+          synchronize: false,
         };
       },
       inject: [ConfigService],

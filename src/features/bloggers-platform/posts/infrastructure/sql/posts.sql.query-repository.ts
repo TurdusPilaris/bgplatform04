@@ -21,12 +21,12 @@ export class PostsSqlQueryRepository {
     const query = `
         with countLikesAndDislike AS(
             SELECT count(*) as "count", "statusLike", "postId"
-                FROM "LikeForPost"
+                FROM "likeForPosts"
                 GROUP BY "statusLike", "postId"
         ),
         likeForCurrentUser AS(
             SELECT "statusLike", "postId"
-            FROM "LikeForPost"
+            FROM "likeForPosts"
             WHERE "userId" = $3
 
         )
@@ -42,10 +42,10 @@ export class PostsSqlQueryRepository {
         COALESCE(countLike."count", 0) as "likesCount",
         COALESCE(likeForCurrentUser."statusLike", 'None') as "myStatus",
         (select array(select row_to_json(row) from (
-        SELECT "LikeForPost".id, "LikeForPost"."postId", TO_CHAR("LikeForPost"."updatedAt", 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as "addedAt", "LikeForPost"."updatedAt", "LikeForPost"."userId", "Users"."userName" as login
-        FROM public."LikeForPost"
-        LEFT JOIN "Users" ON "LikeForPost"."userId" = "Users".id
-        WHERE "statusLike" = 'Like' and "LikeForPost"."postId" =  p.id 
+        SELECT "likeForPosts".id, "likeForPosts"."postId", TO_CHAR("likeForPosts"."updatedAt", 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as "addedAt", "likeForPosts"."updatedAt", "likeForPosts"."userId", "user_tor"."userName" as login
+        FROM public."likeForPosts"
+        LEFT JOIN "user_tor" ON "likeForPosts"."userId" = "user_tor".id
+        WHERE "statusLike" = 'Like' and "likeForPosts"."postId" =  p.id 
         ORDER BY "updatedAt" desc 
         limit 3
         
@@ -53,8 +53,8 @@ export class PostsSqlQueryRepository {
         
         ) )as "newestLikes"
 
-            FROM public."Posts" as p
-            LEFT JOIN public."Blogs" as b
+            FROM public."posts" as p
+            LEFT JOIN public."blogs" as b
             ON p."blogId" = b.id
             LEFT JOIN countLikesAndDislike as countDislike ON p.id = countDislike."postId" AND countDislike."statusLike" = 'Dislike'
             LEFT JOIN countLikesAndDislike as countLike  ON p.id = countLike."postId" AND countLike."statusLike" = 'Like'
@@ -96,8 +96,8 @@ export class PostsSqlQueryRepository {
     const conditionForBlog = !blogId ? '' : ' WHERE b.id = $1';
     const query = `
     SELECT count(*) as "countOfPosts"
-    FROM public."Posts" as p
-    LEFT JOIN public."Blogs" as b
+    FROM public."posts" as p
+    LEFT JOIN public."blogs" as b
     ON p."blogId" = b.id
     ${conditionForBlog}
     `;
@@ -115,13 +115,13 @@ export class PostsSqlQueryRepository {
     const query = `
     with countLikesAndDislike AS(
             SELECT count(*) as "count", "statusLike", "postId"
-                FROM "LikeForPost"
+                FROM "likeForPosts"
                 WHERE "postId" = $1
                 GROUP BY "statusLike", "postId"
         ),
         likeForCurrentUser AS(
             SELECT "statusLike", "postId"
-            FROM "LikeForPost"
+            FROM "likeForPosts"
             WHERE "postId" = $1 AND "userId" = $2
 
         )
@@ -138,8 +138,8 @@ export class PostsSqlQueryRepository {
         COALESCE(countLike."count", 0) as "likesCount",
         COALESCE(likeForCurrentUser."statusLike", 'None') as "myStatus"
 
-            FROM public."Posts" as p
-            LEFT JOIN public."Blogs" as b
+            FROM public."posts" as p
+            LEFT JOIN public."blogs" as b
             ON p."blogId" = b.id
             LEFT JOIN countLikesAndDislike as countDislike ON p.id = countDislike."postId" AND countDislike."statusLike" = 'Dislike'
             LEFT JOIN countLikesAndDislike as countLike  ON p.id = countLike."postId" AND countLike."statusLike" = 'Like'
@@ -154,9 +154,9 @@ export class PostsSqlQueryRepository {
     if (foundPosts.length === 0) return null;
 
     const queryForNewestLikes = `
-    SELECT "LikeForPost".id, TO_CHAR("LikeForPost"."updatedAt", 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as "addedAt", "LikeForPost"."updatedAt", "LikeForPost"."userId", "Users"."userName" as login
-        FROM public."LikeForPost"
-        LEFT JOIN "Users" ON "LikeForPost"."userId" = "Users".id
+    SELECT "likeForPosts".id, TO_CHAR("likeForPosts"."updatedAt", 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as "addedAt", "likeForPosts"."updatedAt", "likeForPosts"."userId", "user_tor"."userName" as login
+        FROM public."likeForPosts"
+        LEFT JOIN "user_tor" ON "likeForPosts"."userId" = "user_tor".id
         WHERE "postId" = $1 AND "statusLike" = 'Like'
         ORDER BY "updatedAt" desc
         LIMIT 3;

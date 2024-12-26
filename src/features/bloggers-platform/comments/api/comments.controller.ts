@@ -21,19 +21,20 @@ import { ErrorProcessor } from '../../../../base/models/errorProcessor';
 import { Request } from 'express';
 import { CommentsSqlQueryRepository } from '../infrastructure/sql/comments.sql.query-repository';
 import { UpdateLikeStatusForCommentCommand } from '../application/use-cases/update-like-status-use-case';
+import { CommentsTorQueryRepository } from '../infrastructure/tor/comments.tor.query-repository';
 
 @Controller('comments')
 export class CommentsController {
   constructor(
     private commandBus: CommandBus,
-    protected commentsSqlQueryRepository: CommentsSqlQueryRepository,
+    protected commentsTorQueryRepository: CommentsTorQueryRepository,
   ) {}
 
   @UseGuards(GetOptionalUserGard)
   @Get(':id')
   async getCommentByID(@Param('id') commentId: string, @Req() req: Request) {
     const foundedComment =
-      await this.commentsSqlQueryRepository.findCommentById(
+      await this.commentsTorQueryRepository.findCommentById(
         commentId,
         req.userId,
       );

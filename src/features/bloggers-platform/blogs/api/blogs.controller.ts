@@ -55,7 +55,7 @@ export class BlogsController {
     if (!foundedBlog) {
       throw new NotFoundException();
     }
-    return await this.postsTorQueryRepository.findAll(
+    return await this.postsSqlQueryRepository.findAll(
       queryDto,
       req.userId,
       blogId,

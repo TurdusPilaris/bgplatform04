@@ -9,7 +9,7 @@ import { DeleteBlogUseCase } from './blogs/application/use-cases/delete-blog-use
 import { CreateBlogUseCase } from './blogs/application/use-cases/create-blog-use-case';
 import { UpdateBlogUseCase } from './blogs/application/use-cases/update-blog-use-case';
 import { UpdateCommentUseCase } from './comments/application/use-cases/update-comment-use-case';
-import { CreateLikeUseCase } from './comments/application/use-cases/create-like-use-case';
+import { CreateLikeUseCase } from './posts/application/use-cases/create-like-use-case';
 import { CreateCommentUseCase } from './comments/application/use-cases/create-comment-use-case';
 import { DeleteCommentUseCase } from './comments/application/use-cases/delete-comment-use-case';
 import { Blog, BlogSchema } from './blogs/domain/entiities/blog.entity';
@@ -49,6 +49,8 @@ import { CommentSQL } from './comments/domain/entities/comment.sql.entity';
 import { CommentsTorRepository } from './comments/infrastructure/tor/comments.tor.repository';
 import { LikesTorRepository } from './likes/infrastructure/likes.tor.repository';
 import { CommentsTorQueryRepository } from './comments/infrastructure/tor/comments.tor.query-repository';
+import { LikeForCommentSQL } from './likes/domain/entities/tor/likeForComment';
+import { LikeForPostSQL } from './likes/domain/entities/tor/likeForPost';
 
 const useCasesForPost = [
   CreatePostUseCase,
@@ -78,7 +80,13 @@ const useCasesForComment = [
     ]),
     UserAccountsModule,
     CqrsModule,
-    TypeOrmModule.forFeature([PostSQL, BlogSQL, CommentSQL]),
+    TypeOrmModule.forFeature([
+      PostSQL,
+      BlogSQL,
+      CommentSQL,
+      LikeForCommentSQL,
+      LikeForPostSQL,
+    ]),
   ],
   controllers: [
     BlogsSaController,

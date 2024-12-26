@@ -1,6 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
 import { CommentsSqlRepository } from '../../infrastructure/sql/comments.sql.repository';
+import { CommentsTorRepository } from '../../infrastructure/tor/comments.tor.repository';
 
 export class DeleteCommentCommand {
   constructor(
@@ -13,10 +14,13 @@ export class DeleteCommentCommand {
 export class DeleteCommentUseCase
   implements ICommandHandler<DeleteCommentCommand>
 {
-  constructor(private commentsSqlRepository: CommentsSqlRepository) {}
+  constructor(
+    private commentsSqlRepository: CommentsSqlRepository,
+    private commentsTorRepository: CommentsTorRepository,
+  ) {}
 
   async execute(command: DeleteCommentCommand): Promise<InterlayerNotice> {
-    const comment = await this.commentsSqlRepository.findCommentById(
+    const comment = await this.commentsTorRepository.findCommentById(
       command.commentId,
     );
 
@@ -26,13 +30,13 @@ export class DeleteCommentUseCase
       return result;
     }
 
-    if (comment.commentatorId !== command.userId) {
+    if (comment.user.id !== command.userId) {
       const result = new InterlayerNotice(null);
       result.addError('You are not owner', 'user', 403);
       return result;
     }
 
-    await this.commentsSqlRepository.deleteComment(command.commentId);
+    await this.commentsTorRepository.deleteComment(command.commentId);
 
     return new InterlayerNotice();
   }

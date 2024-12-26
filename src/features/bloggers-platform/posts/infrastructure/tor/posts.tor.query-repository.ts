@@ -45,28 +45,20 @@ export class PostsTorQueryRepository {
       queryBuilder.andWhere('blogs.id = :blogId', { blogId });
     }
 
-    const items = await queryBuilder
+    const [items, countPosts] = await queryBuilder
       .orderBy(sortBy, sortDirection)
       .offset(offset)
       .limit(limit)
-      .getMany();
+      .getManyAndCount();
+    // .getMany();
 
-    const countPosts = await this.getCountPostByFilter(blogId);
+    // const countPosts = await this.getCountPostByFilter(blogId);
 
     console.log('items', items);
     const itemsForPaginator = items.map((post) =>
       this.postOutputModelMapper(post, []),
     );
 
-    // const itemsForPaginator = res.map((post) =>
-    //   this.postOutputModelMapper(
-    //     post,
-    //     post.newestLikes.map((e) => {
-    //       return new NewestLike(e.addedAt, e.userId, e.login);
-    //     }),
-    //   ),
-    // );
-    //
     return this.paginationPostModelMapper(
       queryDto,
       countPosts,

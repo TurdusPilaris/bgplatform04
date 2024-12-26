@@ -3,6 +3,9 @@ import { InterlayerNotice } from '../../../../../base/models/Interlayer';
 import { likeStatus } from '../../../../../base/models/likesStatus';
 import { CommentsSqlRepository } from '../../infrastructure/sql/comments.sql.repository';
 import { LikesSqlRepository } from '../../../likes/infrastructure/likes.sql.repository';
+import { CommentsTorRepository } from '../../infrastructure/tor/comments.tor.repository';
+import { LikesTorRepository } from '../../../likes/infrastructure/likes.tor.repository';
+import { LikeForCommentSQL } from '../../../likes/domain/entities/tor/likeForComment';
 
 export class UpdateLikeStatusForCommentCommand {
   constructor(
@@ -19,6 +22,8 @@ export class UpdateLikeStatusUseCase
   constructor(
     private commentsSqlRepository: CommentsSqlRepository,
     private likesSqlRepository: LikesSqlRepository,
+    private commentsTorRepository: CommentsTorRepository,
+    private likesTorRepository: LikesTorRepository,
   ) {}
 
   async execute(
@@ -32,7 +37,7 @@ export class UpdateLikeStatusUseCase
       return result;
     }
 
-    const comment = await this.commentsSqlRepository.findCommentById(
+    const comment = await this.commentsTorRepository.findCommentById(
       command.commentId,
     );
 
@@ -42,7 +47,7 @@ export class UpdateLikeStatusUseCase
       return result;
     }
 
-    const foundLike = await this.likesSqlRepository.findLikeByUserAndComment(
+    const foundLike = await this.likesTorRepository.findLikeByUserAndComment(
       command.commentId,
       command.userId,
     );
@@ -50,18 +55,30 @@ export class UpdateLikeStatusUseCase
     //проверяем был ли создан лайк
     if (!foundLike) {
       //если нет, то создаем новый лайк и сохраняем его
-      await this.likesSqlRepository.createLikeForComment(
+      return await this.createNewLike(
         command.commentId,
         command.userId,
         newStatusLike,
       );
     } else {
       //установили новый статус лайка и обновили дату изменения лайка
-      await this.likesSqlRepository.updateLikeForComment(
+      await this.likesTorRepository.updateLikeForComment(
         foundLike.id,
         newStatusLike,
       );
     }
+
+    return new InterlayerNotice();
+  }
+
+  async createNewLike(
+    commentId: string,
+    userId: string,
+    newStatusLike: likeStatus,
+  ): Promise<InterlayerNotice> {
+    //если нет, то создаем новый лайк и сохраняем его
+    const newLike = LikeForCommentSQL.create(commentId, userId, newStatusLike);
+    await this.likesTorRepository.createLikeForComment(newLike);
 
     return new InterlayerNotice();
   }

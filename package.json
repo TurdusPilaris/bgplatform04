@@ -17,7 +17,10 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "set ENV=TESTING&& jest --config ./test/jest-e2e.json --runInBand"
+    "test:e2e": "set ENV=TESTING&& jest --config ./test/jest-e2e.json --runInBand",
+    "generate-migration": "typeorm-ts-node-commonjs migration:generate -d typeorm.config.ts",
+    "apply-migration": "typeorm-ts-node-commonjs migration:run -d typeorm.config.ts",
+    "revert-migration": "typeorm-ts-node-commonjs migration:revert -d typeorm.config.ts"
   },
   "dependencies": {
     "@date-fns/upgrade": "^1.0.3",

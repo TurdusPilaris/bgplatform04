@@ -1,8 +1,11 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
 import { likeStatus } from '../../../../../base/models/likesStatus';
-import { PostsSqlRepository } from '../../../posts/infrastructure/sql/posts.sql.repository';
+import { PostsSqlRepository } from '../../infrastructure/sql/posts.sql.repository';
 import { LikesSqlRepository } from '../../../likes/infrastructure/likes.sql.repository';
+import { PostsTorRepository } from '../../infrastructure/tor/posts.tor.repository';
+import { LikesTorRepository } from '../../../likes/infrastructure/likes.tor.repository';
+import { LikeForPostSQL } from '../../../likes/domain/entities/tor/likeForPost';
 
 export class CreateLikeForPostCommand {
   constructor(
@@ -17,10 +20,14 @@ export class CreateLikeUseCase
 {
   constructor(
     private postsSqlRepository: PostsSqlRepository,
+    private postsTorRepository: PostsTorRepository,
     private likesSqlRepository: LikesSqlRepository,
+    private likesTorRepository: LikesTorRepository,
   ) {}
 
-  async execute(command: CreateLikeForPostCommand): Promise<InterlayerNotice> {
+  async execute(
+    command: CreateLikeForPostCommand,
+  ): Promise<InterlayerNotice<string>> {
     //приводим к enum лайк
     const newStatusLike = command.likeStatusFromDto;
     // выносим переменные из команды в отедльные переменные
@@ -28,7 +35,7 @@ export class CreateLikeUseCase
     // const postId = command.postId;
 
     //ищем пост
-    const foundPost = await this.postsSqlRepository.findById(postId);
+    const foundPost = await this.postsTorRepository.findById(postId);
 
     //возвращаем ошибку если пост не найден
     if (!foundPost) {
@@ -38,7 +45,7 @@ export class CreateLikeUseCase
     }
 
     //ищем лайки для конкретных поста и пользователя
-    const foundedLike = await this.likesSqlRepository.findLikeByUserAndPost(
+    const foundedLike = await this.likesTorRepository.findLikeByUserAndPost(
       postId,
       userId,
     );
@@ -49,7 +56,7 @@ export class CreateLikeUseCase
     }
 
     //установили новый статус лайка и обновили дату изменения лайка
-    await this.likesSqlRepository.updateLikeForPost(
+    await this.likesTorRepository.updateLikeForPost(
       foundedLike.id,
       newStatusLike,
     );
@@ -64,11 +71,8 @@ export class CreateLikeUseCase
     // foundedPost: PostDocument,
   ): Promise<InterlayerNotice> {
     //если нет, то создаем новый лайк и сохраняем его
-    await this.likesSqlRepository.createLikeForPost(
-      postId,
-      userId,
-      newStatusLike,
-    );
+    const newLike = LikeForPostSQL.create(postId, userId, newStatusLike);
+    await this.likesTorRepository.createLikeForPost(newLike);
 
     return new InterlayerNotice();
   }
