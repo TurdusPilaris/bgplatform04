@@ -43,6 +43,7 @@ import { DeleteSessionByDeviceIdUseCase } from './security/application/use-cases
 import { LogoutUseCase } from './auth/application/use-cases/logout-use-case';
 import { NewPasswordUseCase } from './auth/application/use-cases/new-password-use-case';
 import { SecurityTorQueryRepository } from './security/infrastucture/tor/security.tor.query-repository';
+import { Player } from '../quizeGame/domain/entities/player.entity';
 
 const useCasesForSecurity = [
   CreateSessionUseCase,

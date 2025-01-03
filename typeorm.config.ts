@@ -7,6 +7,11 @@ import { LikeForCommentSQL } from './src/features/bloggers-platform/likes/domain
 import { LikeForPostSQL } from './src/features/bloggers-platform/likes/domain/entities/tor/likeForPost';
 import { UserSQL } from './src/features/user-accaunts/users/domain/entities/user.sql.entity';
 import { SessionSQL } from './src/features/user-accaunts/security/domain/session.sql';
+import { Player } from './src/features/quizeGame/domain/entities/player.entity';
+import { GameQuestion } from './src/features/quizeGame/domain/entities/game.question.entity';
+import { Question } from './src/features/quizeGame/domain/entities/question.entity';
+import { Game } from './src/features/quizeGame/domain/entities/game.entity';
+import { Answer } from './src/features/quizeGame/domain/entities/answer.entity';
 
 config();
 
@@ -27,6 +32,11 @@ export default new DataSource({
     LikeForPostSQL,
     UserSQL,
     SessionSQL,
+    Answer,
+    Game,
+    GameQuestion,
+    Player,
+    Question,
   ],
   synchronize: false,
 });

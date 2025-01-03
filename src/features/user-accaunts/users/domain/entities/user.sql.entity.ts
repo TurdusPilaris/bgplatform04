@@ -3,6 +3,7 @@ import { SessionSQL } from '../../../security/domain/session.sql';
 import { CommentSQL } from '../../../../bloggers-platform/comments/domain/entities/comment.sql.entity';
 import { LikeForPostSQL } from '../../../../bloggers-platform/likes/domain/entities/tor/likeForPost';
 import { LikeForCommentSQL } from '../../../../bloggers-platform/likes/domain/entities/tor/likeForComment';
+import { Player } from '../../../../quizeGame/domain/entities/player.entity';
 
 @Entity({ name: 'user_tor' })
 export class UserSQL {
@@ -41,4 +42,7 @@ export class UserSQL {
 
   @OneToMany(() => LikeForCommentSQL, (l) => l.user)
   likesForComments: LikeForCommentSQL[];
+
+  @OneToMany(() => Player, (p) => p.user)
+  players: Player[];
 }
