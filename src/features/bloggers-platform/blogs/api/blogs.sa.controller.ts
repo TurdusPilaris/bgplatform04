@@ -92,7 +92,7 @@ export class BlogsSaController {
     const blogId = await this.commandBus.execute(
       new CreateBlogCommand(inputModel),
     );
-    return await this.blogsTorQueryRepository.findById(blogId);
+    return this.blogsTorQueryRepository.findById(blogId);
   }
 
   @HttpCode(201)

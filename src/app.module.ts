@@ -21,7 +21,7 @@ import { TestingModule } from './features/testing/testing.module';
 import { NameIsExistConstraint } from './infrastructure/decorators/validate/name-is-exist.decorator';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BlogIdIsValidConstraint } from './infrastructure/decorators/validate/blog-id-is-valid';
-import { QuizeGameModule } from './features/quizeGame/quize.game.module';
+import { QuizGameModule } from './features/quizGame/quizGameModule';
 
 const adapters = [EmailAdapter, EmailRouter, JwtService, BcryptService];
 
@@ -73,7 +73,7 @@ const adapters = [EmailAdapter, EmailRouter, JwtService, BcryptService];
             ? databaseSettings.POSTGRES_DB_NAME_TEST
             : databaseSettings.POSTGRES_DB_NAME,
           autoLoadEntities: true,
-          synchronize: false,
+          synchronize: environmentSettings.isTesting,
         };
       },
       inject: [ConfigService],
@@ -81,7 +81,7 @@ const adapters = [EmailAdapter, EmailRouter, JwtService, BcryptService];
     UserAccountsModule,
     BloggersPlatformModule,
     TestingModule,
-    QuizeGameModule,
+    QuizGameModule,
   ],
   providers: [...adapters, NameIsExistConstraint, BlogIdIsValidConstraint],
 })
