@@ -17,4 +17,17 @@ export class Game extends BaseDBEntity {
 
   @OneToMany(() => GameQuestion, (q) => q.game)
   questions: GameQuestion[];
+
+  @Column({ type: 'timestamptz', nullable: true })
+  startGameDate?: Date;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  finishGameDate?: Date;
+
+  static createPendingGame(firstPlayerId: string): Game {
+    const pendingGame = new Game();
+    pendingGame.status = GameStatus.Pending;
+    pendingGame.player_1 = { id: firstPlayerId } as Player;
+    return pendingGame;
+  }
 }

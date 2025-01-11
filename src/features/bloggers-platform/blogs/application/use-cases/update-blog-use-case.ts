@@ -18,12 +18,12 @@ export class UpdateBlogUseCase implements ICommandHandler<UpdateBlogCommand> {
   ) {}
 
   async execute(command: UpdateBlogCommand): Promise<InterlayerNotice> {
-    // if blog wasn't found we will return an error
-    const foundedBlog = await this.blogsTorRepository.findById(command.blogId);
-    console.log('foundedBlog', foundedBlog);
-    if (!foundedBlog) {
+    // If the blog is not found, an error will be returned.
+    const foundBlog = await this.blogsTorRepository.findById(command.blogId);
+
+    if (!foundBlog) {
       const result = new InterlayerNotice(null);
-      result.addError('Blog is not exists', 'blogId', 404);
+      result.addError('Blog does not exists', 'blogId', 404);
       return result;
     }
 
@@ -32,12 +32,12 @@ export class UpdateBlogUseCase implements ICommandHandler<UpdateBlogCommand> {
       command.blogId,
     );
     // //update blog
-    // foundedBlog.name = command.inputModel.name;
-    // foundedBlog.description = command.inputModel.description;
-    // foundedBlog.websiteUrl = command.inputModel.websiteUrl;
+    // foundBlog.name = command.inputModel.name;
+    // foundBlog.description = command.inputModel.description;
+    // foundBlog.websiteUrl = command.inputModel.websiteUrl;
     //
     // //save blog
-    // await this.blogsRepository.save(foundedBlog);
+    // await this.blogsRepository.save(foundBlog);
 
     return new InterlayerNotice(null);
   }

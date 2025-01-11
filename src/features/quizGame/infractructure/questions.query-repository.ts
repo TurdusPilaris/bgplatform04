@@ -3,7 +3,9 @@ import { Question } from '../domain/entities/question.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PaginationQuestionInputModel } from '../api/models/input/question/pagination.question.input.model';
-import { QuestionViewModel } from '../api/models/output/question.view.model';
+import { QuestionViewModel } from '../api/models/output/question/question.view.model';
+import { paginationModelMapper } from '../../../base/models/output/pagination.output.model';
+import { PublishedStatus } from '../../../base/models/publishedStatus';
 
 @Injectable()
 export class QuestionsQueryRepository {
@@ -13,7 +15,34 @@ export class QuestionsQueryRepository {
   ) {}
 
   async getAll(queryDto: PaginationQuestionInputModel) {
-    return Promise.resolve(undefined);
+    //params
+    const limit = queryDto.pageSize;
+    const offset = (queryDto.pageNumber - 1) * queryDto.pageSize;
+    const bodySearchTerm = queryDto.bodySearchTerm
+      ? `%${queryDto.bodySearchTerm}%`
+      : '%%';
+    const sortDirection = (
+      queryDto.sortDirection?.toUpperCase() === 'DESC' ? 'DESC' : 'ASC'
+    ) as 'ASC' | 'DESC'; // Приведение к литеральному типу
+
+    const publishedStatus = queryDto.publishedStatus;
+
+    const queryBuilder = this.questionsRepository
+      .createQueryBuilder('q')
+      .where('q.body ILIKE :body ', { body: bodySearchTerm });
+    if (publishedStatus === PublishedStatus.Published) {
+      queryBuilder.andWhere('q.published = TRUE');
+    } else if (publishedStatus === PublishedStatus.NotPublished) {
+      queryBuilder.andWhere('q.published = FALSE');
+    }
+    const [items, count] = await queryBuilder
+      .orderBy(`"${queryDto.sortBy}"`, sortDirection)
+      .offset(offset)
+      .limit(limit)
+      .getManyAndCount();
+
+    const res = items.map(this.questionOutputMapper);
+    return paginationModelMapper(queryDto, count, res);
   }
 
   async getById(id: string): Promise<QuestionViewModel | null> {

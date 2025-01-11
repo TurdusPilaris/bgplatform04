@@ -16,21 +16,21 @@ import { AuthBasicGuard } from '../../../../infrastructure/guards/auth.basic.gua
 import { PaginationQuestionInputModel } from '../models/input/question/pagination.question.input.model';
 import { QuestionsQueryRepository } from '../../infractructure/questions.query-repository';
 import { QuestionInputModel } from '../models/input/question/question.input.model';
-import { CreateQuestionCommand } from '../../application/use-cases/questions/create-question-use-cases';
-import { DeleteQuestionCommand } from '../../application/use-cases/questions/delete-question-use-cases';
+import { CreateQuestionCommand } from '../../application/use-cases/questions/create-question-use-case';
+import { DeleteQuestionCommand } from '../../application/use-cases/questions/delete-question-use-case';
 import { ErrorProcessor } from '../../../../base/models/errorProcessor';
-import { UpdateQuestionCommand } from '../../application/use-cases/questions/update-question-use-cases';
+import { UpdateQuestionCommand } from '../../application/use-cases/questions/update-question-use-case';
 import { QuestionPublishInputModel } from '../models/input/question/question.publish.input.model';
-import { UpdatePublishQuestionCommand } from '../../application/use-cases/questions/update-publish-question-use-cases';
+import { UpdatePublishQuestionCommand } from '../../application/use-cases/questions/update-publish-question-use-case';
 
-@Controller('sa/quiz')
+@Controller('sa/quiz/questions')
 export class QuizSaController {
   constructor(
     private commandBus: CommandBus,
     protected questionsQueryRepository: QuestionsQueryRepository,
   ) {}
 
-  @Get('questions')
+  @Get()
   @UseGuards(AuthBasicGuard)
   @HttpCode(200)
   async getQuestions(
@@ -40,7 +40,7 @@ export class QuizSaController {
     return await this.questionsQueryRepository.getAll(queryDto);
   }
 
-  @Post('questions')
+  @Post()
   @UseGuards(AuthBasicGuard)
   @HttpCode(201)
   async createQuestion(

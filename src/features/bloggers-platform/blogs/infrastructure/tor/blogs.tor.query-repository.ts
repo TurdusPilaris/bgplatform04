@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { BlogOutputModel } from '../../api/models/output/blog.output.model';
 import { QueryBlogInputModel } from '../../api/models/input/query-blog.model';
-import { PaginationOutputModel } from '../../../../../base/models/output/pagination.output.model';
+import {
+  paginationModelMapper,
+  PaginationOutputModel,
+} from '../../../../../base/models/output/pagination.output.model';
 import { DataSource, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BlogSQL } from '../../domain/entiities/blog.sql.entity';
@@ -19,8 +22,9 @@ export class BlogsTorQueryRepository {
     return this.blogOutputModelMapper(foundBlog);
   }
 
-  async findAll(queryDto: QueryBlogInputModel) {
-    // : Promise<PaginationOutputModel<BlogOutputModel[]>>
+  async findAll(
+    queryDto: QueryBlogInputModel,
+  ): Promise<PaginationOutputModel<BlogOutputModel[]>> {
     //params
     const limit = queryDto.pageSize;
     const offset = (queryDto.pageNumber - 1) * queryDto.pageSize;
@@ -42,7 +46,8 @@ export class BlogsTorQueryRepository {
     const countBlogs = await this.getCountBlogsByFilter(searchNameTerm);
 
     const res = items.map(this.blogOutputModelMapper);
-    return this.paginationBlogModelMapper(queryDto, countBlogs, res);
+    return paginationModelMapper(queryDto, countBlogs, res);
+    // return this.paginationBlogModelMapper(queryDto, countBlogs, res);
   }
 
   async getCountBlogsByFilter(searchNameTerm: string) {

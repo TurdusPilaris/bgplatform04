@@ -13,13 +13,10 @@ export class GameQuestion {
   @ManyToOne(() => Question, (g) => g.gameQuestions)
   question: Question;
 
-  // static create(
-  //   body: string,
-  //   answers: (number | string | boolean)[],
-  // ): Question {
-  //   const question = new Question();
-  //   question.body = body;
-  //   question.answers = answers;
-  //   return question;
-  // }
+  static create(gameId: string, questionId: string): GameQuestion {
+    const g_question = new GameQuestion();
+    g_question.game = { id: gameId } as Game;
+    g_question.question = { id: questionId } as Question;
+    return g_question;
+  }
 }
