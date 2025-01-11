@@ -10,6 +10,7 @@ import { InterlayerNotice } from '../../../../../base/models/Interlayer';
 import { QuestionsRepository } from '../../../infractructure/questions.repository';
 import { Question } from '../../../domain/entities/question.entity';
 import { GameQuestion } from '../../../domain/entities/game.question.entity';
+import { GameQueryRepository } from '../../../infractructure/game.query-repository';
 
 export class ConnectionToGameCommand {
   constructor(public userId: string) {}
@@ -22,6 +23,7 @@ export class ConnectionToGameUseCase
   constructor(
     private gameRepository: GameRepository,
     private questionRepository: QuestionsRepository,
+    private gameQueryRepository: GameQueryRepository,
   ) {}
   async execute(
     command: ConnectionToGameCommand,
@@ -56,8 +58,11 @@ export class ConnectionToGameUseCase
     //create pending game
     const pendingGame = Game.createPendingGame(createdPlayer.id);
     const createdGame = await this.gameRepository.saveGame(pendingGame);
+    const createdGameForView =
+      await this.gameQueryRepository.findGameWithLoginUser(createdGame.id);
+
     //return view model
-    return new InterlayerNotice(this.createViewModel(createdGame, null));
+    return new InterlayerNotice(this.createViewModel(createdGameForView, null));
   }
   async fixPairForGame(
     userId: string,
@@ -77,6 +82,8 @@ export class ConnectionToGameUseCase
       id: currentGame.id,
     });
 
+    const activeGameForView =
+      await this.gameQueryRepository.findGameWithLoginUser(activeGame.id);
     //create questions for game
     const fiveRandomQuestions: Question[] =
       await this.questionRepository.getFiveRandomQuestions();
@@ -88,13 +95,18 @@ export class ConnectionToGameUseCase
     const questionsForGame =
       await this.gameRepository.saveQuestionsForGame(arrayForQuestion);
 
-    const questionsForViewModel = questionsForGame.map((qg) => ({
+    const questionsForGameForView =
+      await this.gameQueryRepository.findQuestionGameForView(
+        arrayForQuestion.map((q) => q.id),
+      );
+
+    const questionsForViewModel = questionsForGameForView.map((qg) => ({
       id: qg.id.toString(),
       body: qg.question.body,
     }));
     //create five game question
     return new InterlayerNotice(
-      this.createViewModel(activeGame, questionsForViewModel),
+      this.createViewModel(activeGameForView, questionsForViewModel),
     );
   }
   createViewModel(game: Game, questions: QuestionViewModel[] | null) {

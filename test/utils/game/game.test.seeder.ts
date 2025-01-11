@@ -4,7 +4,7 @@ import { v4 } from 'uuid';
 
 export const gameTestSeeder = (bcryptService, usersTorRepository) => ({
   async createAuthUser(nameUser: string): Promise<string> {
-    const passwordHash = await this.bcryptService.generationHash(
+    const passwordHash = await bcryptService.generationHash(
       'nameUser' + '123456',
     );
     const userCreateSql = new UserSQL();
@@ -18,6 +18,6 @@ export const gameTestSeeder = (bcryptService, usersTorRepository) => ({
       minutes: 3,
     });
     userCreateSql.isConfirmed = true;
-    return this.usersTorRepository.createUser(userCreateSql);
+    return usersTorRepository.createUser(userCreateSql);
   },
 });

@@ -17,6 +17,8 @@ import { UpdatePublishQuestionUseCase } from './application/use-cases/questions/
 import { UserAccountsModule } from '../user-accaunts/users.accounts.module';
 import { ConnectionToGameUseCase } from './application/use-cases/game/connection-to-game-use-case';
 import { CheckTheAnswersUseCase } from './application/use-cases/game/check-the-answers-use-case';
+import { GameRepository } from './infractructure/game.repository';
+import { GameQueryRepository } from './infractructure/game.query-repository';
 
 const useCasesForQuestion = [
   CreateQuestionUseCase,
@@ -36,6 +38,8 @@ const useCasesForGame = [ConnectionToGameUseCase, CheckTheAnswersUseCase];
     ...useCasesForQuestion,
     ...useCasesForGame,
     QuestionsRepository,
+    GameRepository,
+    GameQueryRepository,
     QuestionsQueryRepository,
   ],
   exports: [],

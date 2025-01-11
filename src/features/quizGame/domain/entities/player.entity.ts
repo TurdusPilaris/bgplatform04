@@ -17,7 +17,7 @@ export class Player {
   @ManyToOne(() => UserSQL, (u) => u.players)
   user: UserSQL;
 
-  @Column()
+  @Column({ default: 0 })
   score: number;
 
   @OneToMany(() => Answer, (a) => a.player)

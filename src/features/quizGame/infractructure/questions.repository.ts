@@ -13,6 +13,9 @@ export class QuestionsRepository {
   async createQuestion(question: Question): Promise<Question> {
     return this.questionsRepository.save(question);
   }
+  async createQuestions(question: Question[]): Promise<Question[]> {
+    return this.questionsRepository.save(question);
+  }
 
   async findById(id: string): Promise<Question> {
     return this.questionsRepository.findOneBy({ id: id });

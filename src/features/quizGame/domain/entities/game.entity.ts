@@ -1,4 +1,4 @@
-import { Column, Entity, OneToMany, OneToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, OneToMany, OneToOne } from 'typeorm';
 import { BaseDBEntity } from '../../../../base/domain/entities/baseDBEntity';
 import { GameStatus } from '../../../../base/models/gameStatus';
 import { Player } from './player.entity';
@@ -10,9 +10,11 @@ export class Game extends BaseDBEntity {
   status: GameStatus;
 
   @OneToOne(() => Player)
+  @JoinColumn({ name: 'player_1_id' })
   player_1: Player;
 
   @OneToOne(() => Player)
+  @JoinColumn({ name: 'player_2_id' })
   player_2: Player;
 
   @OneToMany(() => GameQuestion, (q) => q.game)

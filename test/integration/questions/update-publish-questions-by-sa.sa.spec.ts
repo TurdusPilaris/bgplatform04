@@ -83,8 +83,6 @@ describe('update question by super admin', () => {
     //let's update the created question
     const result = await useCaseUpdate.execute({ id, published });
 
-    // console.log('result', result);
-    // expect(5).toBe(5);
     expect(result).toBeDefined();
     expect(result).toBeInstanceOf(InterlayerNotice);
     expect(result.hasError()).toBeTruthy();
