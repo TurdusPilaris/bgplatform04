@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Get,
   HttpCode,
@@ -15,6 +16,7 @@ import { Request } from 'express';
 import { ConnectionToGameCommand } from '../../application/use-cases/game/connection-to-game-use-case';
 import { CheckTheAnswersCommand } from '../../application/use-cases/game/check-the-answers-use-case';
 import { ErrorProcessor } from '../../../../base/models/errorProcessor';
+import { AnswerInputModel } from '../models/input/question/answer.input.model';
 
 @Controller('pair-game-quiz')
 @UseGuards(AuthBearerGuard)
@@ -51,9 +53,9 @@ export class PairGameQuizController {
 
   @Post()
   @HttpCode(200)
-  async answers(@Req() req: Request) {
+  async answers(@Req() req: Request, @Body() inputModel: AnswerInputModel) {
     const result = await this.commandBus.execute(
-      new CheckTheAnswersCommand(req.userId),
+      new CheckTheAnswersCommand(req.userId, inputModel.answer),
     );
     if (result.hasError()) {
       new ErrorProcessor(result).handleError();

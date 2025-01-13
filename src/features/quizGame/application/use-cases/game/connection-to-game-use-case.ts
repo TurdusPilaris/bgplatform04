@@ -92,8 +92,7 @@ export class ConnectionToGameUseCase
       GameQuestion.create(activeGame.id, q.id),
     );
 
-    const questionsForGame =
-      await this.gameRepository.saveQuestionsForGame(arrayForQuestion);
+    await this.gameRepository.saveQuestionsForGame(arrayForQuestion);
 
     const questionsForGameForView =
       await this.gameQueryRepository.findQuestionGameForView(

@@ -54,7 +54,6 @@ export class PostsTorQueryRepository {
 
     // const countPosts = await this.getCountPostByFilter(blogId);
 
-    console.log('items', items);
     const itemsForPaginator = items.map((post) =>
       this.postOutputModelMapper(post, []),
     );

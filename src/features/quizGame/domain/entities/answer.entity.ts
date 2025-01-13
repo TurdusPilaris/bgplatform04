@@ -13,15 +13,22 @@ export class Answer extends BaseDBEntity {
   player: Player;
 
   @Column()
+  body: string;
+
+  @Column()
   status: AnswerStatus;
 
-  // static create(
-  //   body: string,
-  //   answers: (number | string | boolean)[],
-  // ): Question {
-  //   const question = new Question();
-  //   question.body = body;
-  //   question.answers = answers;
-  //   return question;
-  // }
+  static create(
+    playerId: string,
+    questionId: string,
+    status: AnswerStatus,
+    body: string,
+  ): Answer {
+    const answer = new Answer();
+    answer.question = { id: questionId } as Question;
+    answer.player = { id: playerId } as Player;
+    answer.status = status;
+    answer.body = body;
+    return answer;
+  }
 }
