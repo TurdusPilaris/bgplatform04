@@ -44,15 +44,18 @@ describe('create question by super admin', () => {
     const correctAnswers = ['Paris'];
 
     //получим id созданного вопроса
-    const { id } = await useCaseCreate.execute({ body, correctAnswers });
+    const { questionId } = await useCaseCreate.execute({
+      body,
+      correctAnswers,
+    });
     // const command = new CreateQuestionCommand(body, correctAnswers);
     //  const result = await useCaseCreate.execute(command);
     // const result = await commandBus.execute(command);
 
-    expect(id).toBeDefined();
+    expect(questionId).toBeDefined();
 
     //теперь проверяем что все созданное ок
-    const createdQuestion = await questionsRepository.findById(id);
+    const createdQuestion = await questionsRepository.findById(questionId);
     expect(createdQuestion.body).toBe(body);
     expect(createdQuestion.answers).toEqual(correctAnswers);
     expect(createdQuestion.published).toBeFalsy();
@@ -64,16 +67,20 @@ describe('create question by super admin', () => {
     const correctAnswers = [];
 
     //получим id созданного вопроса
-    const { id } = await useCaseCreate.execute({ body, correctAnswers });
+    const { questionId } = await useCaseCreate.execute({
+      body,
+      correctAnswers,
+    });
     // const command = new CreateQuestionCommand(body, correctAnswers);
     //  const result = await useCaseCreate.execute(command);
     // const result = await commandBus.execute(command);
 
-    expect(id).toBeDefined();
+    expect(questionId).toBeDefined();
 
     //теперь проверяем что все созданное ок
-    const createdQuestion = await questionsRepository.findById(id);
+    const createdQuestion = await questionsRepository.findById(questionId);
 
+    console.log('createdQuestion', createdQuestion);
     expect(createdQuestion.body).toBe(body);
     expect(createdQuestion.answers).toEqual(correctAnswers);
     expect(createdQuestion.published).toBeFalsy();

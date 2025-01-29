@@ -6,6 +6,7 @@ import { GameStatus } from '../../../base/models/gameStatus';
 import { Player } from '../domain/entities/player.entity';
 import { GameQuestion } from '../domain/entities/game.question.entity';
 import { Answer } from '../domain/entities/answer.entity';
+import { PlayerStatus } from '../../../base/models/playerStatus';
 
 @Injectable()
 export class GameRepository {
@@ -20,10 +21,18 @@ export class GameRepository {
     private readonly answerRepository: Repository<Answer>,
   ) {}
 
-  async findPendingGame(): Promise<Game> {
-    return this.gameRepository.findOneBy({
-      status: GameStatus.Pending,
-    });
+  async findPendingGame(): Promise<{ id: string; userForPlayer1: string }> {
+    const pendingGame = await this.gameRepository
+      .createQueryBuilder('game')
+      .leftJoin('game.player_1', 'player1')
+      .leftJoin('player1.user', 'user1')
+      .select(['game.id', 'user1.id'])
+      .andWhere('game.status = :status', { status: GameStatus.Pending })
+      .getRawOne();
+
+    if (!pendingGame) return null;
+
+    return { id: pendingGame.game_id, userForPlayer1: pendingGame.user1_id };
   }
   async savePlayer(player: Player) {
     return this.playerRepository.save(player);
@@ -62,6 +71,33 @@ export class GameRepository {
       .andWhere('game.status = :status', { status: GameStatus.Active })
       .getOne();
   }
+  async findANotFinishedGame(param: { currentUserId: string }) {
+    return this.gameRepository
+      .createQueryBuilder('game')
+      .leftJoinAndSelect('game.player_1', 'player1')
+      .leftJoinAndSelect('player1.user', 'user1')
+      .leftJoinAndSelect('game.player_2', 'player2')
+      .leftJoinAndSelect('player2.user', 'user2')
+      .where('(user1.id = :userId OR user2.id = :userId)', {
+        userId: param.currentUserId,
+      })
+      .andWhere('game.status <> :status', { status: GameStatus.Finished })
+      .getOne();
+  }
+
+  async findGameForUser(param: { currentUserId: string; gameId: string }) {
+    return this.gameRepository
+      .createQueryBuilder('game')
+      .leftJoinAndSelect('game.player_1', 'player1')
+      .leftJoinAndSelect('player1.user', 'user1')
+      .leftJoinAndSelect('game.player_2', 'player2')
+      .leftJoinAndSelect('player2.user', 'user2')
+      .where('(user1.id = :userId OR user2.id = :userId)', {
+        userId: param.currentUserId,
+      })
+      .andWhere('game.id = :gameId', { gameId: param.gameId })
+      .getOne();
+  }
 
   async saveQuestionsForGame(arrayForQuestion: GameQuestion[]) {
     return this.gameQuestionRepository.save(arrayForQuestion);
@@ -78,7 +114,7 @@ export class GameRepository {
       .where('players.id =:playerId', { playerId: param.playerId })
       .groupBy('players.id')
       .getRawOne();
-    return { id: res.players_id, answersCount: res.answersCount };
+    return { id: res.players_id, answersCount: +res.answersCount };
   }
 
   async increaseScoreForPlayer(param: { playerId: string }) {
@@ -88,6 +124,17 @@ export class GameRepository {
       .set({ score: () => 'score + 1' })
       .where('id = :playerId', { playerId: param.playerId })
       .execute();
+  }
+  async updatePlayerStatus(param: {
+    playerId: string;
+    playerStatus: PlayerStatus;
+  }) {
+    await this.playerRepository.update(
+      {
+        id: param.playerId,
+      },
+      { playerStatus: param.playerStatus },
+    );
   }
   async findCurrentQuestionForGame(param: {
     gameId: string;
@@ -102,6 +149,7 @@ export class GameRepository {
       .select(['gq.id', 'gq.questionId', 'q.answers'])
       .getRawOne();
 
+    if (!result) return null;
     return {
       id: result.gq_id,
       answers: result.q_answers,
@@ -117,26 +165,27 @@ export class GameRepository {
     currentPlayerId: string;
     opponentId: string;
     gameId: string;
+    questionId: string;
   }) {
     const queryBuilder = this.answerRepository
       .createQueryBuilder('ap1')
       .leftJoin('answers', 'ap2', 'ap1.questionId = ap2.questionId')
-      .select(
-        'SUM(CASE when ap1.createdAt > ap2.createdAt then 1 else 0 end)',
-        'bonusOfPlayer',
-      )
-      // .addSelect(
-      //   'SUM(CASE when ap2.createdAt > ap1.createdAt then 1 else 0 end)',
-      //   'bonusPlayer2',
-      // )
+      .select('ap1.createdAt < ap2.createdAt', 'bonusOfPlayer1')
+      .addSelect('ap2.createdAt < ap1.createdAt', 'bonusOfPlayer2')
       .where('ap1.playerId =:currentPlayerId', {
         currentPlayerId: param.currentPlayerId,
       })
-      .andWhere('ap2.playerId =:opponentId', { opponentId: param.opponentId });
+      .andWhere('ap2.playerId =:opponentId', { opponentId: param.opponentId })
+      .andWhere('ap1.questionId =:questionId', {
+        questionId: param.questionId,
+      });
 
     const res = await queryBuilder.getRawOne();
 
-    return { bonusOfPlayer: +res.bonusOfPlayer };
+    return {
+      bonusOfPlayer1: res.bonusOfPlayer1,
+      bonusOfPlayer2: res.bonusOfPlayer2,
+    };
   }
 
   async finishGame(id: string) {

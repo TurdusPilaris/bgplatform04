@@ -50,6 +50,7 @@ export class QuizSaController {
     const { questionId } = await this.commandBus.execute(
       new CreateQuestionCommand(inputModel.body, inputModel.correctAnswers),
     );
+
     return this.questionsQueryRepository.getById(questionId);
   }
 
@@ -99,7 +100,7 @@ export class QuizSaController {
     @Body() updateModel: QuestionPublishInputModel,
   ) {
     const result = await this.commandBus.execute(
-      new UpdatePublishQuestionCommand(questionId, updateModel.publish),
+      new UpdatePublishQuestionCommand(questionId, updateModel.published),
     );
 
     if (result.hasError()) {

@@ -157,7 +157,6 @@ export class AuthService {
         return { userId: result.userId, deviceId: result.deviceId };
       } else return { userId: result.userId };
     } catch (error) {
-      console.log('Not verify!');
       return null;
     }
   }

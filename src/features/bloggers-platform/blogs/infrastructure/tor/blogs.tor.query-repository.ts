@@ -47,7 +47,6 @@ export class BlogsTorQueryRepository {
 
     const res = items.map(this.blogOutputModelMapper);
     return paginationModelMapper(queryDto, countBlogs, res);
-    // return this.paginationBlogModelMapper(queryDto, countBlogs, res);
   }
 
   async getCountBlogsByFilter(searchNameTerm: string) {

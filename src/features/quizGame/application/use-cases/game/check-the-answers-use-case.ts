@@ -1,11 +1,11 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { GameRepository } from '../../../infractructure/game.repository';
-import { QuestionsRepository } from '../../../infractructure/questions.repository';
-import { GameQueryRepository } from '../../../infractructure/game.query-repository';
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
 import { AnswerStatus } from '../../../../../base/models/answerStatus';
 import { Answer } from '../../../domain/entities/answer.entity';
 import { AnswerViewModel } from '../../../api/models/output/game/answer.view.model';
+import { Player } from '../../../domain/entities/player.entity';
+import { PlayerStatus } from '../../../../../base/models/playerStatus';
 
 export class CheckTheAnswersCommand {
   constructor(
@@ -18,11 +18,7 @@ export class CheckTheAnswersCommand {
 export class CheckTheAnswersUseCase
   implements ICommandHandler<CheckTheAnswersCommand>
 {
-  constructor(
-    private gameRepository: GameRepository,
-    private questionRepository: QuestionsRepository,
-    private gameQueryRepository: GameQueryRepository,
-  ) {}
+  constructor(private gameRepository: GameRepository) {}
 
   async execute(command: CheckTheAnswersCommand) {
     //first find active game
@@ -76,6 +72,7 @@ export class CheckTheAnswersUseCase
     if (statusAnswer === AnswerStatus.Correct) {
       await this.gameRepository.increaseScoreForPlayer({ playerId: player.id });
     }
+
     //create an Answer entity for the player
     const createdAnswer = await this.createAnswerForPlayer(
       player.id,
@@ -116,9 +113,10 @@ export class CheckTheAnswersUseCase
 
     //calculating the bonus
     await this.calculatingTheBonus({
-      currentPlayerId: currentPlayer.id,
-      opponentId: opponentPlayer.id,
+      currentPlayer: currentPlayer,
+      opponentPlayer: opponentPlayer,
       gameId: activeGame.id,
+      questionId: currentQuestion.questionId,
     });
 
     //finish the game
@@ -162,17 +160,69 @@ export class CheckTheAnswersUseCase
   }
 
   private async calculatingTheBonus(param: {
-    currentPlayerId: string;
-    opponentId: string;
+    currentPlayer: Player;
+    opponentPlayer: Player;
     gameId: string;
+    questionId: string;
   }) {
-    const result = await this.gameRepository.getBonus(param);
-    console.log('result bonus', result);
-    if (result.bonusOfPlayer === 5) {
-      console.log('Im here');
+    const result = await this.gameRepository.getBonus({
+      currentPlayerId: param.currentPlayer.id,
+      opponentId: param.opponentPlayer.id,
+      gameId: param.gameId,
+      questionId: param.questionId,
+    });
+
+    if (result.bonusOfPlayer1 && param.currentPlayer.score > 0) {
       await this.gameRepository.increaseScoreForPlayer({
-        playerId: param.currentPlayerId,
+        playerId: param.currentPlayer.id,
       });
+    }
+    if (result.bonusOfPlayer2 && param.opponentPlayer.score > 0) {
+      await this.gameRepository.increaseScoreForPlayer({
+        playerId: param.opponentPlayer.id,
+      });
+    }
+    if (
+      result.bonusOfPlayer1 + param.currentPlayer.score >
+      result.bonusOfPlayer2 + param.opponentPlayer.score
+    ) {
+      await this.gameRepository.updatePlayerStatus({
+        playerId: param.currentPlayer.id,
+        playerStatus: PlayerStatus.Winner,
+      });
+      await this.gameRepository.updatePlayerStatus({
+        playerId: param.opponentPlayer.id,
+        playerStatus: PlayerStatus.Loser,
+      });
+      return;
+    }
+    if (
+      result.bonusOfPlayer2 + param.opponentPlayer.score >
+      result.bonusOfPlayer1 + param.currentPlayer.score
+    ) {
+      await this.gameRepository.updatePlayerStatus({
+        playerId: param.currentPlayer.id,
+        playerStatus: PlayerStatus.Loser,
+      });
+      await this.gameRepository.updatePlayerStatus({
+        playerId: param.opponentPlayer.id,
+        playerStatus: PlayerStatus.Winner,
+      });
+      return;
+    }
+    if (
+      result.bonusOfPlayer2 + param.opponentPlayer.score ===
+      result.bonusOfPlayer1 + param.currentPlayer.score
+    ) {
+      await this.gameRepository.updatePlayerStatus({
+        playerId: param.currentPlayer.id,
+        playerStatus: PlayerStatus.Draw,
+      });
+      await this.gameRepository.updatePlayerStatus({
+        playerId: param.opponentPlayer.id,
+        playerStatus: PlayerStatus.Draw,
+      });
+      return;
     }
   }
 }

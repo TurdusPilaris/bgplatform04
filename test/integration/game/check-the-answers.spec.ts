@@ -6,19 +6,17 @@ import { AppModule } from '../../../src/app.module';
 import { applyAppSettings } from '../../../src/settings/apply-app-setting';
 import { QuestionsRepository } from '../../../src/features/quizGame/infractructure/questions.repository';
 import { BcryptService } from '../../../src/base/adapters/bcrypt-service';
-import { gameTestSeeder } from '../../utils/game/game.test.seeder';
 import { UsersTorRepository } from '../../../src/features/user-accaunts/users/infrastructure/tor/users.tor.repository';
 import { GameStatus } from '../../../src/base/models/gameStatus';
-import { InterlayerNotice } from '../../../src/base/models/Interlayer';
 import { questionTestSeeder } from '../../utils/question/questions.test.seeder';
-import { Question } from '../../../src/features/quizGame/domain/entities/question.entity';
 import { CheckTheAnswersUseCase } from '../../../src/features/quizGame/application/use-cases/game/check-the-answers-use-case';
 import {
   GamePairViewModel,
   QuestionViewModel,
 } from '../../../src/features/quizGame/api/models/output/game/game.view.model';
-import { AnswerStatus } from '../../../src/base/models/answerStatus';
 import { GameQueryRepository } from '../../../src/features/quizGame/infractructure/game.query-repository';
+import { GameTestManager } from '../../utils/game/game.test.manager';
+import { GetCurrentGameIdUseCase } from '../../../src/features/quizGame/application/use-cases/game/get-current-game-id-use-case';
 
 describe('check the answers', () => {
   let firstUserId: string;
@@ -32,8 +30,8 @@ describe('check the answers', () => {
   let testingController: TestingController;
   let questionsRepository: QuestionsRepository;
   let gameQueryRepository: GameQueryRepository;
-  let usersRepository: UsersTorRepository;
-  let bcryptService: BcryptService;
+  let gameTestManager: GameTestManager;
+  let useCaseGetCurrentGame: GetCurrentGameIdUseCase;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -54,9 +52,14 @@ describe('check the answers', () => {
       CheckTheAnswersUseCase,
     );
     questionsRepository = moduleFixture.get(QuestionsRepository);
-    bcryptService = moduleFixture.get(BcryptService);
-    usersRepository = moduleFixture.get(UsersTorRepository);
     gameQueryRepository = moduleFixture.get(GameQueryRepository);
+    gameTestManager = new GameTestManager(
+      moduleFixture.get(BcryptService),
+      moduleFixture.get(UsersTorRepository),
+    );
+    useCaseGetCurrentGame = moduleFixture.get<GetCurrentGameIdUseCase>(
+      GetCurrentGameIdUseCase,
+    );
   });
 
   beforeEach(async () => {
@@ -67,112 +70,165 @@ describe('check the answers', () => {
     await app.close();
   });
 
+  it('error if current user is not inside active pai', async () => {
+    // 1. create auth user
+    const nameZeroUser = 'ZeroUser';
+    const zeroUserId = await gameTestManager.createAuthUser(nameZeroUser);
+
+    // 2. send random answer
+    const result = await useCaseCheckAnswers.execute({
+      userId: zeroUserId,
+      answer: 'fsdffdfdf',
+    });
+
+    //have to 403 error
+    gameTestManager.checkForA403Error(result);
+  });
+
   it('first player submits first correct answer', async () => {
     //create questions
-    arrayQuestions = questionTestSeeder
-      .createElevenQuestionsDTO()
-      .map((dto) => Question.create(dto.body, dto.correctAnswers));
-    await questionsRepository.createQuestions(arrayQuestions);
+    arrayQuestions =
+      await questionTestSeeder.createElevenQuestionsDTO(questionsRepository);
+
     //we need first user
     const nameFirstUser = 'FirstUser';
-    const gameSeeder = gameTestSeeder(bcryptService, usersRepository);
-    firstUserId = await gameSeeder.createAuthUser(nameFirstUser);
+    firstUserId = await gameTestManager.createAuthUser(nameFirstUser);
+
     //create pending game
     await useCaseConnection.execute({ userId: firstUserId });
+
     //we need second authorization user
     const nameSecondUser = 'SecondUser';
-    secondUserId = await gameSeeder.createAuthUser(nameSecondUser);
+    secondUserId = await gameTestManager.createAuthUser(nameSecondUser);
+
     //create active game
-    const activeGame = await useCaseConnection.execute({
+    const activeGameResult = await useCaseConnection.execute({
       userId: secondUserId,
     });
 
-    currentGame = activeGame.data;
-    actualQuestion = activeGame.data.questions;
-    const currentQuestion = arrayQuestions.find(
-      (q) => q.body === actualQuestion[0].body,
-    );
+    //get created game
+    currentGame = await gameQueryRepository.findGameById({
+      id: activeGameResult.data,
+    });
 
+    //get 5 actual questions
+    actualQuestion = currentGame.questions;
+
+    //get correct answer for 1 question
+    const correctAnswer = await gameTestManager.getCorrectAnswer(
+      1,
+      arrayQuestions,
+      actualQuestion,
+    );
     const result = await useCaseCheckAnswers.execute({
       userId: firstUserId,
-      answer: currentQuestion.answers[0],
+      answer: correctAnswer,
     });
-    expect(result).toBeDefined();
-    expect(result).toBeInstanceOf(InterlayerNotice);
-    expect(result.data).toBeDefined();
-    expect(result.data.questionId).toBeDefined();
-    expect(result.data.addedAt).toBeDefined();
-    expect(result.data.answerStatus).toBe(AnswerStatus.Correct);
-    //first user submits first correct answer
+
+    //check correct answer
+    gameTestManager.checkCorrectAnswer(result);
   });
 
-  it('second player submits first incorrect answer', async () => {
-    const currentQuestion = arrayQuestions.find(
-      (q) => q.body === actualQuestion[1].body,
-    );
-
+  it('first player sen yet 4 answer and second player submits 3 correct answers', async () => {
     const incorrectAnswer = '!!!!!';
+
     const result = await useCaseCheckAnswers.execute({
       userId: secondUserId,
       answer: incorrectAnswer,
     });
-    expect(result).toBeDefined();
-    expect(result).toBeInstanceOf(InterlayerNotice);
-    expect(result.data).toBeDefined();
-    expect(result.data.questionId).toBeDefined();
-    expect(result.data.addedAt).toBeDefined();
-    expect(result.data.answerStatus).toBe(AnswerStatus.Incorrect);
+
+    //check incorrect answer
+    gameTestManager.checkIncorrectAnswer(result);
   });
-  it('first and second player submit yet 4 answers, end game', async () => {
+
+  it('first submit 5 and second player submit yet 4 answers, sucessfull', async () => {
     //2 answer
-    let currentQuestion = arrayQuestions.find(
-      (q) => q.body === actualQuestion[1].body,
+    const twoCorrectAnswer = await gameTestManager.getCorrectAnswer(
+      2,
+      arrayQuestions,
+      actualQuestion,
     );
+
     await useCaseCheckAnswers.execute({
       userId: firstUserId,
-      answer: currentQuestion.answers[0],
+      answer: twoCorrectAnswer,
     });
 
     await useCaseCheckAnswers.execute({
       userId: secondUserId,
-      answer: currentQuestion.answers[0],
+      answer: twoCorrectAnswer,
     });
+
     //3 answer
-    currentQuestion = arrayQuestions.find(
-      (q) => q.body === actualQuestion[2].body,
+    const freeCorrectAnswer = await gameTestManager.getCorrectAnswer(
+      3,
+      arrayQuestions,
+      actualQuestion,
     );
     await useCaseCheckAnswers.execute({
       userId: firstUserId,
-      answer: currentQuestion.answers[0],
+      answer: freeCorrectAnswer,
     });
 
     await useCaseCheckAnswers.execute({
       userId: secondUserId,
-      answer: currentQuestion.answers[0],
+      answer: freeCorrectAnswer,
     });
 
     //4 answer
-    currentQuestion = arrayQuestions.find(
-      (q) => q.body === actualQuestion[3].body,
+    const fourCorrectAnswer = await gameTestManager.getCorrectAnswer(
+      4,
+      arrayQuestions,
+      actualQuestion,
     );
     await useCaseCheckAnswers.execute({
       userId: firstUserId,
-      answer: currentQuestion.answers[0],
+      answer: fourCorrectAnswer,
     });
 
     await useCaseCheckAnswers.execute({
       userId: secondUserId,
-      answer: currentQuestion.answers[0],
+      answer: fourCorrectAnswer,
     });
 
     //5 answer
-    currentQuestion = arrayQuestions.find(
+    const fiveCorrectAnswer = await gameTestManager.getCorrectAnswer(
+      5,
+      arrayQuestions,
+      actualQuestion,
+    );
+    const result = await useCaseCheckAnswers.execute({
+      userId: firstUserId,
+      answer: fiveCorrectAnswer,
+    });
+
+    const resultGame = await gameQueryRepository.findGameById({
+      id: currentGame.id,
+    });
+
+    gameTestManager.checkCorrectAnswer(result);
+
+    expect(resultGame.status).toBe(GameStatus.Active);
+    expect(resultGame.finishGameDate).toBeNull();
+    expect(resultGame.firstPlayerProgress.score).toBe(5);
+    expect(resultGame.secondPlayerProgress.score).toBe(3);
+  });
+  it('first player submit 6 answers, 403 error', async () => {
+    //2 answer
+
+    const result = await useCaseCheckAnswers.execute({
+      userId: firstUserId,
+      answer: 'gdffdgfdhfh',
+    });
+
+    gameTestManager.checkForA403Error(result);
+  });
+
+  it('last answer from second player', async () => {
+    //5 answer
+    const currentQuestion = arrayQuestions.find(
       (q) => q.body === actualQuestion[4].body,
     );
-    await useCaseCheckAnswers.execute({
-      userId: firstUserId,
-      answer: currentQuestion.answers[0],
-    });
 
     const result = await useCaseCheckAnswers.execute({
       userId: secondUserId,
@@ -182,23 +238,155 @@ describe('check the answers', () => {
     const resultGame = await gameQueryRepository.findGameById({
       id: currentGame.id,
     });
-    console.log('resultGame', resultGame);
-    expect(result).toBeDefined();
-    expect(result).toBeInstanceOf(InterlayerNotice);
-    expect(result.data).toBeDefined();
+
+    gameTestManager.checkCorrectAnswer(result);
     expect(result.data.questionId).toBe(currentQuestion.id);
-    expect(result.data.addedAt).toBeDefined();
-    expect(result.data.answerStatus).toBe(AnswerStatus.Correct);
+
+    expect(resultGame.status).toBe(GameStatus.Finished);
+    expect(resultGame.finishGameDate).not.toBeNull();
+    expect(resultGame.firstPlayerProgress.score).toBe(6);
+    expect(resultGame.secondPlayerProgress.score).toBe(4);
   });
 
-  it('user is in active pair but has already answered to all questions', async () => {
+  it('error if game was finish', async () => {
+    //5 answer
+    const currentQuestion = arrayQuestions.find(
+      (q) => q.body === actualQuestion[4].body,
+    );
+
     const result = await useCaseCheckAnswers.execute({
-      userId: firstUserId,
-      answer: 'dgdgdg',
+      userId: secondUserId,
+      answer: currentQuestion.answers[0],
     });
-    expect(result).toBeDefined();
-    expect(result).toBeInstanceOf(InterlayerNotice);
-    expect(result.hasError()).toBeTruthy();
-    expect(result.code).toBe(403);
+
+    gameTestManager.checkForA403Error(result);
+  });
+
+  //the first user answered 4 questions correctly,
+  // but answered all questions earlier than the second user
+  it('firstPlayer should win with 5 scores ', async () => {
+    //create pending game
+    await useCaseConnection.execute({ userId: firstUserId });
+
+    //create active game
+    const activeGameResult = await useCaseConnection.execute({
+      userId: secondUserId,
+    });
+
+    //get created game
+    currentGame = await gameQueryRepository.findGameById({
+      id: activeGameResult.data,
+    });
+
+    //get 5 actual questions
+    actualQuestion = currentGame.questions;
+    //1 answers
+    const oneCorrectAnswer = await gameTestManager.getCorrectAnswer(
+      1,
+      arrayQuestions,
+      actualQuestion,
+    );
+
+    //2 answers
+    const twoCorrectAnswer = await gameTestManager.getCorrectAnswer(
+      2,
+      arrayQuestions,
+      actualQuestion,
+    );
+
+    //3 answers
+    const threeCorrectAnswer = await gameTestManager.getCorrectAnswer(
+      3,
+      arrayQuestions,
+      actualQuestion,
+    );
+
+    //4 answers
+    const fourCorrectAnswer = await gameTestManager.getCorrectAnswer(
+      4,
+      arrayQuestions,
+      actualQuestion,
+    );
+
+    //five answers
+    const fiveCorrectAnswer = await gameTestManager.getCorrectAnswer(
+      5,
+      arrayQuestions,
+      actualQuestion,
+    );
+
+    //add 1 correct answer by firstPlayer;
+    await useCaseCheckAnswers.execute({
+      userId: firstUserId,
+      answer: oneCorrectAnswer,
+    });
+
+    //add 2 correct answer by firstPlayer;
+    await useCaseCheckAnswers.execute({
+      userId: firstUserId,
+      answer: twoCorrectAnswer,
+    });
+
+    //add 1 correct answer by secondPlayer;
+    await useCaseCheckAnswers.execute({
+      userId: secondUserId,
+      answer: oneCorrectAnswer,
+    });
+
+    //add 2 correct answer by secondPlayer;
+    await useCaseCheckAnswers.execute({
+      userId: secondUserId,
+      answer: twoCorrectAnswer,
+    });
+
+    //add 3 incorrect answer by firstPlayer;
+    await useCaseCheckAnswers.execute({
+      userId: firstUserId,
+      answer: 'blablabla',
+    });
+
+    //add 3 correct answer by secondPlayer;
+    await useCaseCheckAnswers.execute({
+      userId: secondUserId,
+      answer: threeCorrectAnswer,
+    });
+
+    //add 4 incorrect answer by firstPlayer;
+    await useCaseCheckAnswers.execute({
+      userId: firstUserId,
+      answer: fourCorrectAnswer,
+    });
+
+    //add 4 correct answer by secondPlayer;
+    await useCaseCheckAnswers.execute({
+      userId: secondUserId,
+      answer: fourCorrectAnswer,
+    });
+
+    //add 5 incorrect answer by firstPlayer;
+    await useCaseCheckAnswers.execute({
+      userId: firstUserId,
+      answer: fiveCorrectAnswer,
+    });
+
+    //add 5 correct answer by secondPlayer;
+    await useCaseCheckAnswers.execute({
+      userId: secondUserId,
+      answer: fiveCorrectAnswer,
+    });
+
+    const resultGame = await gameQueryRepository.findGameById({
+      id: currentGame.id,
+    });
+
+    expect(resultGame.status).toBe(GameStatus.Finished);
+    expect(resultGame.finishGameDate).not.toBeNull();
+    expect(resultGame.firstPlayerProgress.score).toBe(5);
+    expect(resultGame.secondPlayerProgress.score).toBe(5);
+  });
+
+  it('first player is start game', async () => {
+    //create pending game
+    await useCaseConnection.execute({ userId: firstUserId });
   });
 });

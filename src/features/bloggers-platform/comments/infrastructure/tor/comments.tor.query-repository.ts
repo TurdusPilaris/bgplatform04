@@ -6,7 +6,6 @@ import { QueryCommentModel } from '../../api/model/input/query-comment.model';
 import { QueryPostInputModel } from '../../../posts/api/models/input/query-post.model';
 import { PaginationOutputModel } from '../../../../../base/models/output/pagination.output.model';
 import { InjectRepository } from '@nestjs/typeorm';
-import { groupBy } from 'rxjs';
 
 @Injectable()
 export class CommentsTorQueryRepository {

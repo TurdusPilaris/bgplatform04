@@ -19,6 +19,8 @@ import { ConnectionToGameUseCase } from './application/use-cases/game/connection
 import { CheckTheAnswersUseCase } from './application/use-cases/game/check-the-answers-use-case';
 import { GameRepository } from './infractructure/game.repository';
 import { GameQueryRepository } from './infractructure/game.query-repository';
+import { IsGameExistsAndUserParticipantUseCase } from './application/use-cases/game/is-game-exists-and-user-participant-use-case';
+import { GetCurrentGameIdUseCase } from './application/use-cases/game/get-current-game-id-use-case';
 
 const useCasesForQuestion = [
   CreateQuestionUseCase,
@@ -26,7 +28,12 @@ const useCasesForQuestion = [
   UpdateQuestionUseCase,
   UpdatePublishQuestionUseCase,
 ];
-const useCasesForGame = [ConnectionToGameUseCase, CheckTheAnswersUseCase];
+const useCasesForGame = [
+  ConnectionToGameUseCase,
+  CheckTheAnswersUseCase,
+  IsGameExistsAndUserParticipantUseCase,
+  GetCurrentGameIdUseCase,
+];
 @Module({
   imports: [
     CqrsModule,

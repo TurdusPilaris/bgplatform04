@@ -1,6 +1,7 @@
 import { UserSQL } from '../../../src/features/user-accaunts/users/domain/entities/user.sql.entity';
 import { add } from 'date-fns';
 import { v4 } from 'uuid';
+import { InterlayerNotice } from '../../../src/base/models/Interlayer';
 
 export const gameTestSeeder = (bcryptService, usersTorRepository) => ({
   async createAuthUser(nameUser: string): Promise<string> {

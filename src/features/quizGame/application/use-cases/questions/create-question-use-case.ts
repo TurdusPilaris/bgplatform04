@@ -19,6 +19,6 @@ export class CreateQuestionUseCase
     const newQuestion = Question.create(command.body, command.correctAnswers);
     const createdQuestion =
       await this.questionsRepository.createQuestion(newQuestion);
-    return { id: createdQuestion.id };
+    return { questionId: createdQuestion.id };
   }
 }

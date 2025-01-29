@@ -22,6 +22,10 @@ import { NameIsExistConstraint } from './infrastructure/decorators/validate/name
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BlogIdIsValidConstraint } from './infrastructure/decorators/validate/blog-id-is-valid';
 import { QuizGameModule } from './features/quizGame/quizGameModule';
+import {
+  IsBooleanStrict,
+  IsBooleanStrictConstraint,
+} from './infrastructure/decorators/validate/is-boolean-strict.decorator';
 
 const adapters = [EmailAdapter, EmailRouter, JwtService, BcryptService];
 
@@ -84,6 +88,11 @@ const adapters = [EmailAdapter, EmailRouter, JwtService, BcryptService];
     TestingModule,
     QuizGameModule,
   ],
-  providers: [...adapters, NameIsExistConstraint, BlogIdIsValidConstraint],
+  providers: [
+    ...adapters,
+    NameIsExistConstraint,
+    BlogIdIsValidConstraint,
+    IsBooleanStrictConstraint,
+  ],
 })
 export class AppModule {}

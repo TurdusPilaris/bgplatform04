@@ -7,7 +7,7 @@ import {
 } from 'typeorm';
 import { UserSQL } from '../../../user-accaunts/users/domain/entities/user.sql.entity';
 import { Answer } from './answer.entity';
-import { Game } from './game.entity';
+import { PlayerStatus } from '../../../../base/models/playerStatus';
 
 @Entity({ name: 'players' })
 export class Player {
@@ -22,6 +22,9 @@ export class Player {
 
   @OneToMany(() => Answer, (a) => a.player)
   answers: Answer[];
+
+  @Column({ default: null })
+  playerStatus: PlayerStatus;
 
   static create(userId: string): Player {
     const player = new Player();

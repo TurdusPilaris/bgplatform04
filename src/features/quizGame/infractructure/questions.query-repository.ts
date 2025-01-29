@@ -58,7 +58,10 @@ export class QuestionsQueryRepository {
       correctAnswers: [...question.answers],
       published: question.published,
       createdAt: question.createdAt.toISOString(),
-      updatedAt: question.updatedAt.toISOString(),
+      updatedAt:
+        question.createdAt.toISOString() === question.updatedAt.toISOString()
+          ? null
+          : question.updatedAt.toISOString(),
     };
   };
 }

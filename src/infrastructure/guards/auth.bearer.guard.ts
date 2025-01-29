@@ -17,6 +17,7 @@ export class AuthBearerGuard implements CanActivate {
   ) {}
   async canActivate(context: ExecutionContext) {
     // : boolean | Promise<boolean> | Observable<boolean>
+
     const request: Request = context.switchToHttp().getRequest();
 
     if (!request.headers.authorization) {

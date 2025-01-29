@@ -1,5 +1,8 @@
+import { QuestionsRepository } from '../../../src/features/quizGame/infractructure/questions.repository';
+import { Question } from '../../../src/features/quizGame/domain/entities/question.entity';
+
 export const questionTestSeeder = {
-  createElevenQuestionsDTO() {
+  async createElevenQuestionsDTO(questionsRepository: QuestionsRepository) {
     const questions = [];
     questions.push({
       body: 'What is the capital of France?',
@@ -43,6 +46,13 @@ export const questionTestSeeder = {
       body: 'What programming language is used for Android app development?',
       correctAnswers: ['Java', 'Kotlin'],
     });
-    return questions;
+
+    const arrayEntityQuestion = questions.map((dto) =>
+      Question.create(dto.body, dto.correctAnswers),
+    );
+    await questionsRepository.createQuestions(arrayEntityQuestion);
+    await questionsRepository.publishAllQuestions();
+
+    return arrayEntityQuestion;
   },
 };

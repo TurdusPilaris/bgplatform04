@@ -1,9 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { GameRepository } from '../../../infractructure/game.repository';
-import {
-  GamePairViewModel,
-  QuestionViewModel,
-} from '../../../api/models/output/game/game.view.model';
 import { Player } from '../../../domain/entities/player.entity';
 import { Game } from '../../../domain/entities/game.entity';
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
@@ -27,7 +23,7 @@ export class ConnectionToGameUseCase
   ) {}
   async execute(
     command: ConnectionToGameCommand,
-  ): Promise<InterlayerNotice<GamePairViewModel | null>> {
+  ): Promise<InterlayerNotice<string | null>> {
     //first find active game
     const activeGame = await this.gameRepository.findActiveGame({
       currentUserId: command.userId,
@@ -43,15 +39,25 @@ export class ConnectionToGameUseCase
     }
     //find game with status "PendingSecondPlayer"
     const gamePendingSecondPlayer = await this.gameRepository.findPendingGame();
+
     if (!gamePendingSecondPlayer) {
       return this.createNewGame(command.userId);
-    } else {
-      return this.fixPairForGame(command.userId, gamePendingSecondPlayer);
     }
+
+    //user is already in the pending game
+    if (gamePendingSecondPlayer.userForPlayer1 === command.userId) {
+      const errorNotice = new InterlayerNotice(null);
+      errorNotice.addError(
+        'current user is already in the pending game',
+        'game',
+        403,
+      );
+      return errorNotice;
+    }
+
+    return this.fixPairForGame(command.userId, gamePendingSecondPlayer.id);
   }
-  async createNewGame(
-    userId: string,
-  ): Promise<InterlayerNotice<GamePairViewModel>> {
+  async createNewGame(userId: string): Promise<InterlayerNotice<string>> {
     //create new player
     const newPlayer = Player.create(userId);
     const createdPlayer = await this.gameRepository.savePlayer(newPlayer);
@@ -62,31 +68,31 @@ export class ConnectionToGameUseCase
       await this.gameQueryRepository.findGameWithLoginUser(createdGame.id);
 
     //return view model
-    return new InterlayerNotice(this.createViewModel(createdGameForView, null));
+    return new InterlayerNotice(createdGameForView.id);
   }
   async fixPairForGame(
     userId: string,
-    currentGame: Game,
-  ): Promise<InterlayerNotice<GamePairViewModel>> {
+    currentGameId: string,
+  ): Promise<InterlayerNotice<string>> {
     //create new player for second user
     const newPlayer = Player.create(userId);
     const createdSecondPlayer = await this.gameRepository.savePlayer(newPlayer);
 
     //update current game
     await this.gameRepository.addSecondUserAndActiveTheGame({
-      currentGameId: currentGame.id,
+      currentGameId: currentGameId,
       playerId: createdSecondPlayer.id,
     });
 
     const activeGame = await this.gameRepository.findGameById({
-      id: currentGame.id,
+      id: currentGameId,
     });
 
     const activeGameForView =
       await this.gameQueryRepository.findGameWithLoginUser(activeGame.id);
     //create questions for game
     const fiveRandomQuestions: Question[] =
-      await this.questionRepository.getFiveRandomQuestions();
+      await this.questionRepository.getFiveRandomPublishQuestions();
 
     const arrayForQuestion = fiveRandomQuestions.map((q) =>
       GameQuestion.create(activeGame.id, q.id),
@@ -94,47 +100,7 @@ export class ConnectionToGameUseCase
 
     await this.gameRepository.saveQuestionsForGame(arrayForQuestion);
 
-    const questionsForGameForView =
-      await this.gameQueryRepository.findQuestionGameForView(
-        arrayForQuestion.map((q) => q.id),
-      );
-
-    const questionsForViewModel = questionsForGameForView.map((qg) => ({
-      id: qg.id.toString(),
-      body: qg.question.body,
-    }));
     //create five game question
-    return new InterlayerNotice(
-      this.createViewModel(activeGameForView, questionsForViewModel),
-    );
-  }
-  createViewModel(game: Game, questions: QuestionViewModel[] | null) {
-    return {
-      id: game.id,
-      firstPlayerProgress: {
-        answers: [],
-        player: {
-          id: game.player_1.id,
-          login: game.player_1.user.userName,
-        },
-        score: 0,
-      },
-
-      secondPlayerProgress: !game.player_2
-        ? null
-        : {
-            answers: [],
-            player: {
-              id: game.player_2.id,
-              login: game.player_2.user.userName,
-            },
-            score: 0,
-          },
-      questions: questions,
-      status: game.status,
-      pairCreatedDate: game.createdAt.toISOString(),
-      startGameDate: !game.player_2 ? null : game.startGameDate.toISOString(),
-      finishGameDate: null,
-    };
+    return new InterlayerNotice(activeGameForView.id);
   }
 }

@@ -57,6 +57,10 @@ describe('update question by super admin', () => {
     //let's update the created question
     const result = await useCaseUpdate.execute({ id, published });
 
+    const quest = await questionsRepository.findById(id);
+
+    console.log('quest', quest);
+
     expect(result).toBeDefined();
     expect(result).toBeInstanceOf(InterlayerNotice);
     expect(result.hasError()).toBe(false);

@@ -18,7 +18,7 @@ export class UpdatePublishQuestionUseCase
   async execute(command: UpdatePublishQuestionCommand) {
     // If the question is not found, an error will be returned.
     const foundQuestion = await this.questionsRepository.findById(command.id);
-    console.log('foundQuestion----', foundQuestion);
+
     if (!foundQuestion) {
       const errorNotice = new InterlayerNotice(null);
       errorNotice.addError('Question does not exist', 'questionId', 404);
@@ -33,6 +33,7 @@ export class UpdatePublishQuestionUseCase
       );
       return errorNotice;
     }
+    console.log('im here');
     await this.questionsRepository.updatePublishedQuestion({
       id: command.id,
       published: command.published,
