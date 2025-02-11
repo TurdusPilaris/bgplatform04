@@ -22,10 +22,8 @@ import { NameIsExistConstraint } from './infrastructure/decorators/validate/name
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BlogIdIsValidConstraint } from './infrastructure/decorators/validate/blog-id-is-valid';
 import { QuizGameModule } from './features/quizGame/quizGameModule';
-import {
-  IsBooleanStrict,
-  IsBooleanStrictConstraint,
-} from './infrastructure/decorators/validate/is-boolean-strict.decorator';
+import { IsBooleanStrictConstraint } from './infrastructure/decorators/validate/is-boolean-strict.decorator';
+import { ScheduleModule } from '@nestjs/schedule';
 
 const adapters = [EmailAdapter, EmailRouter, JwtService, BcryptService];
 
@@ -33,6 +31,7 @@ const adapters = [EmailAdapter, EmailRouter, JwtService, BcryptService];
   imports: [
     ThrottlerModule.forRoot([{ ttl: 10000, limit: 5 }]),
     CqrsModule,
+    ScheduleModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],

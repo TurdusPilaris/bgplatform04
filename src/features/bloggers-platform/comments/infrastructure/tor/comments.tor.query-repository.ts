@@ -83,8 +83,6 @@ export class CommentsTorQueryRepository {
     const countComments = await builder.getCount();
     const items = await builder.getRawMany();
 
-    console.log('items', items);
-
     const itemsForPaginator = items.map((comment) =>
       this.commentOutputModelMapper(comment),
     );

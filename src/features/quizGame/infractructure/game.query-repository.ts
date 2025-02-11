@@ -14,6 +14,8 @@ import { QueryMyInputModel } from '../api/models/input/question/query.my.input.m
 import { paginationModelMapper } from '../../../base/models/output/pagination.output.model';
 import { PlayerStatus } from '../../../base/models/playerStatus';
 import { MyStatisticViewModel } from '../api/models/output/game/my.statistic.view.model';
+import { QueryTopInputModel } from '../api/models/input/question/query.top.input.model';
+import { TopGamePlayerViewModel } from '../api/models/output/game/top.game.player.view.model';
 
 @Injectable()
 export class GameQueryRepository {
@@ -293,10 +295,98 @@ export class GameQueryRepository {
       .addGroupBy('"statusDraw".count')
       .getRawOne();
 
-    console.log('result', result);
     return this.mapMyStatistic(result);
   }
 
+  async findTopUsers(param: { queryDto: QueryTopInputModel; userId: string }) {
+    //распарсим параметры для удобства
+    const limit = param.queryDto.pageSize;
+    const offset = (param.queryDto.pageNumber - 1) * param.queryDto.pageSize;
+
+    const parsedSort = param.queryDto.sort.map((item) => {
+      const [key, order] = item.split(' ');
+      return {
+        key,
+        order: order.replace('.', '').toLowerCase().includes('asc')
+          ? 'ASC'
+          : ('DESC' as 'ASC' | 'DESC'),
+      };
+    });
+
+    const subQueryPlayersStatus = this.playerRepository
+      .createQueryBuilder()
+      .select('"playerStatus"')
+      .addSelect('"userId"')
+      .addSelect('Count(*)', 'count')
+      .groupBy('"playerStatus"')
+      .addGroupBy('"userId"');
+
+    const resultBuilder = this.playerRepository
+      .createQueryBuilder('pl')
+      .select('SUM(pl.score)', 'sumScore')
+      .addSelect('pl."userId"')
+      .addSelect('COUNT(pl.id)', 'gamesCount')
+      .addSelect('AVG(pl.score)', 'avgScores')
+      // .where('pl."userId" = :userId', { userId: param.userId })
+      .addSelect(
+        'CAST(COALESCE("statusWinner".count, 0) AS INTEGER) AS "winsCount"',
+      )
+      .addSelect(
+        'CAST(COALESCE("statusLoser".count, 0) AS INTEGER) AS "lossesCount"',
+      )
+      .addSelect(
+        'CAST(COALESCE("statusDraw".count, 0) AS INTEGER) AS "drawsCount"',
+      )
+      .addSelect('users."userName"', 'login')
+      .addCommonTableExpression(subQueryPlayersStatus, 'statusWinner')
+      .addCommonTableExpression(subQueryPlayersStatus, 'statusLoser')
+      .addCommonTableExpression(subQueryPlayersStatus, 'statusDraw')
+      .leftJoin('user_tor', 'users', 'pl."userId" = users.id')
+      .leftJoin(
+        'statusWinner',
+        'statusWinner',
+        'pl."userId" = "statusWinner"."userId" AND "statusWinner"."playerStatus" = :winner',
+        { winner: PlayerStatus.Winner },
+      )
+      .leftJoin(
+        'statusLoser',
+        'statusLoser',
+        'pl."userId" = "statusLoser"."userId" AND  "statusLoser"."playerStatus" = :loser',
+        { loser: PlayerStatus.Loser },
+      )
+      .leftJoin(
+        'statusDraw',
+        'statusDraw',
+        'pl."userId" = "statusDraw"."userId" AND "statusDraw"."playerStatus" = :draw',
+        { draw: PlayerStatus.Draw },
+      )
+      .groupBy('pl."userId"')
+      .addGroupBy('"statusWinner".count') // Добавляем count из statusWinner в GROUP BY
+      .addGroupBy('"statusLoser".count')
+      .addGroupBy('"statusDraw".count')
+      .addGroupBy('users."userName"');
+
+    parsedSort.forEach((el) => {
+      resultBuilder.addOrderBy(`"${el.key}"`, el.order);
+    });
+    resultBuilder.limit(limit).offset(offset);
+    const items = await resultBuilder.getRawMany();
+    const itemsForPaginator = items.map((userForTop) =>
+      this.mapTopUser(userForTop),
+    );
+
+    const countResult = await this.playerRepository
+      .createQueryBuilder('pl')
+      .select('COUNT(DISTINCT pl."userId")', 'totalCount') // Учитываем только уникальных пользователей
+      .getRawOne();
+
+    return paginationModelMapper(
+      param.queryDto,
+      // 10,
+      +countResult.totalCount,
+      itemsForPaginator,
+    );
+  }
   mapMyStatistic = (statistic): MyStatisticViewModel => {
     return {
       sumScore: +statistic.sumScore,
@@ -355,6 +445,21 @@ export class GameQueryRepository {
       finishGameDate: !param.resultGame.finishGameDate
         ? null
         : param.resultGame.finishGameDate.toISOString(),
+    };
+  }
+
+  private mapTopUser(userForTop: any): TopGamePlayerViewModel {
+    return {
+      gamesCount: +userForTop.gamesCount,
+      winsCount: +userForTop.winsCount,
+      lossesCount: +userForTop.lossesCount,
+      drawsCount: +userForTop.drawsCount,
+      sumScore: +userForTop.sumScore,
+      avgScores: +(+userForTop.avgScores).toFixed(2),
+      player: {
+        id: userForTop.userId,
+        login: userForTop.login,
+      },
     };
   }
 }

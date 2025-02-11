@@ -21,15 +21,18 @@ import { IsGameExistsAndUserParticipantCommand } from '../../application/use-cas
 import { GameQueryRepository } from '../../infractructure/game.query-repository';
 import { GetCurrentGameIdCommand } from '../../application/use-cases/game/get-current-game-id-use-case';
 import { QueryMyInputModel } from '../models/input/question/query.my.input.model';
+import { QueryTopInputModel } from '../models/input/question/query.top.input.model';
+import { GameExpirationService } from '../../application/services/game.expiration.service';
 
 @Controller('pair-game-quiz')
-@UseGuards(AuthBearerGuard)
 export class PairGameQuizController {
   constructor(
     private commandBus: CommandBus,
     protected gameQueryRepository: GameQueryRepository,
+    private gameService: GameExpirationService,
   ) {}
 
+  @UseGuards(AuthBearerGuard)
   @Get('pairs/my-current')
   @HttpCode(200)
   async getCurrentGameForUser(@Req() req: Request) {
@@ -43,6 +46,7 @@ export class PairGameQuizController {
     }
   }
 
+  @UseGuards(AuthBearerGuard)
   @Get('pairs/my')
   @HttpCode(200)
   async getHistoryGamesForUser(
@@ -56,6 +60,7 @@ export class PairGameQuizController {
     });
   }
 
+  @UseGuards(AuthBearerGuard)
   @Get('users/my-statistic')
   @HttpCode(200)
   async getStatisticForUser(
@@ -68,6 +73,20 @@ export class PairGameQuizController {
       userId: req.userId,
     });
   }
+
+  @Get('users/top')
+  @HttpCode(200)
+  async getPlayersTop(
+    @Req() req: Request,
+    @Query()
+    queryDto: QueryTopInputModel,
+  ) {
+    return await this.gameQueryRepository.findTopUsers({
+      queryDto: queryDto,
+      userId: req.userId,
+    });
+  }
+  @UseGuards(AuthBearerGuard)
   @Get('pairs/:id')
   @HttpCode(200)
   async getGameById(
@@ -86,6 +105,7 @@ export class PairGameQuizController {
     }
   }
 
+  @UseGuards(AuthBearerGuard)
   @Post('pairs/connection')
   @HttpCode(200)
   async connection(@Req() req: Request) {
@@ -99,6 +119,7 @@ export class PairGameQuizController {
     }
   }
 
+  @UseGuards(AuthBearerGuard)
   @Post('pairs/my-current/answers')
   @HttpCode(200)
   async answers(@Req() req: Request, @Body() inputModel: AnswerInputModel) {
@@ -110,5 +131,11 @@ export class PairGameQuizController {
     } else {
       return result.data;
     }
+  }
+
+  @Get('expire')
+  @HttpCode(200)
+  async getExpire() {
+    await this.gameService.handleExpiredGames();
   }
 }

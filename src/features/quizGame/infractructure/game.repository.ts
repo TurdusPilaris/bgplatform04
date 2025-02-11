@@ -194,4 +194,44 @@ export class GameRepository {
       { status: GameStatus.Finished, finishGameDate: new Date() },
     );
   }
+
+  async findExpiredGame() {
+    const currentDateMinus10sek = new Date(Date.now() - 9 * 1000); // Текущая дата - 10 секунд
+    const queryBuilder = this.gameRepository
+      .createQueryBuilder('games')
+      .select('games.id', 'id')
+      .leftJoin(
+        'answers',
+        'answers_pl1',
+        'games."player_1_id" = answers_pl1."playerId"',
+      )
+      .leftJoin(
+        'answers',
+        'answers_pl2',
+        'games."player_2_id" = answers_pl2."playerId"',
+      )
+      .addSelect('count(DISTINCT  answers_pl1.id)', 'count_pl1')
+      .addSelect('count(DISTINCT  answers_pl2.id)', 'count_pl2')
+      .addSelect('games."player_1_id"', 'player1')
+      .addSelect('games."player_2_id"', 'player2')
+      .addSelect('MAX( "answers_pl1"."createdAt")', 'lastdatepl1')
+      .addSelect('MAX(  "answers_pl2"."createdAt")', 'lastdatepl2')
+      .where('games.status = :status', { status: GameStatus.Active })
+      .groupBy('games.id')
+      .addGroupBy('answers_pl1."playerId"')
+      .addGroupBy('answers_pl2."playerId"')
+      .having(
+        '(count(DISTINCT  answers_pl1.id) = 5 AND count(DISTINCT  answers_pl2.id) < 5 AND MAX( "answers_pl1"."createdAt") < :currentDateMinus10sek) OR (count(DISTINCT  answers_pl2.id) = 5 AND count(DISTINCT  answers_pl1.id) < 5 AND MAX( "answers_pl2"."createdAt") < :currentDateMinus10sek) ',
+      )
+      .setParameter('currentDateMinus10sek', currentDateMinus10sek);
+    // console.log(queryBuilder.getSql());
+    const result = await queryBuilder.getRawMany();
+    return result.map((game) => ({
+      gameId: game.id,
+      player1: game.player1,
+      player2: game.player2,
+      count_pl1: +game.count_pl1,
+      count_pl2: +game.count_pl2,
+    }));
+  }
 }

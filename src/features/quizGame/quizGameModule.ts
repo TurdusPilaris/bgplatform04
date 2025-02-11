@@ -21,6 +21,8 @@ import { GameRepository } from './infractructure/game.repository';
 import { GameQueryRepository } from './infractructure/game.query-repository';
 import { IsGameExistsAndUserParticipantUseCase } from './application/use-cases/game/is-game-exists-and-user-participant-use-case';
 import { GetCurrentGameIdUseCase } from './application/use-cases/game/get-current-game-id-use-case';
+import { FinishExpiredGamesUseCase } from './application/use-cases/game/finish-expired-games-use-case';
+import { GameExpirationService } from './application/services/game.expiration.service';
 
 const useCasesForQuestion = [
   CreateQuestionUseCase,
@@ -33,6 +35,7 @@ const useCasesForGame = [
   CheckTheAnswersUseCase,
   IsGameExistsAndUserParticipantUseCase,
   GetCurrentGameIdUseCase,
+  FinishExpiredGamesUseCase,
 ];
 @Module({
   imports: [
@@ -47,6 +50,7 @@ const useCasesForGame = [
     QuestionsRepository,
     GameRepository,
     GameQueryRepository,
+    GameExpirationService,
     QuestionsQueryRepository,
   ],
   exports: [],

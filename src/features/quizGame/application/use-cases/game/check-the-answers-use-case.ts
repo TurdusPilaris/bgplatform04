@@ -182,47 +182,32 @@ export class CheckTheAnswersUseCase
         playerId: param.opponentPlayer.id,
       });
     }
-    if (
+    const player1IsWinner =
       result.bonusOfPlayer1 + param.currentPlayer.score >
-      result.bonusOfPlayer2 + param.opponentPlayer.score
-    ) {
-      await this.gameRepository.updatePlayerStatus({
-        playerId: param.currentPlayer.id,
-        playerStatus: PlayerStatus.Winner,
-      });
-      await this.gameRepository.updatePlayerStatus({
-        playerId: param.opponentPlayer.id,
-        playerStatus: PlayerStatus.Loser,
-      });
-      return;
-    }
-    if (
+      result.bonusOfPlayer2 + param.opponentPlayer.score;
+    const player2IsWinner =
       result.bonusOfPlayer2 + param.opponentPlayer.score >
-      result.bonusOfPlayer1 + param.currentPlayer.score
-    ) {
-      await this.gameRepository.updatePlayerStatus({
-        playerId: param.currentPlayer.id,
-        playerStatus: PlayerStatus.Loser,
-      });
-      await this.gameRepository.updatePlayerStatus({
-        playerId: param.opponentPlayer.id,
-        playerStatus: PlayerStatus.Winner,
-      });
-      return;
-    }
-    if (
+      result.bonusOfPlayer1 + param.currentPlayer.score;
+    const gameIsDraw =
       result.bonusOfPlayer2 + param.opponentPlayer.score ===
-      result.bonusOfPlayer1 + param.currentPlayer.score
-    ) {
-      await this.gameRepository.updatePlayerStatus({
-        playerId: param.currentPlayer.id,
-        playerStatus: PlayerStatus.Draw,
-      });
-      await this.gameRepository.updatePlayerStatus({
-        playerId: param.opponentPlayer.id,
-        playerStatus: PlayerStatus.Draw,
-      });
-      return;
-    }
+      result.bonusOfPlayer1 + param.currentPlayer.score;
+
+    await this.gameRepository.updatePlayerStatus({
+      playerId: param.currentPlayer.id,
+      playerStatus: player1IsWinner
+        ? PlayerStatus.Winner
+        : gameIsDraw
+          ? PlayerStatus.Draw
+          : PlayerStatus.Loser,
+    });
+
+    await this.gameRepository.updatePlayerStatus({
+      playerId: param.opponentPlayer.id,
+      playerStatus: player2IsWinner
+        ? PlayerStatus.Winner
+        : gameIsDraw
+          ? PlayerStatus.Draw
+          : PlayerStatus.Loser,
+    });
   }
 }
