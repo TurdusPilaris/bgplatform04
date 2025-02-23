@@ -1,6 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { GameRepository } from '../../../infractructure/game.repository';
 import { InterlayerNotice } from '../../../../../base/models/Interlayer';
+import { GameErrorCodes } from '../../../../../base/models/error-codes/game.error.codes.enum';
 
 export class IsGameExistsAndUserParticipantCommand {
   constructor(
@@ -16,14 +17,17 @@ export class IsGameExistsAndUserParticipantUseCase
   constructor(private gameRepository: GameRepository) {}
 
   async execute(command: IsGameExistsAndUserParticipantCommand) {
+    const ENTITY_GAME = 'game';
     const foundGame = await this.gameRepository.findGameById({
       id: command.gameId,
     });
 
     if (!foundGame) {
-      const errorNotice = new InterlayerNotice(null);
-      errorNotice.addError('game not found', 'game', 404);
-      return errorNotice;
+      return InterlayerNotice.createErrorNotice(
+        GameErrorCodes.NOT_FOUND,
+        ENTITY_GAME,
+        404,
+      );
     }
     const foundGameForUser = await this.gameRepository.findGameForUser({
       currentUserId: command.userId,
@@ -31,13 +35,11 @@ export class IsGameExistsAndUserParticipantUseCase
     });
 
     if (!foundGameForUser) {
-      const errorNotice = new InterlayerNotice(null);
-      errorNotice.addError(
-        'current user tries to get pair in which user is not participant',
-        'game',
+      return InterlayerNotice.createErrorNotice(
+        GameErrorCodes.USER_NOT_PARTICIPANT,
+        ENTITY_GAME,
         403,
       );
-      return errorNotice;
     }
     return new InterlayerNotice(null);
   }
